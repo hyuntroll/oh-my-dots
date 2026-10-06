@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from .config import Config
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
+from .skills import list_skills, read_skill
 from .store import ComputerSession, Conversation, Event, Message, Run, Setting, Store, Task, serialize
 from .tool_registry import TOOLS
 
@@ -85,6 +86,17 @@ def create_app(config=None):
             row.control_owner, row.epoch = state["owner"], state["epoch"]
             db.commit()
         store.event("control.changed", "제어권: " + state["owner"], payload=state)
+
+    @app.get("/api/skills", dependencies=[Depends(auth)])
+    async def skill_catalog():
+        return {"skills": list_skills()}
+
+    @app.get("/api/skills/{skill_id}", dependencies=[Depends(auth)])
+    async def skill_document(skill_id: str):
+        try:
+            return read_skill(skill_id)
+        except ValueError as exc:
+            raise HTTPException(404, "Built-in skill not found") from exc
 
     @app.get("/health")
     async def health():

@@ -6,6 +6,7 @@ import uuid
 
 import httpx
 
+from .skills import list_skills, read_skill
 from .tool_registry import ToolInputError, validate_input
 
 
@@ -27,6 +28,8 @@ class Tools:
             await self.runtime.abort(self.run_id, "TOOL_LIMIT_EXCEEDED")
             raise asyncio.CancelledError()
         descriptions = {
+            "skills_list": "작업에 맞는 스킬을 찾고 있어요",
+            "skill_read": "작업 절차를 읽고 있어요",
             "desktop_screenshot": "현재 화면을 살펴보고 있어요",
             "desktop_input": "컴퓨터를 조작하고 있어요",
             "desktop_windows": "열린 창을 확인하고 있어요",
@@ -37,7 +40,7 @@ class Tools:
         }
         call_id = str(uuid.uuid4())
         # Persist only display metadata, never screenshots or GUI text input.
-        fields = {"shell_exec": ("command", "cwd"), "artifact_read": ("path",),
+        fields = {"skill_read": ("skill_id",), "shell_exec": ("command", "cwd"), "artifact_read": ("path",),
                   "artifact_write": ("path",), "desktop_input": ("action", "app",)}
         validation_error = None
         try:
@@ -73,6 +76,9 @@ class Tools:
                 if key in result
             }
             details.update(call_id=call_id, duration_ms=round((time.monotonic() - started) * 1000))
+            if name == "skill_read":
+                details.update(skill_id=result["id"], skill_title=result["title"],
+                               skill_version=result["version"], skill_sha256=result["sha256"])
             if name in ("shell_exec", "artifact_read"):
                 for key in ("stdout", "stderr"):
                     if isinstance(result.get(key), str):
@@ -104,6 +110,10 @@ class Tools:
             self.active_seconds += time.monotonic() - started
 
     async def _invoke(self, name, args):
+        if name == "skills_list":
+            return {"skills": list_skills()}
+        if name == "skill_read":
+            return read_skill(args["skill_id"])
         if name == "desktop_screenshot":
             return {"image_url": await self.runtime.desktop.image()}
         if name == "desktop_windows":

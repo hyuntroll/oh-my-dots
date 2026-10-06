@@ -1,0 +1,4 @@
+function tick(){const now=new Date();const time=now.toLocaleTimeString('en-US',{timeZone:'Asia/Seoul',hour:'numeric',minute:'2-digit',hour12:true});document.getElementById('time').textContent=time.replace(/\s[AP]M/,'');document.getElementById('period').textContent=time.split(' ').at(-1);}tick();setInterval(tick,1000);
+ document.querySelector('.speech button').addEventListener('click',()=>document.getElementById('speech').hidden=true);
+async function syncAppearance(){try{const response=await fetch('appearance.json?t='+Date.now(),{cache:'no-store'});if(!response.ok)return;const {name,accent,matrix}=await response.json();document.querySelector('h1').textContent='Welcome back, '+name;document.getElementById('pet-tint').setAttribute('values',matrix);document.documentElement.style.setProperty('--dot-accent',accent);}catch{}}
+syncAppearance();setInterval(syncAppearance,2000);

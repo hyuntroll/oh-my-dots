@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends sudo && rm -rf 
 COPY computer/apt-wrapper.sh /usr/local/bin/apt
 COPY computer/apt-wrapper.sh /usr/local/bin/apt-get
 RUN chmod 0755 /usr/local/bin/apt /usr/local/bin/apt-get && visudo -cf /etc/sudoers.d/dot-packages
+COPY computer/browser.sh /usr/local/bin/dot-browser
+RUN chmod 0755 /usr/local/bin/dot-browser
 COPY computer/daemon.py computer/appearance.py /app/
 COPY computer/entrypoint.sh /app/entrypoint.sh
 COPY computer/desktop/ /opt/dot-desktop/

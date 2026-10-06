@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,10 @@ def test_accent_updates_window_theme_and_atomic_start_page_settings(tmp_path):
     assert '#d875d7' in (tmp_path / '.local/share/dot-desktop/appearance.css').read_text()
     assert '#d875d7' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
     assert '"Wars"' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
+    settings = json.loads((tmp_path / '.local/share/dot-desktop/appearance.json').read_text())
+    assert settings['name'] == 'Wars'
+    assert settings['accent'] == '#d875d7'
+    assert len(settings['matrix'].split()) == 20
     assert 'pet-tint' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
     write_appearance('#19b6de', tmp_path)
     assert '#d875d7' not in theme.read_text()

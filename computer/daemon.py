@@ -200,7 +200,7 @@ class Gate:
                     self.keys.discard(body.key)
             elif action == "launch":
                 apps = {
-                    "chromium": ["chromium", "--no-sandbox", "--disable-dev-shm-usage", "--no-first-run", "--test-type", "file:///opt/dot-desktop/start.html"],
+                    "chromium": ["dot-browser"],
                     "terminal": ["xfce4-terminal"],
                     "files": ["thunar", "/workspace/artifacts"],
                 }

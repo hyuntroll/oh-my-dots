@@ -10,6 +10,8 @@ cat > "$HOME/.config/gtk-3.0/gtk.css" <<'EOF'
 headerbar { background: #f39a80; color: #443933; box-shadow: none; }
 headerbar:backdrop { background: #e8baa9; }
 EOF
+cp /opt/dot-desktop/start.html /opt/dot-desktop/start.js /opt/dot-desktop/background.js /opt/dot-desktop/manifest.json "$HOME/.local/share/dot-desktop/"
+cp -R /opt/dot-desktop/assets "$HOME/.local/share/dot-desktop/"
 cp -R /opt/dot-desktop/themes/MyDot "$HOME/.themes/"
 PYTHONPATH=/app python -c 'from appearance import write_appearance; from pathlib import Path; write_appearance("#bdc1d2", Path.home())'
 sed 's/<name>Clearlooks<\/name>/<name>MyDot<\/name>/' /etc/xdg/openbox/rc.xml > "$HOME/.config/openbox/rc.xml"
@@ -30,7 +32,7 @@ picom --backend xrender --config /dev/null &
 sleep 0.3
 cp /opt/dot-desktop/dock.css "$HOME/.local/share/dot-desktop/dock.css"
 /usr/bin/python3 /opt/dot-desktop/dot_dock.py &
-chromium --no-sandbox --disable-dev-shm-usage --no-first-run --test-type --window-size=1120,825 --window-position=0,0 file:///opt/dot-desktop/start.html >/dev/null 2>&1 &
+dot-browser --window-size=1120,825 --window-position=0,0 >/dev/null 2>&1 &
 # The VNC server itself rejects all input; authenticated API owns input arbitration.
 x11vnc -display :99 -rfbport 5900 -listen 127.0.0.1 -nopw -forever -shared -viewonly -noxdamage -quiet &
 websockify 6080 localhost:5900 &

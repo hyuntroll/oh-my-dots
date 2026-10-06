@@ -30,3 +30,7 @@ def write_appearance(accent: str, home: Path, name: str = "OhMyDots"):
     matrix = f"{r} 0 {1-r} 0 0 {g} 0 {1-g} 0 0 {b} 0 {1-b} 0 0 0 0 0 1 0"
     temporary.write_text('(()=>{const heading=document.querySelector("h1");if(heading)heading.textContent="Welcome back, "+' + json.dumps(name) + ';const tint=document.getElementById("pet-tint");if(tint)tint.setAttribute("values",' + json.dumps(matrix) + ');' + 'document.documentElement.style.setProperty("--dot-accent", ' + json.dumps(accent) + ');})();')
     temporary.replace(appearance)
+
+    temporary = desktop / 'appearance.json.tmp'
+    temporary.write_text(json.dumps({'name': name, 'accent': accent, 'matrix': matrix}))
+    temporary.replace(desktop / 'appearance.json')

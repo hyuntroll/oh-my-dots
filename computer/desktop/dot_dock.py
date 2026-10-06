@@ -43,7 +43,7 @@ APPS = [
     {
         "name": "Browser",
         "cmd": first_command([
-            "chromium --no-sandbox --disable-dev-shm-usage --no-first-run --test-type file:///opt/dot-desktop/start.html", "chromium-browser", "google-chrome", "google-chrome-stable"
+            "dot-browser", "chromium-browser", "google-chrome", "google-chrome-stable"
         ]),
         "tokens": ["chromium", "google-chrome", "chrome"],
         "icons": ["chromium", "chromium-browser", "google-chrome", "web-browser"],

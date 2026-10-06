@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "OhMyDots Start",
+  "version": "0.0.1",
+  "description": "Your dot\u2019s personal new tab page",
+  "chrome_url_overrides": {
+    "newtab": "start.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

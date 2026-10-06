@@ -9,3 +9,4 @@ pillow==12.3.0
 mss==10.2.0
 python-dotenv==1.2.4
 mcp==2.3.0
+jsonschema==4.26.0

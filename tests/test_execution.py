@@ -150,7 +150,7 @@ async def test_tool_history_pairs_calls_bounds_output_and_excludes_images():
     tool = Tools(runtime, "run")
     tool._invoke = AsyncMock(return_value={"stdout": "x" * 9000, "stderr": "", "exit_code": 0,
                                           "image_url": "data:image/png;base64,private"})
-    await tool.invoke("shell_exec", {"command": "echo demo", "unexpected": "private"})
+    await tool.invoke("shell_exec", {"command": "echo demo"})
     start, end = [e for e in store.events if e["type"].startswith("tool.")]
     assert start["payload"]["call_id"] == end["payload"]["call_id"]
     assert start["payload"]["command"] == "echo demo"

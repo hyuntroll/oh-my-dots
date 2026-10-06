@@ -1,81 +1,51 @@
-"""Private stdio tool bridge for Codex. Never inherits GUI or shell service credentials."""
+"""Private stdio bridge. Tool schemas and execution both come from the active Run."""
 
-import base64
+import asyncio
+import json
 import os
 
 import httpx
-from mcp.server.mcpserver import MCPServer
-from mcp.server.mcpserver.utilities.types import Image
-
-server = MCPServer("OhMyDots")
-URL = os.environ["DOT_TOOL_URL"]
-HEADERS = {"Authorization": "Bearer " + os.environ["DOT_RUN_TOKEN"]}
+from mcp import types
+from mcp.server.lowlevel import Server
+from mcp.server.stdio import stdio_server
 
 
-async def invoke(name, args):
-    async with httpx.AsyncClient(timeout=None) as client:
-        response = await client.post(URL + "/" + name, headers=HEADERS, json=args)
+async def run():
+    url = os.environ["DOT_TOOL_URL"].rstrip("/")
+    headers = {"Authorization": "Bearer " + os.environ["DOT_RUN_TOKEN"]}
+    async with httpx.AsyncClient(headers=headers, timeout=None) as client:
+        response = await client.get(url, timeout=15)
         response.raise_for_status()
-        result = response.json()
-        if "image_url" in result:
-            data = result.pop("image_url").split(",", 1)[1]
-            return [Image(data=base64.b64decode(data), format="png"), str(result)]
-        return result
+        definitions = [types.Tool.model_validate(item) for item in response.json()["tools"]]
+        names = {definition.name for definition in definitions}
 
+        async def list_tools(ctx, params):
+            return types.ListToolsResult(tools=definitions)
 
-@server.tool()
-async def desktop_screenshot():
-    """Observe actual desktop screenshot."""
-    return await invoke("desktop_screenshot", {})
+        async def call_tool(ctx, params):
+            if params.name not in names:
+                return types.CallToolResult(is_error=True, content=[
+                    types.TextContent(type="text", text="Unknown tool")])
+            try:
+                response = await client.post(url + "/" + params.name,
+                                             json=params.arguments if params.arguments is not None else {})
+                response.raise_for_status()
+                result = response.json()
+            except httpx.HTTPError:
+                # Transport exception strings can expose URLs; do not echo them to the model.
+                return types.CallToolResult(is_error=True, content=[
+                    types.TextContent(type="text", text="Tool connection failed. The Run may have ended.")])
+            content = []
+            if "image_url" in result:
+                data = result.pop("image_url").split(",", 1)[1]
+                content.append(types.ImageContent(type="image", data=data, mime_type="image/png"))
+            content.append(types.TextContent(type="text", text=json.dumps(result, ensure_ascii=False)))
+            return types.CallToolResult(content=content, is_error="error" in result)
 
-
-@server.tool()
-async def desktop_windows():
-    """List real desktop windows."""
-    return await invoke("desktop_windows", {})
-
-
-@server.tool()
-async def desktop_input(
-    action: str,
-    x: int = 0,
-    y: int = 0,
-    text: str = "",
-    key: str = "",
-    app: str = "chromium",
-    delta: int = 0,
-    window_id: str = "",
-):
-    """Operate GUI with screenshot coordinates or X11 keys. Takeover blocks inputs."""
-    return await invoke(
-        "desktop_input",
-        dict(action=action, x=x, y=y, text=text, key=key, app=app, delta=delta, window_id=window_id),
-    )
-
-
-@server.tool()
-async def shell_exec(command: str, cwd: str = "/workspace"):
-    """Run bounded shell in isolated computer workspace, independent from takeover."""
-    return await invoke("shell_exec", dict(command=command, cwd=cwd))
-
-
-@server.tool()
-async def artifact_write(path: str, text: str):
-    """Write relative UTF-8 artifact; read it back before claiming success."""
-    return await invoke("artifact_write", dict(path=path, text=text))
-
-
-@server.tool()
-async def artifact_read(path: str):
-    """Read and verify an artifact relative to /workspace/artifacts."""
-    return await invoke("artifact_read", dict(path=path))
-
-
-@server.tool()
-async def ask_user(question: str, options: list[str] | None = None, recommended_index: int = 0):
-    """Ask a question with 2-4 concise options and a recommended index; custom input is always available."""
-    return await invoke("ask_user", dict(question=question, options=options, recommended_index=recommended_index))
+        server = Server("OhMyDots", on_list_tools=list_tools, on_call_tool=call_tool)
+        async with stdio_server() as (read_stream, write_stream):
+            await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
 if __name__ == "__main__":
-    server.run(transport="stdio")
+    asyncio.run(run())

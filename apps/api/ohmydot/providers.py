@@ -18,7 +18,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from .execution import OutputStream, record_usage
-from .tools import TOOLS
+from .tool_registry import TOOLS
 
 INSTRUCTIONS = """You are OhMyDots, a personal computer agent. Answer in the user's language.
 You control a real isolated Linux desktop, and a separate bounded shell sharing /workspace/artifacts.

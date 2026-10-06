@@ -19,7 +19,7 @@ from .config import Config
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
 from .store import ComputerSession, Conversation, Event, Message, Run, Setting, Store, Task, serialize
-from .tools import TOOLS
+from .tool_registry import TOOLS
 
 
 class Submit(BaseModel):
@@ -384,6 +384,10 @@ def create_app(config=None):
                 await ws.close()
             except (RuntimeError, WebSocketDisconnect):
                 pass
+
+    @app.get("/internal/runs/{run_id}/tools", dependencies=[Depends(private_auth)])
+    async def internal_tool_catalog(run_id: str):
+        return {"tools": TOOLS}
 
     @app.post("/internal/runs/{run_id}/tools/{name}", dependencies=[Depends(private_auth)])
     async def internal_tool(run_id: str, name: str, request: Request):

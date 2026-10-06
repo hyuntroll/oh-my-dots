@@ -1,0 +1,99 @@
+name: ohmydot
+services:
+  postgres:
+    image: postgres:18.6-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    environment:
+      POSTGRES_USER: dots
+      POSTGRES_PASSWORD: local-demo-only
+      POSTGRES_DB: dots
+    volumes: [postgres:/var/lib/postgresql]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U dots]
+      interval: 3s
+  computer:
+    build:
+      context: .
+      dockerfile: computer/Dockerfile
+    image: ohmydot-computer:dev
+    environment:
+      COMPUTER_TOKEN: ${COMPUTER_TOKEN:?Run scripts/setup.py}
+    volumes: [artifacts:/workspace/artifacts]
+    tmpfs: [/tmp, "/home/dot:uid=1000,gid=1000", "/workspace:uid=1000,gid=1000"]
+    read_only: true
+    shm_size: 512m
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 512
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [desktop]
+    healthcheck:
+      test: [CMD, python, -c, 'import urllib.request,os; r=urllib.request.Request("http://localhost:8765/health",headers={"Authorization":"Bearer "+os.environ["COMPUTER_TOKEN"]}); urllib.request.urlopen(r)']
+      interval: 5s
+      start_period: 15s
+  shell:
+    build:
+      context: .
+      dockerfile: shell/Dockerfile
+    image: ohmydot-shell:dev
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+    environment:
+      SHELL_TOKEN: ${SHELL_TOKEN:?Run scripts/setup.py}
+    volumes: [artifacts:/workspace/artifacts]
+    tmpfs: [/tmp, "/workspace:uid=1000,gid=1000"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [shell]
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    mem_limit: 1g
+    pids_limit: 128
+    env_file: .env.local
+    environment:
+      DATABASE_URL: postgresql+psycopg://dots:local-demo-only@postgres/dots
+      COMPUTER_URL: http://computer:8765
+      SHELL_URL: http://shell:8766
+      VNC_URL: ws://computer:6080
+      INTERNAL_API_URL: http://127.0.0.1:18000
+      DOT_ORIGIN: http://localhost:3080
+      DOT_DATA_DIR: /data
+      CODEX_HOME: /data/codex
+    volumes: [api-data:/data]
+    networks: [backend, desktop, shell, frontend]
+    depends_on:
+      postgres: {condition: service_healthy}
+      computer: {condition: service_healthy}
+      shell: {condition: service_started}
+  web:
+    mem_limit: 512m
+    pids_limit: 128
+    build:
+      context: apps/web
+    networks: [frontend]
+  gateway:
+    image: nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    ports: [127.0.0.1:3080:8080]
+    environment:
+      DOT_SESSION_TOKEN: ${DOT_SESSION_TOKEN:?Run scripts/setup.py}
+    volumes: [./infra/nginx.conf:/etc/ohmydot/nginx.conf.template:ro, ./infra/gateway.sh:/gateway.sh:ro]
+    entrypoint: [/bin/sh, /gateway.sh]
+    networks: [frontend]
+    depends_on: [web, api]
+networks:
+  backend: {internal: true}
+  desktop: {}
+  shell:
+    internal: true
+    ipam:
+      config: [{subnet: 10.246.78.0/24}]
+  frontend: {}
+volumes:
+  postgres: {}
+  artifacts: {}
+  api-data: {}

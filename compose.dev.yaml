@@ -1,0 +1,12 @@
+name: ohmydot
+services:
+  postgres:
+    ports: [127.0.0.1:15432:5432]
+    networks: !override [backend, frontend]
+  computer:
+    ports: [127.0.0.1:18765:8765, 127.0.0.1:16080:6080]
+  gateway:
+    volumes: [./infra/nginx.dev.conf:/etc/ohmydot/nginx.conf.template:ro]
+    ports: [127.0.0.1:18766:18766]
+    networks: !override [frontend, shell]
+    depends_on: !override [shell]

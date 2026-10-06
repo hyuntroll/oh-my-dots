@@ -1,0 +1,14 @@
+{
+  "name": "ohmydots-desktop-preview",
+  "version": "0.0.1",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "package:mac": "node package.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "@electron/packager": "20.3.0"
+  }
+}

@@ -72,6 +72,8 @@ open output/desktop/OhMyDots-darwin-arm64/OhMyDots.app
 
 결과 파일은 공유 작업 공간에 저장됩니다. 컴퓨터 컨테이너를 다시 생성하면 GUI 프로필과 임시 상태가 초기화될 수 있습니다. `docker compose down -v`는 저장 볼륨을 삭제하므로 데이터를 유지하려면 사용하지 마세요.
 
+셸에는 Python, Node/npm, Git, curl, C/C++ 빌드 도구가 포함되며 패키지 다운로드를 위한 인터넷 연결을 지원합니다. `pip install --user 패키지명`과 `npm install -g 패키지명`으로 설치한 도구와 캐시는 `/workspace/.tools` 볼륨에 보관됩니다. 가상환경도 이 경로에 만들면 셸 재시작 후 유지됩니다. 명령은 기본 120초, `timeout` 지정 시 최대 300초 동안 실행할 수 있습니다.
+
 ## 구성
 
 | 경로 | 역할 |

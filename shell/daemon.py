@@ -13,6 +13,7 @@ TOKEN = os.environ.get("SHELL_TOKEN", "")
 if not TOKEN:
     raise RuntimeError("SHELL_TOKEN is required")
 ROOT = Path(os.environ.get("WORKSPACE", "/workspace")).resolve()
+TOOLS = ROOT / ".tools"
 LIMIT = 65536
 processes = {}
 cancelled = set()
@@ -31,7 +32,7 @@ class Exec(BaseModel):
     run_id: str = Field(min_length=1, max_length=64)
     command: str = Field(min_length=1, max_length=8000)
     cwd: str = "/workspace"
-    timeout: float = Field(120, gt=0, le=120)
+    timeout: float = Field(120, gt=0, le=300)
 
 
 async def kill_group(proc):
@@ -62,6 +63,8 @@ async def execute(body: Exec):
     cwd = Path(body.cwd).resolve()
     if not cwd.is_relative_to(ROOT) or not cwd.is_dir():
         raise HTTPException(422, "cwd must exist inside /workspace")
+    for directory in ("home", "python", "node", "cache/pip", "cache/npm"):
+        (TOOLS / directory).mkdir(parents=True, exist_ok=True)
     async with lock:
         if body.run_id in cancelled:
             raise HTTPException(409, "Run cancelled")
@@ -72,7 +75,14 @@ async def execute(body: Exec):
             "-c",
             body.command,
             cwd=cwd,
-            env={"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/tmp", "LANG": "C.UTF-8"},
+            env={
+                "PATH": f"{TOOLS}/python/bin:{TOOLS}/node/bin:/usr/local/bin:/usr/bin:/bin",
+                "HOME": str(TOOLS / "home"), "LANG": "C.UTF-8",
+                "PYTHONUSERBASE": str(TOOLS / "python"),
+                "PIP_CACHE_DIR": str(TOOLS / "cache/pip"),
+                "NPM_CONFIG_PREFIX": str(TOOLS / "node"),
+                "NPM_CONFIG_CACHE": str(TOOLS / "cache/npm"),
+            },
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             start_new_session=True,

@@ -42,12 +42,12 @@ services:
     pids_limit: 128
     environment:
       SHELL_TOKEN: ${SHELL_TOKEN:?Run scripts/setup.py}
-    volumes: [artifacts:/workspace/artifacts]
+    volumes: [artifacts:/workspace/artifacts, shell-tools:/workspace/.tools]
     tmpfs: [/tmp, "/workspace:uid=1000,gid=1000"]
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    networks: [shell]
+    networks: [shell, shell-egress]
   api:
     build:
       context: .
@@ -93,7 +93,9 @@ networks:
     ipam:
       config: [{subnet: 10.246.78.0/24}]
   frontend: {}
+  shell-egress: {}
 volumes:
   postgres: {}
   artifacts: {}
   api-data: {}
+  shell-tools: {}

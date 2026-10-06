@@ -141,7 +141,7 @@ class Tools:
             await asyncio.sleep(0.2)
             return {"image_url": await self.runtime.desktop.image()}
         if name == "shell_exec":
-            result = await self.runtime.shell.post("/exec", {**args, "run_id": self.run_id}, timeout=130)
+            result = await self.runtime.shell.post("/exec", {**args, "run_id": self.run_id}, timeout=args.get("timeout", 120) + 10)
             if result["exit_code"] != 0 or result["timed_out"]:
                 self.runtime.store.event(
                     "shell.failed",

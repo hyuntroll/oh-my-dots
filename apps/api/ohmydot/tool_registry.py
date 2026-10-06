@@ -54,8 +54,11 @@ TOOLS = [
     spec(
         "shell_exec",
         "Execute a bounded command in an isolated shell container. It shares artifacts but "
-        "has no GUI, credentials or internet. Takeover does not cancel shell; Cancel does.",
-        {"command": {"type": "string"}, "cwd": {"type": "string"}},
+        "has no GUI or provider credentials. Internet, pip, npm, git and build tools are available. "
+        "Install Python packages with pip install --user and npm CLIs with npm install -g; "
+        "these persist under /workspace/.tools. Use this directory for persistent virtualenvs. "
+        "Takeover does not cancel shell; Cancel does.",
+        {"command": {"type": "string"}, "cwd": {"type": "string"}, "timeout": {"type": "number", "exclusiveMinimum": 0, "maximum": 300}},
         ["command"],
     ),
     spec(

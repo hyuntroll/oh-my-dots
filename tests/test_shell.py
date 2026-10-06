@@ -11,6 +11,7 @@ def shell(tmp_path, monkeypatch):
     monkeypatch.setenv("SHELL_TOKEN", "test-shell")
     module = importlib.import_module("shell.daemon")
     monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "TOOLS", tmp_path / ".tools")
     (tmp_path / "artifacts").mkdir()
     return module
 
@@ -57,3 +58,13 @@ async def test_command_environment_has_no_gui_or_credentials(shell, monkeypatch)
     )
     with pytest.raises(HTTPException):
         await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd="/", command="pwd"))
+
+
+async def test_user_install_paths_persist_between_commands(shell):
+    first = await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd=str(shell.ROOT),
+        command='printf ready > "$PYTHONUSERBASE/installed-marker"; printf "%s" "$NPM_CONFIG_PREFIX"'))
+    assert first["exit_code"] == 0
+    assert str(shell.TOOLS / 'node') in first["stdout"]
+    second = await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd=str(shell.ROOT),
+        command='cat "$PYTHONUSERBASE/installed-marker"'))
+    assert second["stdout"].strip() == 'ready'

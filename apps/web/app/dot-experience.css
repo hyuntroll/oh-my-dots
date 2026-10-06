@@ -8,6 +8,13 @@
 }
 html[data-theme='light'] { color-scheme: light; --bg: #fff; --paper: #f2f2f2; --raised: #e9e9e9; --ink: #202020; --muted: #777; --dim: #808080; --line: #e5e5e5; --rail: #fafafa; --chat-user: #ffcb32; --bubble-ink: #242424; --primary: #151515; --primary-ink: #fff; }
 body { font-family: var(--font-ui); font-size: 14px; }
+/* Let scrolling messages show through the profile header, with a soft lower edge. */
+.dots-shell .chat-panel { --chat-heading-height: 76px; }
+.dots-shell .chat-panel > .chat-heading { position: absolute; inset: 0 0 auto; z-index: 5; height: var(--chat-heading-height); background: transparent; isolation: isolate; }
+.dots-shell .chat-heading::before { content: ''; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--bg) 72%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 100%); }
+.dots-shell .chat-panel > .messages { padding-top: calc(var(--chat-heading-height) + 20px); }
+.dots-shell .chat-panel > .error-banner { margin-top: var(--chat-heading-height); }
+@media (max-width: 720px) { .dots-shell .chat-panel { --chat-heading-height: 72px; }.dots-shell .chat-panel > .messages { padding-top: calc(var(--chat-heading-height) + 16px); } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .dots-shell { display: grid; grid-template-columns: var(--rail-width) minmax(0, 1fr); height: 100dvh; overflow: hidden; background: var(--bg); }
 .dots-shell.with-sidebar { grid-template-columns: var(--rail-width) var(--sidebar-width) minmax(0, 1fr); }

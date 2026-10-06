@@ -5,12 +5,13 @@ import Markdown from 'react-markdown';
 import ComputerView from '../components/ComputerView';
 import Settings from '../components/Settings';
 import RunActivity from '../components/RunActivity';
+import RunUsage from '../components/RunUsage';
 import QuestionCard from '../components/QuestionCard';
 import Presence from '../components/Presence';
 import { readPreferences, shouldSend } from '../lib/preferences';
 import { usePreferences } from '../lib/usePreferences';
 import { api, post, Activity, Computer, Conversation, Run, AuthSettings } from '../lib/api';
-import { mergeExecution, tokenCount, type ExecutionState } from '../lib/execution';
+import { mergeExecution, type ExecutionState } from '../lib/execution';
 const labels: Record<string, string> = { PENDING: '대기 중', RUNNING: '진행 중', WAITING_USER: '응답 대기', COMPLETED: '완료', FAILED: '실패', CANCELLED: '취소됨' };
 const emptyComputer: Computer = { connected: false, owner: null, epoch: null, handoff: false };
 export default function Home() {
@@ -162,7 +163,7 @@ export default function Home() {
           return run ? <RunActivity run={run} execution={execution[run.id]} /> : null;
         })()}</Fragment>)}
         {active?.status === 'RUNNING' && liveText && <article className="message assistant streaming-message" aria-label="작성 중인 답변"><div className="message-body"><Markdown>{liveText}</Markdown>{(progress?.message?.sequence ?? 0) > (progress?.activity?.sequence ?? 0) && <span className="stream-cursor" aria-hidden="true" />}</div></article>}
-        {conversation?.runs?.length ? (() => { const latest = [...conversation.runs].reverse().find(r => execution[r.id]?.usage); const usage = latest ? execution[latest.id].usage!.payload : null; return usage ? <div className="run-usage" title="이 대화의 최근 작업에서 보고된 토큰 사용량">최근 작업 · 입력 {tokenCount(usage.input_tokens).toLocaleString()} · 출력 {tokenCount(usage.output_tokens).toLocaleString()} 토큰</div> : null; })() : null}
+        {conversation?.runs?.length ? (() => { const latest = [...conversation.runs].reverse().find(r => execution[r.id]?.usage); const usage = latest ? execution[latest.id].usage!.payload : null; return usage ? <RunUsage usage={usage} /> : null; })() : null}
         <Presence show={filesOpen}><section className="chat-files" aria-label="결과 파일 목록"><header><Folder size={14} /><strong>결과 파일</strong><button className="icon-button" aria-label="파일 목록 닫기" onClick={() => setFilesOpen(false)}><X size={14} /></button></header>{artifacts.length ? artifacts.map(file => <button className="file-link" key={file.path} onClick={() => openFile(file.path)}><Folder size={14} /><span>{file.path}</span><small>{file.size} B</small></button>) : <p>아직 생성한 파일이 없습니다.</p>}</section></Presence>
       </div>
       <Presence show={activityOpen}><section className="activity-drawer" aria-label="작업 활동"><header><span><ActivityIcon size={15} />Activity</span><button className="icon-button" aria-label="활동 닫기" onClick={() => setActivityOpen(false)}><X size={15} /></button></header><div className="activity-list">{relevantActivity.length ? relevantActivity.slice(-20).reverse().map(event => <div className="activity-row" key={event.sequence}><i /><div>{event.summary}<time>{new Date(event.created_at * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time></div></div>) : <p>작업을 시작하면 진행 과정이 표시됩니다.</p>}</div></section></Presence>

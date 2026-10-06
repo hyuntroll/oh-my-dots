@@ -8,7 +8,7 @@ export default function Presence({ show, children }: { show: boolean; children: 
   if (show) content.current = children;
   useEffect(() => {
     if (show) { setMounted(true); return; }
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setMounted(false); return; }
+    if ((window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.reduceMotion === 'true')) { setMounted(false); return; }
     const timer = setTimeout(() => setMounted(false), 160);
     return () => clearTimeout(timer);
   }, [show]);

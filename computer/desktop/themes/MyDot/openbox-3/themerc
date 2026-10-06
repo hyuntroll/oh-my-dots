@@ -1,0 +1,29 @@
+window.active.title.bg: Flat Solid
+window.active.title.bg.color: #f39a80
+window.inactive.title.bg: Flat Solid
+window.inactive.title.bg.color: #e8baa9
+window.active.label.bg: Parentrelative
+window.inactive.label.bg: Parentrelative
+window.active.label.text.color: #443933
+window.inactive.label.text.color: #78675d
+window.active.button.unpressed.bg: Parentrelative
+window.inactive.button.unpressed.bg: Parentrelative
+window.active.button.unpressed.image.color: #655047
+window.inactive.button.unpressed.image.color: #90786c
+window.active.button.hover.bg: Flat Solid
+window.active.button.hover.bg.color: #ffb39b
+window.active.button.hover.image.color: #443933
+window.active.button.pressed.bg: Flat Solid
+window.active.button.pressed.bg.color: #e5856c
+window.active.button.pressed.image.color: #443933
+window.active.border.color: #ee9d85
+window.inactive.border.color: #d9b5a4
+window.active.handle.bg: Flat Solid
+window.active.handle.bg.color: #ee9d85
+window.inactive.handle.bg: Flat Solid
+window.inactive.handle.bg.color: #d9b5a4
+border.width: 1
+padding.width: 7
+padding.height: 5
+window.handle.width: 0
+window.label.text.justify: center

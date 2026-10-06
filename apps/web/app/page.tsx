@@ -156,7 +156,7 @@ export default function Home() {
       }
       else {
         if (submission.current?.text !== prompt) submission.current = { text: prompt, key: crypto.randomUUID() };
-        await api('/conversations/' + currentId.current + '/messages', post({ text: prompt, idempotency_key: submission.current.key }));
+        await api('/conversations/' + currentId.current + '/messages', post({ text: prompt, idempotency_key: submission.current.key, dot_name: profile.name }));
       }
       setText(''); submission.current = null; await refresh();
     } catch (e) { setError((e as Error).message); } finally { setSubmitting(false); }

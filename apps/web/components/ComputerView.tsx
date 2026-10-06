@@ -11,10 +11,10 @@ export default function ComputerView({ name = 'OhMyDots', accent, computer, onRe
   useEffect(() => {
     if (!computer.connected) return;
     const controller = new AbortController();
-    void api(PREFIX + '/appearance', { ...post({ accent }), signal: controller.signal })
+    void api(PREFIX + '/appearance', { ...post({ accent, name }), signal: controller.signal })
       .catch(error => { if (!controller.signal.aborted) onError('컴퓨터 색상을 적용하지 못했어요: ' + (error as Error).message); });
     return () => controller.abort();
-  }, [accent, computer.connected, onError]);
+  }, [accent, name, computer.connected, onError]);
   const host = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);

@@ -86,8 +86,8 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
         elif request.get("method") == "thread/start":
             assert request["params"]["sandbox"] == "read-only"
             assert request["params"]["ephemeral"]
-            from ohmydot.providers import INSTRUCTIONS
-            assert request["params"]["baseInstructions"] == INSTRUCTIONS
+            from ohmydot.providers import instructions_for
+            assert request["params"]["baseInstructions"] == instructions_for(SimpleNamespace())
             assert request["params"]["developerInstructions"] == ""
             assert request["params"]["approvalPolicy"] == "never"
             servers = request["params"]["config"]["mcp_servers"]
@@ -243,3 +243,12 @@ def test_usage_optional_details_do_not_invent_unknown_counts():
     record_usage(store, "run", "codex", {}, requests=True, last={"inputTokens": -1})
     assert "model_requests" not in store.events[-1]["payload"]
     assert "last_input_tokens" not in store.events[-1]["payload"]
+
+
+def test_custom_identity_replaces_product_name_without_changing_agent_rules():
+    from ohmydot.providers import INSTRUCTIONS, instructions_for
+    named = instructions_for(SimpleNamespace(dot_name='Wars'))
+    assert named.startswith(INSTRUCTIONS)
+    assert '"Wars"' in named
+    assert 'replaces any name in earlier conversation messages' in named
+    assert '"OhMyDots"' in instructions_for(SimpleNamespace())

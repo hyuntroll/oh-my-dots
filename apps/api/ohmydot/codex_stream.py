@@ -13,7 +13,7 @@ from .tool_registry import TOOLS
 
 
 async def run_streamed_codex(runtime, run, history):
-    from .providers import INSTRUCTIONS, Outcome, codex_args, final_answer
+    from .providers import instructions_for, Outcome, codex_args, final_answer
 
     if not shutil.which(runtime.config.codex_bin):
         raise RuntimeError("CODEX_NOT_INSTALLED")
@@ -113,7 +113,7 @@ async def run_streamed_codex(runtime, run, history):
                 "cwd": cwd, "ephemeral": True, "approvalPolicy": "never", "sandbox": "read-only",
                 # Supply the product's full instructions as the base instead of
                 # appending them to the large general-purpose coding-agent prompt.
-                "baseInstructions": INSTRUCTIONS, "developerInstructions": "",
+                "baseInstructions": instructions_for(run), "developerInstructions": "",
                 "config": {"mcp_servers": {**{name: {"enabled": False}
                                              for name in inherited if name != "dot"},
                                            "dot": dot_server},

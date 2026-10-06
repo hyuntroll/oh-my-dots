@@ -300,7 +300,7 @@ appearance_lock = asyncio.Lock()
 @app.post("/appearance")
 async def appearance(body: Appearance):
     async with appearance_lock:
-        write_appearance(body.accent, Path.home())
+        write_appearance(body.accent, Path.home(), body.name)
         await command("xsetroot", "-solid", body.accent)
         await command("openbox", "--reconfigure")
     return {"accent": body.accent}

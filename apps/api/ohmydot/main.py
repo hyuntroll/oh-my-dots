@@ -24,6 +24,7 @@ from .tool_registry import TOOLS
 
 
 class Submit(BaseModel):
+    dot_name: str = Field(default="OhMyDots", min_length=1, max_length=32)
     text: str = Field(min_length=1, max_length=16000)
     idempotency_key: str = Field(min_length=1, max_length=100)
 
@@ -203,7 +204,7 @@ def create_app(config=None):
                     db.rollback()
                     raise HTTPException(409, "Duplicate submission")
                 result = serialize(run)
-            store.event("run.queued", "작업 대기 중", run.id)
+            store.event("run.queued", "작업 대기 중", run.id, {"dot_name": body.dot_name.strip() or "OhMyDots"})
             await runtime.queue.put(run.id)
             return result
 
@@ -297,7 +298,10 @@ def create_app(config=None):
         if not isinstance(body, dict) or not isinstance(body.get("accent"), str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", body["accent"]):
             raise HTTPException(422, "Invalid dot accent")
         try:
-            return await runtime.desktop.post("/appearance", {"accent": body["accent"]})
+            name = body.get("name", "OhMyDots")
+            if not isinstance(name, str) or not 1 <= len(name.strip()) <= 32:
+                raise HTTPException(422, "Invalid dot name")
+            return await runtime.desktop.post("/appearance", {"accent": body["accent"], "name": name.strip()})
         except httpx.HTTPError:
             raise HTTPException(503, "컴퓨터 색상을 적용하지 못했습니다. 다시 연결해 주세요.")
 

@@ -1,11 +1,12 @@
 import asyncio
+import json
 import secrets
 import time
 
 from sqlalchemy import or_, select
 
 from .providers import TaskFailure, run_codex, run_openai
-from .store import Message, Run
+from .store import Event, Message, Run
 from .tools import Adapter, Tools
 
 
@@ -141,6 +142,8 @@ class Runtime:
         self.store.status(run_id, "RUNNING")
         with self.store.session() as db:
             run = db.get(Run, run_id)
+            identity = db.scalar(select(Event).where(Event.run_id == run_id, Event.type == "run.queued").order_by(Event.sequence).limit(1))
+            run.dot_name = json.loads(identity.payload).get("dot_name", "OhMyDots") if identity else "OhMyDots"
             cutoff = db.scalar(
                 select(Message.sequence)
                 .where(Message.run_id == run_id, Message.role == "user")

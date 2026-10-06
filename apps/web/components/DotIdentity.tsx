@@ -1,17 +1,21 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Circle, X, Moon, Sun, Check } from 'lucide-react';
 import { DOT_COLORS, type DotProfile } from '../lib/dot-profile';
 
 export function DotAvatar({ profile, size = 40 }: { profile: Pick<DotProfile, 'avatar' | 'color'>; size?: number }) {
-  return profile.avatar === 'pet' ? <img className="dot-avatar" src="/dot-pet.png" width={size} height={size} alt="" /> : <Circle className="dot-avatar dot-ring" size={size} strokeWidth={7} color={DOT_COLORS.find(c => c.id === profile.color)?.value} aria-hidden="true" />;
+  const filterId = 'pet-' + useId().replaceAll(':', '');
+  const accent = DOT_COLORS.find(c => c.id === profile.color)!.value;
+  const [r, g, b] = [1, 3, 5].map(offset => parseInt(accent.slice(offset, offset + 2), 16) / 255);
+  const matrix = `${r} 0 ${1-r} 0 0 ${g} 0 ${1-g} 0 0 ${b} 0 ${1-b} 0 0 0 0 0 1 0`;
+  return profile.avatar === 'pet' ? <svg className="dot-avatar dot-pet" width={size} height={size} viewBox="210 220 840 840" aria-hidden="true"><defs><filter id={filterId} colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values={matrix} /></filter></defs><image href="/dot-pet.png" width="1254" height="1254" filter={`url(#${filterId})`} /></svg> : <Circle className="dot-avatar dot-ring" size={size} strokeWidth={7} color={accent} aria-hidden="true" />;
 }
 export function IdentityEditor({ profile, onSave, onboarding = false }: { profile: DotProfile; onSave: (value: DotProfile) => void; onboarding?: boolean }) {
   const [draft, setDraft] = useState(profile);
   return <form className="identity-editor" onSubmit={e => { e.preventDefault(); if (draft.name.trim()) onSave({ ...draft, name: draft.name.trim() }); }}>
     <div className="identity-options">
-      <fieldset><legend>Colors</legend><div className="avatar-options">{DOT_COLORS.map(color => <button key={color.id} type="button" aria-label={color.label} aria-pressed={draft.color === color.id && draft.avatar === 'ring'} onClick={() => setDraft({ ...draft, color: color.id, avatar: 'ring' })}><DotAvatar profile={{ avatar: 'ring', color: color.id }} size={54} /></button>)}</div></fieldset>
-      <fieldset><legend>캐릭터</legend><div className="avatar-options"><button type="button" aria-label="OhMyDots 캐릭터" aria-pressed={draft.avatar === 'pet'} onClick={() => setDraft({ ...draft, avatar: 'pet' })}><DotAvatar profile={{ ...draft, avatar: 'pet' }} size={66} /></button><p>익숙한 모습으로 함께해요.</p></div></fieldset>
+      <fieldset><legend>Colors</legend><div className="avatar-options">{DOT_COLORS.map(color => <button key={color.id} type="button" aria-label={color.label} aria-pressed={draft.color === color.id} onClick={() => setDraft({ ...draft, color: color.id })}><DotAvatar profile={{ avatar: 'ring', color: color.id }} size={54} /></button>)}</div></fieldset>
+      <fieldset><legend>캐릭터</legend><div className="avatar-options"><button type="button" aria-label="기본 dot" aria-pressed={draft.avatar === 'ring'} onClick={() => setDraft({ ...draft, avatar: 'ring' })}><DotAvatar profile={{ ...draft, avatar: 'ring' }} size={54} /></button><button type="button" aria-label="OhMyDots 캐릭터" aria-pressed={draft.avatar === 'pet'} onClick={() => setDraft({ ...draft, avatar: 'pet' })}><DotAvatar profile={{ ...draft, avatar: 'pet' }} size={66} /></button><p>익숙한 모습으로 함께해요.</p></div></fieldset>
       <fieldset><legend>화면</legend><div className="theme-options">{(['dark', 'light'] as const).map(theme => <button type="button" key={theme} aria-pressed={draft.theme === theme} onClick={() => setDraft({ ...draft, theme })}>{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? '다크' : '라이트'}{draft.theme === theme && <Check size={14} />}</button>)}</div></fieldset>
     </div>
     <div className="identity-preview"><label><span className="sr-only">Dot 이름</span><input aria-label="Dot 이름" value={draft.name} maxLength={32} autoComplete="off" placeholder="이름을 지어 주세요" onChange={e => setDraft({ ...draft, name: e.target.value })} /></label><div className="identity-avatar"><DotAvatar profile={draft} size={126} /></div><button className="onboarding-primary" disabled={!draft.name.trim()}>{onboarding ? '대화 시작하기' : '저장'}</button><small>이 브라우저에 이름과 모습을 저장합니다.</small></div>

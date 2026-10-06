@@ -10,7 +10,7 @@ def test_accent_updates_window_theme_and_atomic_start_page_settings(tmp_path):
     theme.parent.mkdir(parents=True)
     source = Path('computer/desktop/themes/MyDot/openbox-3/themerc').read_text()
     theme.write_text(source)
-    write_appearance('#d875d7', tmp_path)
+    write_appearance('#d875d7', tmp_path, 'Wars')
     result = theme.read_text()
     assert 'window.active.title.bg.color: #d875d7' in result
     assert 'window.inactive.title.bg.color: #d875d7' in result
@@ -19,6 +19,8 @@ def test_accent_updates_window_theme_and_atomic_start_page_settings(tmp_path):
     assert '#d875d7' in (tmp_path / '.config/gtk-3.0/gtk.css').read_text()
     assert '#d875d7' in (tmp_path / '.local/share/dot-desktop/appearance.css').read_text()
     assert '#d875d7' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
+    assert '"Wars"' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
+    assert 'pet-tint' in (tmp_path / '.local/share/dot-desktop/appearance.js').read_text()
     write_appearance('#19b6de', tmp_path)
     assert '#d875d7' not in theme.read_text()
     assert not list(tmp_path.rglob('*.tmp'))

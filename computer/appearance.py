@@ -7,9 +7,10 @@ from pydantic import BaseModel, Field
 
 class Appearance(BaseModel):
     accent: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
+    name: str = Field(default="OhMyDots", min_length=1, max_length=32)
 
 
-def write_appearance(accent: str, home: Path):
+def write_appearance(accent: str, home: Path, name: str = "OhMyDots"):
     theme = home / '.themes/MyDot/openbox-3/themerc'
     lines = theme.read_text().splitlines()
     for index, line in enumerate(lines):
@@ -25,5 +26,7 @@ def write_appearance(accent: str, home: Path):
     (desktop / 'appearance.css').write_text(f'#desktop-wallpaper {{ background: {accent}; }}\n')
     appearance = desktop / 'appearance.js'
     temporary = desktop / 'appearance.js.tmp'
-    temporary.write_text('document.documentElement.style.setProperty("--dot-accent", ' + json.dumps(accent) + ');')
+    r, g, b = [int(accent[offset:offset + 2], 16) / 255 for offset in (1, 3, 5)]
+    matrix = f"{r} 0 {1-r} 0 0 {g} 0 {1-g} 0 0 {b} 0 {1-b} 0 0 0 0 0 1 0"
+    temporary.write_text('(()=>{const heading=document.querySelector("h1");if(heading)heading.textContent="Welcome back, "+' + json.dumps(name) + ';const tint=document.getElementById("pet-tint");if(tint)tint.setAttribute("values",' + json.dumps(matrix) + ');' + 'document.documentElement.style.setProperty("--dot-accent", ' + json.dumps(accent) + ');})();')
     temporary.replace(appearance)

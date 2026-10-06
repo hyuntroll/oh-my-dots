@@ -91,3 +91,5 @@ html[data-theme='light'] .settings-nav-group button[aria-current='page'] { color
 .dots-shell .send-button:not(:disabled):hover { background: var(--dot-accent); filter: brightness(1.08); }
 .dots-shell .computer-panel { background: var(--bg); color: var(--ink); }
 .dots-shell .mobile-computer-back, .dots-shell .computer-tools, .dots-shell .remote-paste { background: var(--paper); color: var(--ink); border-color: var(--line); }
+
+.chat-heading .profile-trigger .dot-pet { width: 44px; height: 44px; }

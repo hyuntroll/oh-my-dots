@@ -1,0 +1,55 @@
+{
+  "identical_request": true,
+  "identical_tool_sequence": true,
+  "verified_artifact_content": true,
+  "runs": [
+    {
+      "run_id": "b7f18e80-a10b-448a-a888-823a27070b94",
+      "provider": "codex",
+      "model_setting": "",
+      "first_request_input": 19843,
+      "total_input": 123753,
+      "cached_input": 110848,
+      "uncached_input": 12905,
+      "output": 323,
+      "usage_reports": 6,
+      "seconds": 19.2
+    },
+    {
+      "run_id": "a93cdda9-fe48-4d58-bc8c-e1893d662f40",
+      "provider": "codex",
+      "model_setting": "",
+      "first_request_input": 15660,
+      "total_input": 81509,
+      "cached_input": 63872,
+      "uncached_input": 17637,
+      "output": 234,
+      "usage_reports": 5,
+      "seconds": 26.7
+    },
+    {
+      "run_id": "19472c0e-ed66-4f53-af7c-646ba05e7b3b",
+      "provider": "codex",
+      "model_setting": "",
+      "first_request_input": 11842,
+      "total_input": 62419,
+      "cached_input": 48512,
+      "uncached_input": 13907,
+      "output": 224,
+      "usage_reports": 5,
+      "seconds": 16.2
+    },
+    {
+      "run_id": "c43bfb4a-6180-4da5-81d0-79ca128d2992",
+      "provider": "codex",
+      "model_setting": "",
+      "first_request_input": 6360,
+      "total_input": 35009,
+      "cached_input": 26496,
+      "uncached_input": 8513,
+      "output": 232,
+      "usage_reports": 5,
+      "seconds": 15.6
+    }
+  ]
+}

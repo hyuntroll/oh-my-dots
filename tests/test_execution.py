@@ -52,6 +52,11 @@ def test_replay_and_usage_use_latest_report_per_run(tmp_path):
                 if e["type"] == "message.updated")["payload"]["text"] == "complete"
     assert store.usage()["providers"][0]["input_tokens"] == 20
     assert store.usage()["recorded_runs"] == 1
+    for kind in ("tool.started", "tool.completed", "tool.started", "tool.cancelled"):
+        store.event(kind, "shell_exec", run.id, {"call_id": "test"})
+    assert [e["type"] for e in store.execution(conversation.id) if e["type"].startswith("tool.")] == [
+        "tool.started", "tool.completed", "tool.started", "tool.cancelled"]
+    assert store.execution("another-conversation") == []
 
 
 @pytest.mark.asyncio
@@ -133,3 +138,60 @@ async def test_openai_stream_and_usage_keep_final_outcome(monkeypatch):
     assert any(e["type"] == "message.updated" for e in store.events)
     assert store.events[-1]["payload"]["input_tokens"] == 9
     assert cancelled
+
+
+@pytest.mark.asyncio
+async def test_tool_history_pairs_calls_bounds_output_and_excludes_images():
+    from unittest.mock import AsyncMock
+
+    from ohmydot.tools import Tools
+    store = Events()
+    runtime = SimpleNamespace(store=store, config=SimpleNamespace(max_tools=10), check_run=lambda _: None)
+    tool = Tools(runtime, "run")
+    tool._invoke = AsyncMock(return_value={"stdout": "x" * 9000, "stderr": "", "exit_code": 0,
+                                          "image_url": "data:image/png;base64,private"})
+    await tool.invoke("shell_exec", {"command": "echo demo", "unexpected": "private"})
+    start, end = [e for e in store.events if e["type"].startswith("tool.")]
+    assert start["payload"]["call_id"] == end["payload"]["call_id"]
+    assert start["payload"]["command"] == "echo demo"
+    assert end["payload"]["duration_ms"] >= 0
+    assert len(end["payload"]["stdout"]) == 8192
+    assert end["payload"]["stdout_truncated"]
+    assert "private" not in json.dumps(store.events)
+    await tool.invoke("desktop_input", {"action": "type", "text": "private"})
+    assert "private" not in json.dumps(store.events)
+
+
+@pytest.mark.asyncio
+async def test_cancelled_tool_records_terminal_event():
+    from unittest.mock import AsyncMock
+
+    from ohmydot.tools import Tools
+    store = Events()
+    runtime = SimpleNamespace(store=store, config=SimpleNamespace(max_tools=10), check_run=lambda _: None)
+    tool = Tools(runtime, "run")
+    tool._invoke = AsyncMock(side_effect=asyncio.CancelledError)
+    with pytest.raises(asyncio.CancelledError):
+        await tool.invoke("shell_exec", {"command": "sleep 30"})
+    assert store.events[-1]["type"] == "tool.cancelled"
+    assert store.events[-1]["payload"]["call_id"] == store.events[0]["payload"]["call_id"]
+
+
+@pytest.mark.asyncio
+async def test_repeated_failed_commands_keep_the_last_output_when_run_aborts():
+    from unittest.mock import AsyncMock
+
+    from ohmydot.tools import Tools
+    store = Events()
+    runtime = SimpleNamespace(store=store, config=SimpleNamespace(max_tools=10),
+                              check_run=lambda _: None, abort=AsyncMock())
+    tool = Tools(runtime, "run")
+    tool._invoke = AsyncMock(return_value={"stdout": "", "stderr": "command failed", "exit_code": 2})
+    for _ in range(2):
+        await tool.invoke("shell_exec", {"command": "false"})
+    with pytest.raises(asyncio.CancelledError):
+        await tool.invoke("shell_exec", {"command": "false"})
+    terminal = [e for e in store.events if e["type"] in ("tool.completed", "tool.cancelled")]
+    assert len(terminal) == 3
+    assert all(e["payload"]["stderr"] == "command failed" for e in terminal)
+    runtime.abort.assert_awaited_once_with("run", "REPEATED_TOOL_FAILURE")

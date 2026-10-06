@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import time
+import uuid
 
 import httpx
 
@@ -103,10 +104,21 @@ class Tools:
             "artifact_read": "파일 내용을 확인하고 있어요",
             "ask_user": "답변을 기다리고 있어요",
         }
-        self.runtime.store.event("tool.started", name, self.run_id)
+        call_id = str(uuid.uuid4())
+        # Persist only display metadata, never screenshots or GUI text input.
+        fields = {"shell_exec": ("command", "cwd"), "artifact_read": ("path",),
+                  "artifact_write": ("path",), "desktop_input": ("action", "app",)}
+        metadata = {"call_id": call_id}
+        for key in fields.get(name, ()):
+            if isinstance(args.get(key), str):
+                metadata[key] = args[key][:8192]
+                if len(args[key]) > 8192:
+                    metadata[key + "_truncated"] = True
+        self.runtime.store.event("tool.started", name, self.run_id, metadata)
         self.runtime.store.event("run.activity", descriptions.get(name, "도구를 실행하고 있어요"),
                                  self.run_id, {"tool": name})
         started = time.monotonic()
+        terminal_recorded = False
         try:
             result = await self._invoke(name, args)
             self.runtime.check_run(self.run_id)
@@ -114,9 +126,6 @@ class Tools:
                 fingerprint = (name, json.dumps(args, sort_keys=True))
                 self.failures = self.failures + 1 if fingerprint == self.last_failure else 1
                 self.last_failure = fingerprint
-                if self.failures >= 3:
-                    await self.runtime.abort(self.run_id, "REPEATED_TOOL_FAILURE")
-                    raise asyncio.CancelledError()
             else:
                 self.failures = 0
                 self.last_failure = None
@@ -125,16 +134,30 @@ class Tools:
                 for key in ("exit_code", "timed_out", "stdout_truncated", "stderr_truncated")
                 if key in result
             }
+            details.update(call_id=call_id, duration_ms=round((time.monotonic() - started) * 1000))
+            if name in ("shell_exec", "artifact_read"):
+                for key in ("stdout", "stderr"):
+                    if isinstance(result.get(key), str):
+                        details[key] = result[key][:8192]
+                        details[key + "_truncated"] = bool(result.get(key + "_truncated")) or len(result[key]) > 8192
             self.runtime.store.event("tool.completed", name, self.run_id, details)
+            terminal_recorded = True
+            if self.failures >= 3:
+                await self.runtime.abort(self.run_id, "REPEATED_TOOL_FAILURE")
+                raise asyncio.CancelledError()
             self.runtime.store.event("run.activity", "실행 결과를 확인하고 있어요", self.run_id)
             return result
         except asyncio.CancelledError:
+            if not terminal_recorded:
+                self.runtime.store.event("tool.cancelled", name, self.run_id,
+                                         {"call_id": call_id, "duration_ms": round((time.monotonic() - started) * 1000)})
             raise
         except Exception as exc:
             fingerprint = (name, json.dumps(args, sort_keys=True))
             self.failures = self.failures + 1 if fingerprint == self.last_failure else 1
             self.last_failure = fingerprint
-            self.runtime.store.event("tool.failed", name, self.run_id, {"error": type(exc).__name__})
+            self.runtime.store.event("tool.failed", name, self.run_id, {"call_id": call_id, "duration_ms": round((time.monotonic() - started) * 1000),
+                                      "error": type(exc).__name__})
             if self.failures >= 3:
                 await self.runtime.abort(self.run_id, "REPEATED_TOOL_FAILURE")
                 raise asyncio.CancelledError() from exc

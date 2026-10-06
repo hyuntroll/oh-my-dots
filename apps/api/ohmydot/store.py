@@ -10,8 +10,10 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    and_,
     create_engine,
     func,
+    or_,
     select,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
@@ -156,7 +158,10 @@ class Store:
                 Event.type.in_(["run.activity", "message.updated", "run.usage"]),
             ).group_by(Event.run_id, Event.type)
             return [serialize(event) for event in db.scalars(
-                select(Event).where(Event.sequence.in_(latest)).order_by(Event.sequence)
+                select(Event).where(or_(Event.sequence.in_(latest), and_(
+                    Event.run_id.in_(run_ids),
+                    Event.type.in_(["tool.started", "tool.completed", "tool.failed", "tool.cancelled"]),
+                ))).order_by(Event.sequence)
             )]
 
     def usage(self):

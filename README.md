@@ -74,6 +74,8 @@ open output/desktop/OhMyDots-darwin-arm64/OhMyDots.app
 
 셸에는 Python, Node/npm, Git, curl, C/C++ 빌드 도구가 포함되며 패키지 다운로드를 위한 인터넷 연결을 지원합니다. `pip install --user 패키지명`과 `npm install -g 패키지명`으로 설치한 도구와 캐시는 `/workspace/.tools` 볼륨에 보관됩니다. 가상환경도 이 경로에 만들면 셸 재시작 후 유지됩니다. 명령은 기본 120초, `timeout` 지정 시 최대 300초 동안 실행할 수 있습니다.
 
+시스템 패키지는 셸에서 `apt-get update && apt-get install -y --no-install-recommends 패키지명`으로 설치할 수 있습니다. 셸 컨테이너 내부 root 권한으로 실행되므로 sudo는 필요하지 않습니다. apt 패키지는 컨테이너 재시작 시 유지되며, 컨테이너를 삭제하거나 새 이미지로 재생성하면 다시 설치해야 합니다.
+
 ## 구성
 
 | 경로 | 역할 |

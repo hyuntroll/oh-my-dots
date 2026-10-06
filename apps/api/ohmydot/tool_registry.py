@@ -57,6 +57,8 @@ TOOLS = [
         "has no GUI or provider credentials. Internet, pip, npm, git and build tools are available. "
         "Install Python packages with pip install --user and npm CLIs with npm install -g; "
         "these persist under /workspace/.tools. Use this directory for persistent virtualenvs. "
+        "Commands run as root inside this container: use apt-get update && apt-get install -y "
+        "--no-install-recommends PACKAGE for system dependencies; sudo is unnecessary. "
         "Takeover does not cancel shell; Cancel does.",
         {"command": {"type": "string"}, "cwd": {"type": "string"}, "timeout": {"type": "number", "exclusiveMinimum": 0, "maximum": 300}},
         ["command"],

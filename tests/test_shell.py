@@ -56,6 +56,7 @@ async def test_command_environment_has_no_gui_or_credentials(shell, monkeypatch)
         and "DISPLAY" not in result["stdout"]
         and "SHELL_TOKEN" not in result["stdout"]
     )
+    assert "DEBIAN_FRONTEND=noninteractive" in result["stdout"]
     with pytest.raises(HTTPException):
         await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd="/", command="pwd"))
 
@@ -68,3 +69,11 @@ async def test_user_install_paths_persist_between_commands(shell):
     second = await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd=str(shell.ROOT),
         command='cat "$PYTHONUSERBASE/installed-marker"'))
     assert second["stdout"].strip() == 'ready'
+
+
+async def test_created_artifacts_remain_group_writable(shell):
+    result = await shell.execute(shell.Exec(run_id=str(uuid.uuid4()), cwd=str(shell.ROOT),
+        command='mkdir artifacts/shared; printf ready > artifacts/shared/file.txt'))
+    assert result['exit_code'] == 0
+    assert (shell.ROOT / 'artifacts/shared').stat().st_mode & 0o020
+    assert (shell.ROOT / 'artifacts/shared/file.txt').stat().st_mode & 0o020

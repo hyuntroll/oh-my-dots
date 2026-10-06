@@ -78,6 +78,7 @@ async def execute(body: Exec):
             env={
                 "PATH": f"{TOOLS}/python/bin:{TOOLS}/node/bin:/usr/local/bin:/usr/bin:/bin",
                 "HOME": str(TOOLS / "home"), "LANG": "C.UTF-8",
+                "DEBIAN_FRONTEND": "noninteractive",
                 "PYTHONUSERBASE": str(TOOLS / "python"),
                 "PIP_CACHE_DIR": str(TOOLS / "cache/pip"),
                 "NPM_CONFIG_PREFIX": str(TOOLS / "node"),
@@ -86,6 +87,7 @@ async def execute(body: Exec):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             start_new_session=True,
+            umask=0o002,
         )
         processes[body.run_id] = proc
     stdout = asyncio.create_task(drain(proc.stdout))

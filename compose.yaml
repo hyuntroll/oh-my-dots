@@ -44,8 +44,9 @@ services:
       SHELL_TOKEN: ${SHELL_TOKEN:?Run scripts/setup.py}
     volumes: [artifacts:/workspace/artifacts, shell-tools:/workspace/.tools]
     tmpfs: [/tmp, "/workspace:uid=1000,gid=1000"]
-    read_only: true
+    read_only: false
     cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID]
     security_opt: [no-new-privileges:true]
     networks: [shell, shell-egress]
   api:

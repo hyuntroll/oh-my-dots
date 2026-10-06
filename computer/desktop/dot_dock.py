@@ -14,7 +14,7 @@ from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 HOME = str(Path.home())
 APP_DIR = os.path.join(HOME, ".local", "share", "dot-desktop")
 ICON_SIZE = int(os.environ.get("DOT_ICON_SIZE", "40"))
-HOVER_ICON_SIZE = int(os.environ.get("DOT_HOVER_ICON_SIZE", "46"))
+HOVER_ICON_SIZE = int(os.environ.get("DOT_HOVER_ICON_SIZE", "62"))
 BOTTOM_MARGIN = int(os.environ.get("DOT_BOTTOM_MARGIN", "12"))
 ASSETS = Path(__file__).parent
 
@@ -105,7 +105,16 @@ class DotDock(Gtk.Window):
 
         self.shell = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         self.shell.set_name("dock-shell")
-        self.add(self.shell)
+        self.overlay = Gtk.Overlay()
+        self.overlay.set_size_request(222, 100)
+        plate = Gtk.Box()
+        plate.set_name("dock-plate")
+        plate.set_size_request(-1, 64)
+        plate.set_valign(Gtk.Align.END)
+        self.overlay.add(plate)
+        self.overlay.add_overlay(self.shell)
+        self.add(self.overlay)
+        self.motions = []
 
         self.items = []
         for app in APPS:
@@ -137,7 +146,7 @@ class DotDock(Gtk.Window):
 
     def add_app(self, app):
         item = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        item.set_size_request(52, 54)
+        item.set_size_request(66, 96)
 
         button = Gtk.Button()
         button.get_style_context().add_class("dock-item")
@@ -147,29 +156,28 @@ class DotDock(Gtk.Window):
 
         # Fixed hit targets prevent enter/leave jitter as the icon grows and lifts.
         canvas = Gtk.Fixed()
-        canvas.set_size_request(max(HOVER_ICON_SIZE + 12, 58), 68)
+        canvas.set_size_request(66, 88)
         icon = Gtk.IconTheme.get_default().load_icon(
             choose_icon(app["icons"]), max(96, HOVER_ICON_SIZE * 2),
             Gtk.IconLookupFlags.FORCE_SIZE,
         )
         motion = {"hover": 0.0, "target": 0.0, "bounce": None,
-                  "last": time.monotonic(), "tick": None}
+                  "last": time.monotonic(), "tick": None, "pressed": False}
 
         image = Gtk.Image()
         canvas.put(image, 9, 25)
         sizes = {size: icon.scale_simple(size, size, GdkPixbuf.InterpType.BILINEAR)
-                 for size in range(min(ICON_SIZE, HOVER_ICON_SIZE + 2),
-                                   max(ICON_SIZE, HOVER_ICON_SIZE + 2) + 1)}
+                 for size in range(round(ICON_SIZE * 0.88), HOVER_ICON_SIZE + 1)}
 
         def render():
             hover = motion["hover"]
-            size = round(ICON_SIZE + (HOVER_ICON_SIZE + 2 - ICON_SIZE) * hover)
+            size = round((ICON_SIZE + (HOVER_ICON_SIZE - ICON_SIZE) * hover) * (0.9 if motion["pressed"] else 1))
             bounce = 0.0
             if motion["bounce"] is not None:
                 elapsed = time.monotonic() - motion["bounce"]
-                bounce = 12 * abs(math.sin(elapsed * math.pi / 0.24)) * math.exp(-elapsed * 3.8)
-            x = (max(HOVER_ICON_SIZE + 12, 58) - size) / 2
-            y = 25 + (ICON_SIZE - size) / 2 - hover * 8 - bounce
+                bounce = 18 * abs(math.sin(elapsed * math.pi / 0.30)) * math.exp(-elapsed * 3.5)
+            x = (66 - size) / 2
+            y = 80 - size - hover * 5 - bounce
             image.set_from_pixbuf(sizes[size])
             canvas.move(image, round(x), round(y))
 
@@ -178,7 +186,7 @@ class DotDock(Gtk.Window):
             dt = min(now - motion["last"], 0.05)
             motion["last"] = now
             motion["hover"] += (motion["target"] - motion["hover"]) * (1 - math.exp(-dt / 0.075))
-            if motion["bounce"] is not None and now - motion["bounce"] >= 0.72:
+            if motion["bounce"] is not None and now - motion["bounce"] >= 0.9:
                 motion["bounce"] = None
             settled = abs(motion["target"] - motion["hover"]) < 0.002
             if settled:
@@ -194,9 +202,26 @@ class DotDock(Gtk.Window):
                 motion["last"] = time.monotonic()
                 motion["tick"] = GLib.timeout_add(16, animate)
 
-        def hover(_widget, _event, target):
-            motion["target"] = target
-            start_animation()
+        def hover(_widget, event):
+            pointer_x = event.x_root - self.get_position()[0]
+            for index, (state, start) in enumerate(self.motions):
+                distance = abs(pointer_x - (8 + index * 70 + 33)) / 105
+                state["target"] = (1 + math.cos(math.pi * distance)) / 2 if distance < 1 else 0.0
+                start()
+            return False
+
+        def leave(_widget, event):
+            # Crossing between buttons keeps the continuous wave; leaving the dock resets it.
+            x, y = event.x_root - self.get_position()[0], event.y_root - self.get_position()[1]
+            if not (0 <= x < self.get_allocated_width() and 0 <= y < self.get_allocated_height()):
+                for state, start in self.motions:
+                    state["target"] = 0.0
+                    start()
+            return False
+
+        def press(_widget, _event, pressed):
+            motion["pressed"] = pressed
+            render()
             return False
 
         def clicked(_button):
@@ -209,6 +234,7 @@ class DotDock(Gtk.Window):
                 GLib.source_remove(motion["tick"])
                 motion["tick"] = None
 
+        self.motions.append((motion, start_animation))
         render()
         canvas.connect("destroy", cleanup)
         button.add(canvas)
@@ -216,8 +242,13 @@ class DotDock(Gtk.Window):
         dot.get_style_context().add_class("running-dot")
         dot.get_style_context().add_class("off")
         button.connect("clicked", clicked)
-        button.connect("enter-notify-event", hover, 1.0)
-        button.connect("leave-notify-event", hover, 0.0)
+        button.add_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.LEAVE_NOTIFY_MASK)
+        button.connect("enter-notify-event", hover)
+        button.connect("motion-notify-event", hover)
+        button.connect("leave-notify-event", leave)
+        button.connect("button-press-event", press, True)
+        button.connect("button-release-event", press, False)
+        self.connect("leave-notify-event", leave)
         item.pack_start(button, False, False, 0)
         item.pack_start(dot, False, False, 0)
         self.shell.pack_start(item, False, False, 0)

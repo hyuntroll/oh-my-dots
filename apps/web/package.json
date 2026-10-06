@@ -6,7 +6,7 @@
     "dev": "next dev -H 0.0.0.0 -p 3081",
     "build": "next build",
     "start": "node scripts/start.mjs",
-    "test": "node --test ../../tests/web-recovery.test.mjs",
+    "test": "node --test ../../tests/web-*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

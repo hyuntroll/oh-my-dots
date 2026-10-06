@@ -60,7 +60,8 @@ def test_replay_and_usage_use_latest_report_per_run(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_codex_streams_before_completion_and_cleans_up(monkeypatch):
+@pytest.mark.parametrize("unexpected_host_tools", [False, True])
+async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpected_host_tools):
     from ohmydot import codex_stream
     store = Events()
     reader = asyncio.StreamReader()
@@ -75,18 +76,45 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch):
         request = json.loads(raw)
         if request.get("method") == "initialize":
             feed({"id": request["id"], "result": {}})
+        elif request.get("method") == "config/read":
+            assert not request["params"]["includeLayers"]
+            feed({"id": request["id"], "result": {"config": {"mcp_servers": {
+                "dot": {}, "host-server": {"env": {"SECRET": "not-for-model"}}}}}})
+        elif request.get("method") == "skills/list":
+            feed({"id": request["id"], "result": {"data": [{"skills": [
+                {"path": "/private/host/SKILL.md", "description": "not-for-model"}]}]}})
         elif request.get("method") == "thread/start":
             assert request["params"]["sandbox"] == "read-only"
             assert request["params"]["ephemeral"]
+            from ohmydot.providers import INSTRUCTIONS
+            assert request["params"]["baseInstructions"] == INSTRUCTIONS
+            assert request["params"]["developerInstructions"] == ""
+            assert request["params"]["approvalPolicy"] == "never"
+            servers = request["params"]["config"]["mcp_servers"]
+            assert set(servers) == {"host-server", "dot"}
+            assert servers["host-server"] == {"enabled": False}
+            assert servers["dot"]["required"]
+            assert servers["dot"]["env"]["DOT_TOOL_URL"] == "http://local/internal/runs/run/tools"
+            assert request["params"]["config"]["skills"] == {
+                "config": [{"path": "/private/host/SKILL.md", "enabled": False}]}
             feed({"id": request["id"], "result": {"thread": {"id": "thread"}}})
+        elif request.get("method") == "mcpServerStatus/list":
+            from ohmydot.tool_registry import TOOLS
+            servers = [{"name": "dot", "tools": {tool["name"]: tool for tool in TOOLS}}]
+            if unexpected_host_tools:
+                servers.append({"name": "host-server", "tools": {"host_shell": {"name": "host_shell"}}})
+            feed({"id": request["id"], "result": {"data": servers}})
         elif request.get("method") == "turn/start":
+            assert not unexpected_host_tools  # No model request with inherited host tools.
             assert "outputSchema" in request["params"]
             feed({"id": request["id"], "result": {}})
             feed({"method": "item/agentMessage/delta", "params": {"itemId": "a", "delta": final[:-8]}})
             feed({"method": "item/completed", "params": {"item": {
                 "type": "agentMessage", "id": "a", "phase": "final_answer", "text": final}}})
-            feed({"method": "thread/tokenUsage/updated", "params": {
-                "tokenUsage": {"total": {"inputTokens": 12, "outputTokens": 4, "cachedInputTokens": 2}}}})
+            for total in (6, 6, 12):  # A replay must not add another request.
+                feed({"method": "thread/tokenUsage/updated", "params": {
+                    "tokenUsage": {"total": {"inputTokens": total, "outputTokens": 4, "cachedInputTokens": 2},
+                                   "last": {"inputTokens": 6}}}})
             feed({"method": "turn/completed", "params": {"turn": {"status": "completed"}}})
 
     async def drain():
@@ -106,10 +134,18 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch):
     monkeypatch.setattr(codex_stream.os, "killpg", lambda pid, sig: killed.append(pid))
     runtime = SimpleNamespace(config=SimpleNamespace(codex_bin="codex", internal_url="http://local"),
                               store=store, tool_tokens={"run": "private"})
+    if unexpected_host_tools:
+        with pytest.raises(RuntimeError, match="CODEX_TOOLSET_MISMATCH"):
+            await run_codex(runtime, SimpleNamespace(id="run", model=""), [], None)
+        assert killed == [proc.pid]
+        return
     result = await run_codex(runtime, SimpleNamespace(id="run", model=""), [], None)
     assert result == "hello world"
-    assert store.events[0]["payload"]["text"] != result
+    assert next(e for e in store.events if e["type"] == "message.updated")["payload"]["text"] != result
     assert store.events[-1]["payload"]["cached_input_tokens"] == 2
+    assert store.events[-1]["payload"]["model_requests"] == 2
+    assert store.events[-1]["payload"]["last_input_tokens"] == 6
+    assert "not-for-model" not in json.dumps(store.events)
     assert killed == [proc.pid]
 
 
@@ -137,6 +173,7 @@ async def test_openai_stream_and_usage_keep_final_outcome(monkeypatch):
     assert await run_openai(runtime, SimpleNamespace(id="run", model="test"), [], None) == "안녕하세요"
     assert any(e["type"] == "message.updated" for e in store.events)
     assert store.events[-1]["payload"]["input_tokens"] == 9
+    assert store.events[-1]["payload"]["model_requests"] == 1
     assert cancelled
 
 
@@ -195,3 +232,14 @@ async def test_repeated_failed_commands_keep_the_last_output_when_run_aborts():
     assert len(terminal) == 3
     assert all(e["payload"]["stderr"] == "command failed" for e in terminal)
     runtime.abort.assert_awaited_once_with("run", "REPEATED_TOOL_FAILURE")
+
+
+def test_usage_optional_details_do_not_invent_unknown_counts():
+    from ohmydot.execution import record_usage
+    store = Events()
+    record_usage(store, "run", "codex", {"inputTokens": 100, "outputTokens": 5, "cachedInputTokens": 80})
+    payload = store.events[-1]["payload"]
+    assert "model_requests" not in payload and "last_input_tokens" not in payload
+    record_usage(store, "run", "codex", {}, requests=True, last={"inputTokens": -1})
+    assert "model_requests" not in store.events[-1]["payload"]
+    assert "last_input_tokens" not in store.events[-1]["payload"]

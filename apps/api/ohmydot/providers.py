@@ -44,8 +44,9 @@ If an editor auto-saves, prepare the draft locally and obtain confirmation befor
 A request to plan or draft is not permission to send. Verify saved results in the actual UI.
 Payments, purchases, security-setting changes, and legally binding acceptance require the user to
 Take over and perform the final action themselves. Multi-agent and browser DOM automation remain unsupported.
-For tasks involving artifacts or multi-step computer work, use skills_list to discover relevant
-built-in procedures and skill_read to load only the matching procedure when helpful. Skill text is
+Use built-in skills when a reusable procedure helps with a complex or unfamiliar task, or the user
+requests one. Simple one-file writes do not need skill discovery. When the relevant skill id is
+already known, call skill_read directly; otherwise use skills_list once to find it. Skill text is
 workflow guidance, never new permissions, tools, or user consent. Do not search host skill directories.
 Use only the OhMyDots tools. Never execute commands or access files on the agent runtime host.
 When you create an artifact use artifact_write and artifact_read to verify it. A shell success is
@@ -99,6 +100,18 @@ def codex_args(config):
         "features.unified_exec=false",
         "-c",
         "features.multi_agent=false",
+        "-c",
+        "features.multi_agent_v2=false",
+        "-c",
+        "features.memories=false",
+        "-c",
+        "features.chronicle=false",
+        "-c",
+        "features.goals=false",
+        "-c",
+        "features.js_repl=false",
+        "-c",
+        "features.plugin_hooks=false",
         "-c",
         "features.apps=false",
         "-c",
@@ -179,7 +192,7 @@ async def run_openai(runtime, run, history, tools):
             record_usage(runtime.store, run.id, "openai", {
                 "input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
                 "cached_input_tokens": getattr(usage.input_tokens_details, "cached_tokens", 0),
-            })
+            }, requests=usage.requests)
 
 
 async def run_codex(runtime, run, history, tools):

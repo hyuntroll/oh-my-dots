@@ -33,16 +33,23 @@ class OutputStream:
                          {"item_id": item_id, "text": visible})
 
 
-def record_usage(store, run_id, provider, values):
+def record_usage(store, run_id, provider, values, *, last=None, requests=None):
     def count(*keys):
         for key in keys:
             value = values.get(key)
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
                 return value
         return 0
-    store.event("run.usage", "모델 사용량", run_id, {
+    payload = {
         "provider": provider,
         "input_tokens": count("input_tokens", "inputTokens"),
         "output_tokens": count("output_tokens", "outputTokens"),
         "cached_input_tokens": count("cached_input_tokens", "cachedInputTokens"),
-    })
+    }
+    if isinstance(requests, int) and not isinstance(requests, bool) and requests > 0:
+        payload["model_requests"] = requests
+    if last:
+        value = last.get("inputTokens", last.get("input_tokens"))
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            payload["last_input_tokens"] = value
+    store.event("run.usage", "모델 사용량", run_id, payload)

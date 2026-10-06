@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useId, useState } from 'react';
-import { AppWindow, ChevronDown, FilePenLine, FileText, Globe, Image, MessageCircle, Terminal, Loader2 } from 'lucide-react';
+import { AppWindow, BookOpen, ChevronDown, FilePenLine, FileText, Globe, Image, MessageCircle, Terminal, Loader2 } from 'lucide-react';
 import type { Run } from '../lib/api';
 import { executionLabel, stepStatus, toolSteps, type Execution, type ToolStep } from '../lib/execution';
 
 const toolLabels: Record<string, [typeof Terminal, string, string]> = {
+  skills_list: [BookOpen, '스킬 찾는 중', '스킬 목록 확인함'],
+  skill_read: [BookOpen, '작업 절차 읽는 중', '작업 절차 확인함'],
   shell_exec: [Terminal, '명령 실행 중', '명령 실행함'],
   desktop_screenshot: [Image, '화면 확인 중', '이미지 1개 확인함'],
   desktop_input: [Globe, '컴퓨터 조작 중', '컴퓨터 사용함'],
@@ -28,9 +30,10 @@ function ToolRow({ step, run, now }: { step: ToolStep; run: Run; now: number }) 
     : status === 'running' && step.start ? Math.max(0, now - step.start.created_at * 1000) : null;
   const command = text(input.command), path = text(input.path), stdout = text(output.stdout), stderr = text(output.stderr);
   const error = text(output.error);
-  const details = Boolean(command || path || stdout || stderr || error || output.exit_code !== undefined);
+  const skill = text(output.skill_title) || text(input.skill_id);
+  const details = Boolean(command || path || skill || stdout || stderr || error || output.exit_code !== undefined);
   const label = status === 'running' ? runningLabel : status === 'failed' ? '실행 실패' : status === 'cancelled' ? '실행 취소됨' : status === 'interrupted' ? '실행 중단됨' : completedLabel;
-  const content = <><Icon size={16} aria-hidden="true" /><span className="tool-label">{label}{(command || path) && <span className="tool-preview">{command ? command.split('\n')[0] : path}</span>}</span>{elapsed !== null && <span className="tool-duration">{duration(elapsed)}</span>}{status === 'running' && <Loader2 size={12} className="spin" aria-label="진행 중" />}{details && <ChevronDown size={13} className="activity-chevron" aria-hidden="true" />}</>;
+  const content = <><Icon size={16} aria-hidden="true" /><span className="tool-label">{label}{(command || path || skill) && <span className="tool-preview">{command ? command.split('\n')[0] : path || skill}</span>}</span>{elapsed !== null && <span className="tool-duration">{duration(elapsed)}</span>}{status === 'running' && <Loader2 size={12} className="spin" aria-label="진행 중" />}{details && <ChevronDown size={13} className="activity-chevron" aria-hidden="true" />}</>;
   return <li className={'tool-step tool-' + status}>
     {details ? <button className="tool-row" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={id}>{content}</button> : <div className="tool-row">{content}</div>}
     {details && open && <div className="tool-details" id={id}>
@@ -39,6 +42,8 @@ function ToolRow({ step, run, now }: { step: ToolStep; run: Run; now: number }) 
       {input.command_truncated === true && <small>긴 명령의 앞부분만 표시합니다.</small>}
       {text(input.cwd) && <div className="tool-directory">작업 폴더 · {text(input.cwd)}</div>}
       {path && <pre>{path}</pre>}
+      {skill && <p>{skill}</p>}
+      {text(output.skill_sha256) && <small>읽은 설명서 버전 · {text(output.skill_sha256).slice(0, 12)}</small>}
       {stdout && <pre aria-label="표준 출력">{stdout}</pre>}
       {stderr && <pre className="tool-stderr" aria-label="오류 출력">{stderr}</pre>}
       {error && <p>{error}</p>}

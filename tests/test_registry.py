@@ -61,7 +61,8 @@ def test_optional_fields_stay_optional_and_unknown_tool_fails():
 
 async def test_private_catalog_and_execution_require_active_run_token(tmp_path):
     app = create_app(Config(database_url="sqlite:///" + str(tmp_path / "registry.db"),
-                            data_dir=str(tmp_path), session_token="session"))
+                            data_dir=str(tmp_path), session_token="session",
+                            computer_token="computer", shell_token="shell"))
     runtime = app.state.runtime
     runtime.tool_tokens["run"] = "run-token"
     runtime.tools["run"] = SimpleNamespace(invoke=AsyncMock(return_value={"ok": True}))

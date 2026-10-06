@@ -5,7 +5,7 @@ import Markdown from 'react-markdown';
 import ComputerView from '../components/ComputerView';
 import Settings from '../components/Settings';
 import RunActivity from '../components/RunActivity';
-import QuestionDialog from '../components/QuestionDialog';
+import QuestionCard from '../components/QuestionCard';
 import Presence from '../components/Presence';
 import { api, post, Activity, Computer, Conversation, Run, AuthSettings } from '../lib/api';
 import { mergeExecution, tokenCount, type ExecutionState } from '../lib/execution';
@@ -113,6 +113,13 @@ export default function Home() {
   const progress = active ? execution[active.id] : undefined;
   const question = waitingAnswer ? progress?.question : undefined;
   const questionKey = question ? active!.id + ":" + question.sequence : null;
+  useEffect(() => {
+    if (!questionKey) return;
+    const frame = requestAnimationFrame(() => {
+      if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [questionKey, dismissedQuestion]);
   const liveText = typeof progress?.message?.payload.text === 'string' ? progress.message.payload.text : '';
   useEffect(() => { if (followOutput.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight; }, [liveText]);
   const submit = async () => {
@@ -136,7 +143,6 @@ export default function Home() {
   const openFile = (path: string) => api<{ path: string; text: string }>('/artifacts/' + path.split('/').map(encodeURIComponent).join('/')).then(setPreview).catch(e => setError(e.message));
   const openComputer = () => { setComputerOpen(true); setMobileTab('computer'); setProfileOpen(false); };
   return <main className={'app-shell ' + (computerOpen ? '' : 'computer-hidden ') + (computerExpanded ? 'computer-expanded ' : '') + 'tab-' + mobileTab}>
-    {question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionDialog key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}
     <section className="chat-panel" aria-label="OhMyDots 대화">
       <header className="chat-heading">
         <button className="profile-trigger" aria-label="OhMyDots 프로필" aria-expanded={profileOpen} onClick={() => setProfileOpen(!profileOpen)}><img src="/dot-pet.png" alt="" /><span>OhMyDots</span><i className={'status-dot ' + (eventOnline ? '' : 'offline')} /></button>
@@ -155,7 +161,7 @@ export default function Home() {
         <Presence show={filesOpen}><section className="chat-files" aria-label="결과 파일 목록"><header><Folder size={14} /><strong>결과 파일</strong><button className="icon-button" aria-label="파일 목록 닫기" onClick={() => setFilesOpen(false)}><X size={14} /></button></header>{artifacts.length ? artifacts.map(file => <button className="file-link" key={file.path} onClick={() => openFile(file.path)}><Folder size={14} /><span>{file.path}</span><small>{file.size} B</small></button>) : <p>아직 생성한 파일이 없습니다.</p>}</section></Presence>
       </div>
       <Presence show={activityOpen}><section className="activity-drawer" aria-label="작업 활동"><header><span><ActivityIcon size={15} />Activity</span><button className="icon-button" aria-label="활동 닫기" onClick={() => setActivityOpen(false)}><X size={15} /></button></header><div className="activity-list">{relevantActivity.length ? relevantActivity.slice(-20).reverse().map(event => <div className="activity-row" key={event.sequence}><i /><div>{event.summary}<time>{new Date(event.created_at * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time></div></div>) : <p>작업을 시작하면 진행 과정이 표시됩니다.</p>}</div></section></Presence>
-      <div className="composer-area">{question && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div></div>
+      <div className="composer-area">{question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionCard key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}{question && questionKey === dismissedQuestion && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div></div>
     </section>
     {computerOpen && <ComputerView computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onClose={() => { setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); }} onBack={() => { setComputerExpanded(false); setMobileTab('chat'); }} onToggleExpanded={() => setComputerExpanded(!computerExpanded)} expanded={computerExpanded} />}
     <Presence show={settingsOpen}><Settings onClose={() => setSettingsOpen(false)} onSaved={refreshAuth} /></Presence><Presence show={!!preview}>{preview && <div className="modal-backdrop" onClick={() => setPreview(null)}><section role="dialog" aria-modal="true" aria-label="결과 파일" className="artifact-modal" onClick={e => e.stopPropagation()}><header><strong>{preview.path}</strong><button className="icon-button" aria-label="결과 파일 닫기" onClick={() => setPreview(null)}><X size={18} /></button></header><pre>{preview.text}</pre><footer><Check size={14} /> 파일 내용</footer></section></div>}</Presence>

@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { ArrowUp, Check, Loader2, MessageCircle, X } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { api, post, type Activity } from '../lib/api';
 
-export default function QuestionDialog({ runId, question, onDismiss, onAnswered }: {
+export default function QuestionCard({ runId, question, onDismiss, onAnswered }: {
   runId: string; question: Activity; onDismiss: () => void; onAnswered: () => void;
 }) {
   const options = Array.isArray(question.payload.options) ? question.payload.options.filter((o): o is string => typeof o === 'string') : [];
@@ -13,16 +13,9 @@ export default function QuestionDialog({ runId, question, onDismiss, onAnswered 
   const [custom, setCustom] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const dialog = useRef<HTMLDialogElement>(null);
   const submitting = useRef(false);
   const titleId = useId();
   const fieldId = useId();
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    const element = dialog.current;
-    element?.showModal();
-    return () => { element?.close(); previous?.focus(); };
-  }, []);
   const answer = selected === -1 ? custom.trim() : options[selected];
   const submit = async () => {
     if (!answer || submitting.current) return;
@@ -33,8 +26,8 @@ export default function QuestionDialog({ runId, question, onDismiss, onAnswered 
     } catch (e) { setError((e as Error).message); }
     finally { submitting.current = false; setSending(false); }
   };
-  return <dialog ref={dialog} className="question-dialog" aria-labelledby={titleId} onCancel={e => { e.preventDefault(); if (!sending) onDismiss(); }}>
-    <header className="question-heading"><span><MessageCircle size={17} /><strong id={titleId}>답변이 필요해요</strong></span><button type="button" className="icon-button" aria-label="질문 창 닫기" disabled={sending} onClick={onDismiss}><X size={18} /></button></header>
+  return <section className="question-card" aria-labelledby={titleId}>
+    <header className="question-heading"><span><MessageCircle size={17} /><strong id={titleId}>어떻게 답하시겠어요?</strong></span><button type="button" className="icon-button" aria-label="질문 접기" disabled={sending} onClick={onDismiss}><X size={18} /></button></header>
     <form onSubmit={e => { e.preventDefault(); void submit(); }}>
       <div className="question-scroll">
         <div className="question-body"><Markdown>{question.summary}</Markdown></div>
@@ -50,5 +43,5 @@ export default function QuestionDialog({ runId, question, onDismiss, onAnswered 
       </div>
       <footer className="question-footer"><small>선택 후 제출하면 작업을 이어갑니다.</small><button type="submit" className="question-submit" disabled={!answer || sending}>{sending ? <Loader2 size={15} className="spin" /> : <ArrowUp size={15} />}답변 제출</button></footer>
     </form>
-  </dialog>;
+  </section>;
 }

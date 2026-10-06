@@ -1,0 +1,54 @@
+:root {
+  color-scheme: dark;
+  --bg: #181818;
+  --paper: #202020;
+  --raised: #303030;
+  --ink: #f3f3f3;
+  --muted: #a1a1a1;
+  --dim: #777;
+  --line: #333;
+  --accent: #d9d9d9;
+  --green: #8eb59c;
+  --user: #edc5d7;
+  --user-ink: #48343f;
+  --chat-user: #82b5d5;
+  --desktop: #f49a80;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.5 Arial, Helvetica, system-ui, sans-serif; }
+button, input, textarea { font: inherit; }
+button { border: 0; cursor: pointer; color: inherit; background: transparent; }
+button:disabled { opacity: .4; cursor: default; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--chat-user); outline-offset: 3px; }
+a { color: inherit; }
+button svg { flex-shrink: 0; }
+.icon-button { width: 26px; height: 26px; padding: 0; display: inline-grid; place-items: center; color: var(--muted); border-radius: 5px; flex-shrink: 0; }
+.icon-button:hover { color: var(--ink); background: var(--raised); }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: #f3f3f3; color: #242424; border-radius: 20px; padding: 7px 13px; font-weight: 500; }
+.button:hover:not(:disabled) { background: white; }
+.button.light { color: var(--ink); background: var(--raised); }
+.status-dot { display: inline-block; height: 5px; width: 5px; border-radius: 50%; background: var(--green); }
+.status-dot.offline { background: #777; }
+.error-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; background: #3b2929; color: #f6bdbd; font-size: 11px; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: #0009; backdrop-filter: blur(5px); }
+.settings-modal, .artifact-modal { width: min(520px, 100%); max-height: 90dvh; overflow: auto; background: var(--paper); border: 1px solid #404040; border-radius: 18px; padding: 24px; box-shadow: 0 20px 80px #0007; }
+.settings-modal header, .artifact-modal header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.settings-modal header>div { display: flex; align-items: center; gap: 10px; }
+.settings-modal h2 { font-size: 17px; margin: 0; }
+.settings-intro, .settings-note, .auth-box p { color: var(--muted); font-size: 12px; }
+.provider-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+.provider-options button { text-align: left; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #282828; }
+.provider-options button.selected { border-color: #bcbcbc; background: #343434; }
+.provider-options span { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.provider-options small { display: block; margin-top: 8px; color: var(--muted); font-size: 10px; }
+.auth-box { padding: 16px; background: #191919; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 20px; }
+.auth-status { color: #dfc6a4; font-size: 12px; }.auth-status.ready { color: var(--green); }
+.settings-modal label { display: block; color: var(--muted); margin: 12px 0 6px; font-size: 12px; }
+.settings-modal input { width: 100%; padding: 11px 12px; color: var(--ink); background: #282828; border: 1px solid #444; border-radius: 8px; }
+.settings-modal footer { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; gap: 12px; }
+.settings-modal footer span, .artifact-modal footer { color: var(--green); font-size: 11px; }
+.settings-modal .error { color: #f2aaaa; }.device-login a { display: inline-flex; align-items: center; gap: 6px; }.device-login strong { font-size: 16px; letter-spacing: 2px; }
+.artifact-modal { width: min(720px, 100%); }.artifact-modal header strong { overflow-wrap: anywhere; }.artifact-modal pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: #151515; border-radius: 9px; line-height: 1.7; }.artifact-modal footer { display: flex; align-items: center; gap: 7px; }
+.spin, .spinner { animation: spin 1s linear infinite; }.spinner { height: 22px; width: 22px; border: 2px solid #555; border-top-color: white; border-radius: 50%; }@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

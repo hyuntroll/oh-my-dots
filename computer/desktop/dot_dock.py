@@ -89,6 +89,12 @@ class DotDock(Gtk.Window):
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
+        self.appearance_provider = Gtk.CssProvider()
+        self.appearance_stamp = None
+        Gtk.StyleContext.add_provider_for_screen(screen, self.appearance_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
+        self.refresh_appearance()
+        GLib.timeout_add(1000, self.refresh_appearance)
+
         # A real desktop window keeps the wallpaper visible under X11 compositing.
         self.wallpaper = Gtk.Window()
         self.wallpaper.set_name("desktop-wallpaper")
@@ -130,6 +136,17 @@ class DotDock(Gtk.Window):
 
     def _after_realize(self, *_):
         GLib.idle_add(self.position_dock)
+
+    def refresh_appearance(self):
+        path = os.path.join(APP_DIR, 'appearance.css')
+        try:
+            stamp = os.stat(path).st_mtime_ns
+            if stamp != self.appearance_stamp:
+                self.appearance_provider.load_from_path(path)
+                self.appearance_stamp = stamp
+        except OSError:
+            pass
+        return True
 
     def position_dock(self):
         screen = self.get_screen()

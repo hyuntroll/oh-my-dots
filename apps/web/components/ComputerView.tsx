@@ -7,7 +7,14 @@ import { RemoteInputQueue } from '../lib/remote-input';
 
 const PREFIX = '/computer-sessions/computer-1';
 const special: Record<string, string> = { Enter: 'Return', Backspace: 'BackSpace', Tab: 'Tab', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', Delete: 'Delete', Home: 'Home', End: 'End', PageUp: 'Page_Up', PageDown: 'Page_Down', Control: 'Control_L', Meta: 'Control_L', Shift: 'Shift_L', Alt: 'Alt_L', ' ': 'space' };
-export default function ComputerView({ name = 'OhMyDots', computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { name?: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
+export default function ComputerView({ name = 'OhMyDots', accent, computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { name?: string; accent: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
+  useEffect(() => {
+    if (!computer.connected) return;
+    const controller = new AbortController();
+    void api(PREFIX + '/appearance', { ...post({ accent }), signal: controller.signal })
+      .catch(error => { if (!controller.signal.aborted) onError('컴퓨터 색상을 적용하지 못했어요: ' + (error as Error).message); });
+    return () => controller.abort();
+  }, [accent, computer.connected, onError]);
   const host = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);

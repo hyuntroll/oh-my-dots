@@ -9,6 +9,11 @@ import secrets
 import time
 from contextlib import asynccontextmanager
 from typing import Literal
+from pathlib import Path
+try:
+    from .appearance import Appearance, write_appearance
+except ImportError:
+    from appearance import Appearance, write_appearance
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import Response
@@ -288,3 +293,14 @@ async def release(body: Return):
             raise HTTPException(409, "Stale input")
         await gate.release()
     return gate.status()
+
+
+appearance_lock = asyncio.Lock()
+
+@app.post("/appearance")
+async def appearance(body: Appearance):
+    async with appearance_lock:
+        write_appearance(body.accent, Path.home())
+        await command("xsetroot", "-solid", body.accent)
+        await command("openbox", "--reconfigure")
+    return {"accent": body.accent}

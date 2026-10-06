@@ -4,13 +4,14 @@ mkdir -p "$HOME/.config" "$HOME/.cache" "$HOME/.local/share/dot-desktop" /worksp
 mkdir -p "$HOME/.config/openbox" "$HOME/.themes" "$HOME/.config/xfce4/terminal"
 mkdir -p "$HOME/.config/chromium/Default" "$HOME/.config/gtk-3.0"
 cat > "$HOME/.config/chromium/Default/Preferences" <<'EOF'
-{"translate":{"enabled":false},"intl":{"accept_languages":"ko-KR,ko,en-US,en"},"browser":{"check_default_browser":false},"extensions":{"theme":{"system_theme":1}}}
+{"translate":{"enabled":false},"intl":{"accept_languages":"ko-KR,ko,en-US,en"},"browser":{"check_default_browser":false,"custom_chrome_frame":false},"extensions":{"theme":{"system_theme":1}}}
 EOF
 cat > "$HOME/.config/gtk-3.0/gtk.css" <<'EOF'
 headerbar { background: #f39a80; color: #443933; box-shadow: none; }
 headerbar:backdrop { background: #e8baa9; }
 EOF
 cp -R /opt/dot-desktop/themes/MyDot "$HOME/.themes/"
+PYTHONPATH=/app python -c 'from appearance import write_appearance; from pathlib import Path; write_appearance("#bdc1d2", Path.home())'
 sed 's/<name>Clearlooks<\/name>/<name>MyDot<\/name>/' /etc/xdg/openbox/rc.xml > "$HOME/.config/openbox/rc.xml"
 cat > "$HOME/.config/xfce4/terminal/terminalrc" <<'EOF'
 [Configuration]
@@ -24,7 +25,7 @@ Xvfb :99 -screen 0 1280x960x24 -nolisten tcp -ac &
 until xdpyinfo -display :99 >/dev/null 2>&1; do sleep 0.1; done
 dbus-launch openbox --sm-disable &
 sleep 0.5
-xsetroot -solid '#F49A80'
+xsetroot -solid '#bdc1d2'
 picom --backend xrender --config /dev/null &
 sleep 0.3
 cp /opt/dot-desktop/dock.css "$HOME/.local/share/dot-desktop/dock.css"

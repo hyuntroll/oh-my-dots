@@ -290,6 +290,17 @@ def create_app(config=None):
         except httpx.HTTPError:
             return {"id": session_id, "connected": False, "owner": None, "epoch": None, "handoff": False}
 
+    @app.post("/api/computer-sessions/{session_id}/appearance", dependencies=[Depends(auth)])
+    async def appearance(session_id: str, request: Request):
+        check_session(session_id)
+        body = await request.json()
+        if not isinstance(body, dict) or not isinstance(body.get("accent"), str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", body["accent"]):
+            raise HTTPException(422, "Invalid dot accent")
+        try:
+            return await runtime.desktop.post("/appearance", {"accent": body["accent"]})
+        except httpx.HTTPError:
+            raise HTTPException(503, "컴퓨터 색상을 적용하지 못했습니다. 다시 연결해 주세요.")
+
     @app.post("/api/computer-sessions/{session_id}/input", dependencies=[Depends(auth)])
     async def input(session_id: str, request: Request):
         check_session(session_id)

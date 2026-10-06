@@ -2,11 +2,11 @@
 :root {
   --bg: #0e0e0e; --paper: #202020; --raised: #292929; --ink: #ececec;
   --muted: #a2a2a2; --dim: #777; --line: #292929; --rail: #090909;
-  --chat-user: #49a4f4; --bubble-ink: #fff; --primary: #ededed; --primary-ink: #151515;
+  --dot-accent: #bdc1d2; --chat-user: var(--dot-accent); --bubble-ink: #202020; --primary: #ededed; --primary-ink: #151515;
   --panel-width: 320px; --sidebar-width: 260px; --rail-width: 56px;
   --font-ui: Arial, Helvetica, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
 }
-html[data-theme='light'] { color-scheme: light; --bg: #fff; --paper: #f2f2f2; --raised: #e9e9e9; --ink: #202020; --muted: #777; --dim: #808080; --line: #e5e5e5; --rail: #fafafa; --chat-user: #ffcb32; --bubble-ink: #242424; --primary: #151515; --primary-ink: #fff; }
+html[data-theme='light'] { color-scheme: light; --bg: #fff; --paper: #f2f2f2; --raised: #e9e9e9; --ink: #202020; --muted: #777; --dim: #808080; --line: #e5e5e5; --rail: #fafafa; --chat-user: var(--dot-accent); --bubble-ink: #242424; --primary: #151515; --primary-ink: #fff; }
 body { font-family: var(--font-ui); font-size: 14px; }
 /* Let scrolling messages show through the profile header, with a soft lower edge. */
 .dots-shell .chat-panel { --chat-heading-height: 76px; }
@@ -86,3 +86,8 @@ html[data-theme='light'] .activity-heading:hover:not(:disabled), html[data-theme
 html[data-theme='light'] { --muted: #6e6e6e; --dim: #767676; }
 html[data-theme='light'] :is(.settings-nav-group button,.settings-card header p,.settings-badge,.settings-account-row p,.settings-page-heading p,.settings-help,.settings-rule,.preference-row p,.settings-brand,.computer-facts dt,.question-footer small) { color: var(--muted); }
 html[data-theme='light'] .settings-nav-group button[aria-current='page'] { color: var(--ink); }
+
+.dots-shell .desktop-frame { border-color: var(--dot-accent); background: var(--dot-accent); }
+.dots-shell .send-button:not(:disabled):hover { background: var(--dot-accent); filter: brightness(1.08); }
+.dots-shell .computer-panel { background: var(--bg); color: var(--ink); }
+.dots-shell .mobile-computer-back, .dots-shell .computer-tools, .dots-shell .remote-paste { background: var(--paper); color: var(--ink); border-color: var(--line); }

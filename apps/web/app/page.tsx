@@ -12,7 +12,7 @@ import DotSidebar, { DotRail } from '../components/DotSidebar';
 import Onboarding from '../components/Onboarding';
 import CustomizeDot, { DotAvatar } from '../components/DotIdentity';
 import DotContext, { ArtifactWorkspace } from '../components/DotContext';
-import { DEFAULT_PROFILE, PROFILE_KEY, parseDotProfile, type DotProfile } from '../lib/dot-profile';
+import { DEFAULT_PROFILE, DOT_COLORS, PROFILE_KEY, parseDotProfile, type DotProfile } from '../lib/dot-profile';
 import { readPreferences, shouldSend } from '../lib/preferences';
 import { usePreferences } from '../lib/usePreferences';
 import { api, post, Activity, Computer, Conversation, Run, AuthSettings } from '../lib/api';
@@ -28,6 +28,8 @@ export default function Home() {
   const [contextSection, setContextSection] = useState<'profile' | 'activity' | 'outputs'>('profile');
   useEffect(() => { try { const saved = parseDotProfile(localStorage.getItem(PROFILE_KEY)); setProfile(saved); setSidebarOpen(!saved.setupCompleted); } catch {} setContextOpen(window.matchMedia('(min-width: 801px)').matches); setProfileLoaded(true); }, []);
   useEffect(() => { document.documentElement.dataset.theme = profile.theme; }, [profile.theme]);
+  const accent = DOT_COLORS.find(color => color.id === profile.color)!.value;
+  useEffect(() => { document.documentElement.style.setProperty('--dot-accent', accent); }, [accent]);
   const updateProfile = (value: DotProfile) => {
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(value)); setProfile(value); }
     catch { setError('설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.'); }
@@ -192,7 +194,7 @@ export default function Home() {
       </div>
       <div className="composer-area">{question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionCard key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}{question && questionKey === dismissedQuestion && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (shouldSend(e.key, e.shiftKey, e.metaKey || e.ctrlKey, e.nativeEvent.isComposing, preferences.sendWith)) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div></div>
     </section>
-    {computerOpen && <ComputerView name={profile.name} computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onClose={() => { setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); }} onBack={() => { setComputerExpanded(false); setMobileTab('chat'); }} onToggleExpanded={() => setComputerExpanded(!computerExpanded)} expanded={computerExpanded} />}
+    {computerOpen && <ComputerView name={profile.name} accent={accent} computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onClose={() => { setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); }} onBack={() => { setComputerExpanded(false); setMobileTab('chat'); }} onToggleExpanded={() => setComputerExpanded(!computerExpanded)} expanded={computerExpanded} />}
     {!computerOpen && (preview ? <ArtifactWorkspace file={preview} files={artifacts} onFile={openFile} onClose={() => setPreview(null)} /> : contextOpen && <DotContext profile={profile} computer={computer} conversation={conversation} execution={execution} artifacts={artifacts} online={eventOnline} section={contextSection} onCustomize={() => setProfileOpen(true)} onComputer={openComputer} onFile={openFile} onSettings={() => setSettingsOpen(true)} onClose={() => setContextOpen(false)} />)}
   </main>}
     <Presence show={settingsOpen}><Settings onClose={() => { setSettingsOpen(false); refreshAuth(); }} onSaved={refreshAuth} /></Presence>

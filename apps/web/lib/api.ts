@@ -17,7 +17,7 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}, 
   } finally { clearTimeout(timer); }
 }
 export const post = (body: unknown = {}) => ({ method: 'POST', body: JSON.stringify(body) });
-export type Run = { id: string; status: string; wait_reason: string | null; error: string | null; task_id: string };
+export type Run = { id: string; status: string; wait_reason: string | null; error: string | null; task_id: string; started_at?: number | null; finished_at?: number | null };
 export type Message = { sequence: number; role: string; text: string; run_id: string | null };
 export type Conversation = { id: string; title: string; messages?: Message[]; runs?: Run[]; execution?: Activity[] };
 export type Computer = { connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; handoff: boolean; width?: number; height?: number };

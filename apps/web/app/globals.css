@@ -69,3 +69,29 @@ button svg { flex-shrink: 0; }
 .usage-provider dd { margin: 6px 0 0; font-size: 16px; font-variant-numeric: tabular-nums; }
 @keyframes stream-blink { 50% { opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { .stream-cursor { animation: none; } }
+
+/* Inline execution history, with compact rows and optional command details. */
+.run-activity { margin: 8px 0 20px; min-width: 0; color: var(--muted, #a3a3a3); font-size: 12px; }
+.activity-heading { display: flex; align-items: center; gap: 7px; max-width: 100%; padding: 5px 0; color: inherit; background: none; border: 0; text-align: left; line-height: 1.6; }
+.activity-heading:disabled { opacity: 1; cursor: default; }
+.activity-heading:hover:not(:disabled), .tool-row:hover { color: var(--text, #eee); }
+.activity-chevron { flex-shrink: 0; transition: transform 180ms ease; }
+[aria-expanded="true"] > .activity-chevron { transform: rotate(180deg); }
+.activity-pulse { width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: currentColor; animation: activity-breathe 1.6s ease-in-out infinite; }
+.tool-list { list-style: none; margin: 5px 0 0; padding: 0; animation: activity-reveal 180ms ease-out; }
+.tool-step { margin: 2px 0; min-width: 0; }
+.tool-row { display: flex; align-items: center; gap: 9px; width: 100%; min-width: 0; padding: 7px 0; border: 0; background: none; color: inherit; text-align: left; font-size: 12px; line-height: 1.5; }
+.tool-row > svg { flex-shrink: 0; }
+.tool-label { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex: 1; white-space: nowrap; }
+.tool-preview { overflow: hidden; text-overflow: ellipsis; color: #888; font-size: 11px; }
+.tool-duration { flex-shrink: 0; color: #858585; font-size: 10px; font-variant-numeric: tabular-nums; }
+.tool-failed { color: #dbaba4; }
+.tool-details { background: #282828; border: 1px solid #414141; border-radius: 12px; padding: 13px 14px; margin: 3px 0 10px 24px; min-width: 0; animation: activity-reveal 180ms ease-out; }
+.tool-detail-heading { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 14px; font-size: 12px; }
+.tool-detail-heading > span + span, .tool-directory, .tool-details small, .tool-empty { font-size: 10px; color: #999; }
+.tool-details pre { margin: 10px 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 280px; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.7; color: #c4c4c4; }
+.tool-details .tool-stderr { color: #e5b6ab; }
+.activity-heading:focus-visible, .tool-row:focus-visible { outline: 2px solid #82b8ff; outline-offset: 3px; border-radius: 4px; }
+@keyframes activity-breathe { 50% { opacity: .35; } }
+@keyframes activity-reveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .activity-pulse, .tool-list, .tool-details { animation: none; }.activity-chevron { transition: none; } }

@@ -40,3 +40,11 @@ Codex는 기존 로그인으로 로컬 app-server를 실행합니다. 임시 스
 - 호출 ID에 따른 동시 호출 연결, 역순·중복 재생, 출력 길이 제한, 민감한 GUI 입력 제외, 반복 실패 마지막 출력 보존 테스트.
 
 로컬 증거: `output/execution/activity-report.json`, `activity-running.png`, `activity-complete.png`, `activity-cancelled.png`.
+
+## 질문과 선택지
+
+`ask_user`는 `question`과 선택적인 2~4개 문자열 `options`, 0부터 시작하는 `recommended_index`를 받습니다. 선택지가 없으면 직접 입력만 표시합니다. `run.question`에 고유 `question_id`와 선택지를 저장하고 대화 조회에서 최신 질문을 복원합니다.
+
+질문 창은 추천 항목을 미리 선택하지만 자동 제출하지 않습니다. 사용자는 다른 항목이나 직접 입력을 선택해 **답변 제출**로 이어갑니다. Escape 또는 닫기를 누르면 대기 상태를 유지하고 입력창 위 **질문에 답하기**에서 다시 열 수 있습니다. 일반 입력창으로도 답할 수 있습니다. `/runs/{id}/answer`는 질문 ID가 현재 대기 중인 질문과 일치해야 하며, 지난 질문의 중복 제출이나 공백 답변은 거절합니다. 질문 대기는 기존 Run과 FIFO 순서를 유지합니다.
+
+검증: 실제 Codex가 추천 항목을 포함한 3개 선택지를 전달하고, 브라우저에서 추천 기본 선택·다른 선택지·직접 입력·빈 답변 제출 방지·새로고침 복원·닫기와 다시 열기를 확인했습니다. 직접 입력한 답변을 제출한 뒤 동일 Run이 완료되었습니다. 회귀 테스트는 이전 질문 ID 재전송 거부, 사용자 답변 전 FIFO 대기, 질문 스냅샷 순서 역전을 포함합니다. 로컬 화면 증거는 `output/execution/question-options.png`, `question-custom.png`입니다.

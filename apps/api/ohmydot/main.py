@@ -28,6 +28,7 @@ class Submit(BaseModel):
 
 
 class Answer(BaseModel):
+    question_id: str = Field(min_length=1, max_length=100)
     text: str = Field(min_length=1, max_length=16000)
 
 
@@ -212,8 +213,10 @@ def create_app(config=None):
     @app.post("/api/runs/{run_id}/answer", dependencies=[Depends(auth)])
     async def answer(run_id: str, body: Answer):
         future = runtime.answers.get(run_id)
-        if not future or future.done():
+        if not future or future.done() or runtime.question_ids.get(run_id) != body.question_id:
             raise HTTPException(409, "Run is not waiting for an answer")
+        if not body.text.strip():
+            raise HTTPException(422, "Answer must not be blank")
         with store.session() as db:
             row = db.get(Run, run_id)
             db.add(Message(conversation_id=row.conversation_id, run_id=run_id, role="user", text=body.text))

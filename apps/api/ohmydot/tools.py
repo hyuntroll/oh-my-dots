@@ -73,7 +73,11 @@ TOOLS = [
     spec(
         "ask_user",
         "Ask a necessary clarification and wait for an answer in this Run.",
-        {"question": {"type": "string"}},
+        {"question": {"type": "string", "maxLength": 8000},
+         "options": {"type": "array", "minItems": 2, "maxItems": 4,
+                     "items": {"type": "string", "minLength": 1, "maxLength": 120}},
+         "recommended_index": {"type": "integer", "minimum": 0, "maximum": 3}},
+        ["question"],
     ),
 ]
 
@@ -232,7 +236,8 @@ class Tools:
                 self.verified.add(path)
             return result
         if name == "ask_user":
-            return {"answer": await self.runtime.ask_user(self.run_id, args["question"])}
+            return {"answer": await self.runtime.ask_user(self.run_id, args["question"],
+                                                          args.get("options"), args.get("recommended_index", 0))}
         raise ValueError("Unknown tool")
 
 

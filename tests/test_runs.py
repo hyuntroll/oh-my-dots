@@ -141,13 +141,13 @@ async def test_answer_resumes_same_run_and_does_not_unblock_fifo_early(app, monk
         await eventually(lambda: status(app, first) == "WAITING_USER")
         second = await submit(c, cid, "second", "two")
         assert status(app, second) == "PENDING"
-        await c.post(f"/api/runs/{first}/answer", json={"text": "result.txt"})
+        await c.post(f"/api/runs/{first}/answer", json={"text": "result.txt", "question_id": app.state.runtime.question_ids[first]})
         await eventually(lambda: status(app, second) == "COMPLETED")
         with app.state.store.session() as db:
             assert db.get(Run, first).result == "result.txt"
             assert len(list(db.scalars(select(Run)))) == 2
             assert len(list(db.scalars(select(Message).where(Message.run_id == first)))) == 4
-        assert (await c.post(f"/api/runs/{first}/answer", json={"text": "again"})).status_code == 409
+        assert (await c.post(f"/api/runs/{first}/answer", json={"text": "again", "question_id": "old"})).status_code == 409
 
 
 async def test_restart_requires_explicit_retry(app):
@@ -270,3 +270,34 @@ async def test_missing_artifact_preserves_not_found_status(app):
     async with client(app, startup=False) as c:
         response = await c.get("/api/artifacts/missing.txt")
         assert response.status_code == 404 and response.json()["detail"] == "Artifact not found"
+
+
+async def test_question_options_survive_reload_and_stale_answers_cannot_resume_next_question(app, monkeypatch):
+    received = []
+
+    async def provider(runtime, run, messages, tools):
+        received.append(await runtime.ask_user(run.id, "어떤 방식을 원하세요?", ["초안만 준비", "그만하기"], 0))
+        received.append(await runtime.ask_user(run.id, "제목을 알려 주세요"))
+        return "done"
+
+    monkeypatch.setattr("ohmydot.runtime.run_codex", provider)
+    async with client(app) as c:
+        cid = (await c.post("/api/conversations")).json()["id"]
+        run_id = await submit(c, cid, "question", "structured")
+        await eventually(lambda: status(app, run_id) == "WAITING_USER")
+        replay = (await c.get(f"/api/conversations/{cid}")).json()["execution"]
+        question = next(e for e in replay if e["type"] == "run.question")
+        first_id = question["payload"]["question_id"]
+        assert question["payload"]["options"] == ["초안만 준비", "그만하기"]
+        assert question["payload"]["recommended_index"] == 0
+        assert received == []  # A recommendation is not an answer.
+        assert (await c.post(f"/api/runs/{run_id}/answer", json={"text": " ", "question_id": first_id})).status_code == 422
+        assert (await c.post(f"/api/runs/{run_id}/answer", json={"text": "다른 의견", "question_id": first_id})).status_code == 200
+        await eventually(lambda: app.state.runtime.question_ids.get(run_id) not in (None, first_id))
+        assert (await c.post(f"/api/runs/{run_id}/answer", json={"text": "중복 답변", "question_id": first_id})).status_code == 409
+        assert received == ["다른 의견"]
+        second_id = app.state.runtime.question_ids[run_id]
+        await c.post(f"/api/runs/{run_id}/answer", json={"text": "회의 메모", "question_id": second_id})
+        await eventually(lambda: status(app, run_id) == "COMPLETED")
+        assert received == ["다른 의견", "회의 메모"]
+        assert run_id not in app.state.runtime.question_ids

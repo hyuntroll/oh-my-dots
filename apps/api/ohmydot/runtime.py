@@ -21,6 +21,7 @@ class Runtime:
         self.tool_tokens = {}
         self.tools = {}
         self.answers = {}
+        self.question_ids = {}
         self.control_returned = asyncio.Event()
         self.control_returned.set()
         self.waiting = set()
@@ -82,18 +83,31 @@ class Runtime:
             self.waiting.discard(run_id)
         self.store.status(run_id, "RUNNING")
 
-    async def ask_user(self, run_id, question):
+    async def ask_user(self, run_id, question, options=None, recommended_index=0):
+        self.check_run(run_id)
+        options = [] if options is None else options
+        if (not isinstance(options, list) or (options and not 2 <= len(options) <= 4)
+                or any(not isinstance(option, str) or not option.strip() or len(option) > 120 for option in options)
+                or len(set(options)) != len(options)):
+            raise ValueError("Provide 2-4 distinct, nonempty options of at most 120 characters")
+        if options and (type(recommended_index) is not int or not 0 <= recommended_index < len(options)):
+            raise ValueError("recommended_index must refer to an option")
+        question_id = secrets.token_urlsafe(16)
+        self.question_ids[run_id] = question_id
         future = asyncio.get_running_loop().create_future()
         self.answers[run_id] = future
         self.waiting.add(run_id)
-        self.store.status(run_id, "WAITING_USER", "ANSWER")
-        self.store.event("run.question", question, run_id)
+        self.store.event("run.question", question, run_id, {
+            "question_id": question_id, "options": options,
+            "recommended_index": recommended_index if options else None,
+        })
         with self.store.session() as db:
             run = db.get(Run, run_id)
             db.add(
                 Message(conversation_id=run.conversation_id, run_id=run_id, role="assistant", text=question)
             )
             db.commit()
+        self.store.status(run_id, "WAITING_USER", "ANSWER")
         try:
             answer = await future
             self.check_run(run_id)
@@ -101,6 +115,7 @@ class Runtime:
             return answer
         finally:
             self.answers.pop(run_id, None)
+            self.question_ids.pop(run_id, None)
             self.waiting.discard(run_id)
 
     async def worker(self):

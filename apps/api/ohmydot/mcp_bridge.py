@@ -72,9 +72,9 @@ async def artifact_read(path: str):
 
 
 @server.tool()
-async def ask_user(question: str):
-    """Ask clarification and wait for an answer in the current Run."""
-    return await invoke("ask_user", dict(question=question))
+async def ask_user(question: str, options: list[str] | None = None, recommended_index: int = 0):
+    """Ask a question with 2-4 concise options and a recommended index; custom input is always available."""
+    return await invoke("ask_user", dict(question=question, options=options, recommended_index=recommended_index))
 
 
 if __name__ == "__main__":

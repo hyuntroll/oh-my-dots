@@ -155,7 +155,7 @@ class Store:
             run_ids = select(Run.id).where(Run.conversation_id == conversation_id)
             latest = select(func.max(Event.sequence)).where(
                 Event.run_id.in_(run_ids),
-                Event.type.in_(["run.activity", "message.updated", "run.usage"]),
+                Event.type.in_(["run.activity", "message.updated", "run.usage", "run.question"]),
             ).group_by(Event.run_id, Event.type)
             return [serialize(event) for event in db.scalars(
                 select(Event).where(or_(Event.sequence.in_(latest), and_(

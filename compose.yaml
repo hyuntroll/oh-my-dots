@@ -20,13 +20,13 @@ services:
       COMPUTER_TOKEN: ${COMPUTER_TOKEN:?Run scripts/setup.py}
     volumes: [artifacts:/workspace/artifacts]
     tmpfs: [/tmp, "/home/dot:uid=1000,gid=1000", "/workspace:uid=1000,gid=1000"]
-    read_only: true
+    read_only: false
     shm_size: 512m
     mem_limit: 2g
     cpus: 2
     pids_limit: 512
     cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, AUDIT_WRITE]
     networks: [desktop]
     healthcheck:
       test: [CMD, python, -c, 'import urllib.request,os; r=urllib.request.Request("http://localhost:8765/health",headers={"Authorization":"Bearer "+os.environ["COMPUTER_TOKEN"]}); urllib.request.urlopen(r)']

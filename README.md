@@ -76,6 +76,8 @@ open output/desktop/OhMyDots-darwin-arm64/OhMyDots.app
 
 시스템 패키지는 셸에서 `apt-get update && apt-get install -y --no-install-recommends 패키지명`으로 설치할 수 있습니다. 셸 컨테이너 내부 root 권한으로 실행되므로 sudo는 필요하지 않습니다. apt 패키지는 컨테이너 재시작 시 유지되며, 컨테이너를 삭제하거나 새 이미지로 재생성하면 다시 설치해야 합니다.
 
+컴퓨터 안의 터미널에서도 `apt-get update && apt-get install -y --no-install-recommends mousepad`처럼 GUI 앱을 설치할 수 있습니다. `apt`·`apt-get`은 설치 권한을 자동으로 사용하며, 데스크톱 앱과 터미널은 일반 사용자로 실행됩니다. 작업용 셸과 컴퓨터는 별도 환경이므로 GUI 앱은 컴퓨터 터미널에서 설치해야 합니다. 컴퓨터에 설치한 패키지도 새 컨테이너를 만들면 초기화됩니다.
+
 ## 구성
 
 | 경로 | 역할 |

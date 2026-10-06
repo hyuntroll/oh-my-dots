@@ -134,6 +134,7 @@ def create_app(config=None):
                 raise HTTPException(404, "Conversation not found")
             return {
                 **serialize(row),
+                "execution": store.execution(conversation_id),
                 "messages": [
                     serialize(m)
                     for m in db.scalars(
@@ -219,6 +220,10 @@ def create_app(config=None):
             db.commit()
         future.set_result(body.text)
         return {"accepted": True}
+
+    @app.get("/api/usage", dependencies=[Depends(auth)])
+    async def usage():
+        return store.usage()
 
     @app.get("/api/events", dependencies=[Depends(auth)])
     async def events(after: int = 0):

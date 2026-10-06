@@ -11,6 +11,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     create_engine,
+    func,
     select,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
@@ -146,6 +147,39 @@ class Store:
             db.get(Task, run.task_id).status = state
             db.commit()
         self.event("run.changed", state, run_id, {"status": state, "wait_reason": reason, "error": error})
+
+    def execution(self, conversation_id):
+        with self.session() as db:
+            run_ids = select(Run.id).where(Run.conversation_id == conversation_id)
+            latest = select(func.max(Event.sequence)).where(
+                Event.run_id.in_(run_ids),
+                Event.type.in_(["run.activity", "message.updated", "run.usage"]),
+            ).group_by(Event.run_id, Event.type)
+            return [serialize(event) for event in db.scalars(
+                select(Event).where(Event.sequence.in_(latest)).order_by(Event.sequence)
+            )]
+
+    def usage(self):
+        # Providers report cumulative totals per run. Replayed/intermediate updates
+        # must not be added together; use only the latest report for each run.
+        with self.session() as db:
+            rows = db.execute(select(Event, Run.provider).join(Run, Run.id == Event.run_id)
+                              .where(Event.type == "run.usage").order_by(Event.sequence.desc()))
+            seen = set()
+            providers = {}
+            for event, provider in rows:
+                if event.run_id in seen:
+                    continue
+                seen.add(event.run_id)
+                payload = json.loads(event.payload)
+                total = providers.setdefault(provider, {"provider": provider, "runs": 0,
+                    "input_tokens": 0, "output_tokens": 0, "cached_input_tokens": 0})
+                total["runs"] += 1
+                for key in ("input_tokens", "output_tokens", "cached_input_tokens"):
+                    value = payload.get(key, 0)
+                    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                        total[key] += value
+            return {"providers": list(providers.values()), "recorded_runs": len(seen)}
 
     def get_setting(self, key, default):
         with self.session() as db:

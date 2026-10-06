@@ -94,7 +94,18 @@ class Tools:
         if self.calls > self.runtime.config.max_tools:
             await self.runtime.abort(self.run_id, "TOOL_LIMIT_EXCEEDED")
             raise asyncio.CancelledError()
+        descriptions = {
+            "desktop_screenshot": "현재 화면을 살펴보고 있어요",
+            "desktop_input": "컴퓨터를 조작하고 있어요",
+            "desktop_windows": "열린 창을 확인하고 있어요",
+            "shell_exec": "명령을 실행하고 있어요",
+            "artifact_write": "결과 파일을 작성하고 있어요",
+            "artifact_read": "파일 내용을 확인하고 있어요",
+            "ask_user": "답변을 기다리고 있어요",
+        }
         self.runtime.store.event("tool.started", name, self.run_id)
+        self.runtime.store.event("run.activity", descriptions.get(name, "도구를 실행하고 있어요"),
+                                 self.run_id, {"tool": name})
         started = time.monotonic()
         try:
             result = await self._invoke(name, args)
@@ -115,6 +126,7 @@ class Tools:
                 if key in result
             }
             self.runtime.store.event("tool.completed", name, self.run_id, details)
+            self.runtime.store.event("run.activity", "실행 결과를 확인하고 있어요", self.run_id)
             return result
         except asyncio.CancelledError:
             raise

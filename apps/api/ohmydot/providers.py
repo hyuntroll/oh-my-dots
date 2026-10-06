@@ -1,8 +1,6 @@
 import asyncio
 import json
 import os
-import shutil
-import sys
 import tempfile
 from pathlib import Path
 from typing import Literal
@@ -19,6 +17,7 @@ from agents import (
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from .execution import OutputStream, record_usage
 from .tools import TOOLS
 
 INSTRUCTIONS = """You are OhMyDots, a personal computer agent. Answer in the user's language.
@@ -133,90 +132,38 @@ async def run_openai(runtime, run, history, tools):
         model=OpenAIResponsesModel(run.model, AsyncOpenAI(api_key=key)),
         model_settings=ModelSettings(parallel_tool_calls=False),
     )
-    result = await Runner.run(agent, input=history, max_turns=40, run_config=RunConfig(tracing_disabled=True))
-    usage = result.context_wrapper.usage
-    runtime.store.event(
-        "run.usage",
-        "모델 사용량",
-        run.id,
-        {"input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens},
-    )
-    return final_answer(result.final_output)
+    stream = OutputStream(runtime.store, run.id)
+    result = Runner.run_streamed(agent, input=history, max_turns=40,
+                                 run_config=RunConfig(tracing_disabled=True))
+    try:
+        async for event in result.stream_events():
+            if event.type == "raw_response_event":
+                data = event.data
+                if data.type == "response.output_text.delta":
+                    stream.update(data.item_id, data.delta)
+                elif data.type == "response.output_text.done":
+                    stream.update(data.item_id, data.text, replace=True, force=True)
+        return final_answer(result.final_output)
+    finally:
+        result.cancel()
+        # Drain the SDK stream so cancelled background tasks finish cleanup.
+        try:
+            async for _ in result.stream_events():
+                pass
+        except (Exception, asyncio.CancelledError):
+            pass
+        usage = result.context_wrapper.usage
+        if usage.requests:
+            record_usage(runtime.store, run.id, "openai", {
+                "input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
+                "cached_input_tokens": getattr(usage.input_tokens_details, "cached_tokens", 0),
+            })
 
 
 async def run_codex(runtime, run, history, tools):
-    if not shutil.which(runtime.config.codex_bin):
-        raise RuntimeError("CODEX_NOT_INSTALLED")
-    token = runtime.tool_tokens[run.id]
-    bridge = str(Path(__file__).with_name("mcp_bridge.py").resolve())
-    with tempfile.TemporaryDirectory(prefix="ohmydot-") as cwd:
-        schema = Path(cwd) / "outcome.json"
-        schema.write_text(json.dumps(Outcome.model_json_schema()))
-        cmd = codex_args(runtime.config) + [
-            "-C",
-            cwd,
-            "--output-schema",
-            str(schema),
-            "-c",
-            "mcp_servers.dot.command=" + json.dumps(sys.executable),
-            "-c",
-            "mcp_servers.dot.args=" + json.dumps([bridge]),
-            "-c",
-            "mcp_servers.dot.required=true",
-            "-c",
-            'mcp_servers.dot.default_tools_approval_mode="approve"',
-            "-c",
-            "mcp_servers.dot.env="
-            + "{DOT_TOOL_URL="
-            + json.dumps(runtime.config.internal_url + "/internal/runs/" + run.id + "/tools")
-            + ", DOT_RUN_TOKEN="
-            + json.dumps(token)
-            + "}",
-            "-c",
-            "mcp_servers.dot.tool_timeout_sec=3600",
-            "-c",
-            "developer_instructions=" + json.dumps(INSTRUCTIONS),
-        ]
-        # Empty model uses the CLI default for the signed-in account.
-        if run.model:
-            cmd += ["-m", run.model]
-        cmd += ["-"]
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
-            limit=2**20,
-            start_new_session=True,
-        )
-        try:
-            prompt = "\n\n".join(item["role"] + ": " + item["content"] for item in history)
-            proc.stdin.write(prompt.encode())
-            await proc.stdin.drain()
-            proc.stdin.close()
-            answer = ""
-            while line := await proc.stdout.readline():
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                item = event.get("item", {})
-                if event.get("type") == "item.completed" and item.get("type") == "agent_message":
-                    answer = item.get("text", "")
-                if event.get("type") == "turn.completed":
-                    runtime.store.event("run.usage", "Codex 사용량", run.id, event.get("usage", {}))
-                if event.get("type") in ("turn.failed", "error"):
-                    raise RuntimeError("CODEX_RUN_FAILED")
-            await proc.wait()
-            if proc.returncode or not answer:
-                raise RuntimeError("CODEX_RUN_FAILED")
-            return final_answer(Outcome.model_validate_json(answer))
-        finally:
-            if proc.returncode is None:
-                import signal
+    from .codex_stream import run_streamed_codex
 
-                os.killpg(proc.pid, signal.SIGKILL)
-                await proc.wait()
+    return await run_streamed_codex(runtime, run, history)
 
 
 async def analyze_screen(runtime, image_url, provider, model):

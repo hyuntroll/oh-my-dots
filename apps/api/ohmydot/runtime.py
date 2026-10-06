@@ -152,6 +152,7 @@ class Runtime:
                 )
             )
             history = [{"role": r.role, "content": r.text} for r in reversed(rows)]
+        self.store.event("run.activity", "요청을 확인하고 있어요", run_id)
         provider = run_openai if run.provider == "openai" else run_codex
         invocation = asyncio.create_task(provider(self, run, history, tools))
         elapsed = 0.0
@@ -169,18 +170,17 @@ class Runtime:
             if tools.written - tools.verified:
                 raise RuntimeError("ARTIFACT_NOT_VERIFIED")
             self.check_run(run_id)
-            self.store.status(run_id, "COMPLETED", result=answer)
             with self.store.session() as db:
                 db.add(
                     Message(conversation_id=run.conversation_id, run_id=run_id, role="assistant", text=answer)
                 )
                 db.commit()
+            self.store.status(run_id, "COMPLETED", result=answer)
         except asyncio.CancelledError:
             self.store.status(run_id, "CANCELLED")
             raise
         except Exception as exc:
             error = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
-            self.store.status(run_id, "FAILED", error=error[:100])
             with self.store.session() as db:
                 db.add(
                     Message(
@@ -193,6 +193,7 @@ class Runtime:
                     )
                 )
                 db.commit()
+            self.store.status(run_id, "FAILED", error=error[:100])
         finally:
             invocation.cancel()
             await asyncio.gather(invocation, return_exceptions=True)

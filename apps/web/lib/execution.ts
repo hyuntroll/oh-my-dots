@@ -1,5 +1,5 @@
 import type { Activity } from './api';
-export type Execution = { activity?: Activity; message?: Activity; usage?: Activity; tools?: Activity[] };
+export type Execution = { activity?: Activity; message?: Activity; usage?: Activity; question?: Activity; tools?: Activity[] };
 export type ExecutionState = Record<string, Execution>;
 export function mergeExecution(state: ExecutionState, events: Activity[]): ExecutionState {
   let next = state;
@@ -10,7 +10,7 @@ export function mergeExecution(state: ExecutionState, events: Activity[]): Execu
       next = { ...next, [event.run_id]: { ...run, tools: [...(run?.tools ?? []), event].sort((a, b) => a.sequence - b.sequence) } };
       continue;
     }
-    const field = event.type === 'run.activity' ? 'activity' : event.type === 'message.updated' ? 'message' : event.type === 'run.usage' ? 'usage' : null;
+    const field = event.type === 'run.activity' ? 'activity' : event.type === 'message.updated' ? 'message' : event.type === 'run.usage' ? 'usage' : event.type === 'run.question' ? 'question' : null;
     if (!field || !event.run_id || (next[event.run_id]?.[field]?.sequence ?? 0) >= event.sequence) continue;
     next = { ...next, [event.run_id]: { ...next[event.run_id], [field]: event } };
   }

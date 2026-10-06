@@ -36,3 +36,11 @@ test('legacy records, cancellation and unfinished terminal runs never stay spinn
   const cancelled = toolSteps(mergeExecution(state, [toolEvent(4, 'tool.cancelled', 'new')]).a);
   assert.equal(stepStatus(cancelled[1], 'CANCELLED'), 'cancelled');
 });
+
+test('new questions replace old ones without reconnect rollback', () => {
+  const first = { ...event(10, 'run.question', 'a', '첫 질문'), payload: { question_id: 'first', options: ['A', 'B'], recommended_index: 0 } };
+  const second = { ...event(20, 'run.question', 'a', '다음 질문'), payload: { question_id: 'second', options: [] } };
+  const state = mergeExecution({}, [first, second]);
+  assert.equal(mergeExecution(state, [first, second]), state);
+  assert.equal(state.a.question.payload.question_id, 'second');
+});

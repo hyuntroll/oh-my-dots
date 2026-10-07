@@ -1,3 +1,7 @@
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) { super(message); this.name = 'ApiError'; this.status = status; }
+}
 export async function api<T = unknown>(path: string, options: RequestInit = {}, timeoutMs = 10_000): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(new DOMException('요청 시간이 초과되었습니다. 다시 시도해 주세요.', 'TimeoutError')), timeoutMs);
@@ -11,7 +15,7 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}, 
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(typeof body.detail === 'string' ? body.detail : `요청 실패 (${response.status})`);
+      throw new ApiError(typeof body.detail === 'string' ? body.detail : `요청 실패 (${response.status})`, response.status);
     }
     return await response.json();
   } finally { clearTimeout(timer); }

@@ -11,11 +11,12 @@ import Presence from '../components/Presence';
 import DotSidebar, { DotRail } from '../components/DotSidebar';
 import Onboarding from '../components/Onboarding';
 import CustomizeDot, { DotAvatar } from '../components/DotIdentity';
-import DotContext, { ArtifactWorkspace } from '../components/DotContext';
+import DotContext from '../components/DotContext';
+import SpacesWorkspace, { type FilePreview } from '../components/SpacesWorkspace';
 import { DEFAULT_PROFILE, DOT_COLORS, PROFILE_KEY, parseDotProfile, type DotProfile } from '../lib/dot-profile';
 import { readPreferences, shouldSend } from '../lib/preferences';
 import { usePreferences } from '../lib/usePreferences';
-import { api, post, Activity, Computer, Conversation, Run, AuthSettings } from '../lib/api';
+import { api, ApiError, post, Activity, Computer, Conversation, Run, AuthSettings } from '../lib/api';
 import { mergeExecution, type ExecutionState } from '../lib/execution';
 const labels: Record<string, string> = { PENDING: '대기 중', RUNNING: '진행 중', WAITING_USER: '응답 대기', COMPLETED: '완료', FAILED: '실패', CANCELLED: '취소됨' };
 const emptyComputer: Computer = { connected: false, owner: null, epoch: null, handoff: false };
@@ -35,7 +36,7 @@ export default function Home() {
     catch { setError('설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.'); }
   };
   const finishSetup = (value: DotProfile) => { updateProfile({ ...value, setupCompleted: true }); setSidebarOpen(false); setComputerOpen(false); setProfileOpen(false); };
-  const showContext = (section: 'profile' | 'activity' | 'outputs') => { setContextSection(section); setContextOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview(null); };
+  const showContext = (section: 'profile' | 'activity' | 'outputs') => { setContextSection(section); setContextOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview(null); setSpacesOpen(false); ++fileRequest.current; };
   const onboarding = profileLoaded && !profile.setupCompleted;
   useEffect(() => { setComputerOpen(readPreferences().showComputer); }, []);
   useEffect(() => { document.documentElement.dataset.reduceMotion = String(preferences.reduceMotion); }, [preferences.reduceMotion]);
@@ -53,14 +54,15 @@ export default function Home() {
   const [answeredQuestion, setAnsweredQuestion] = useState<string | null>(null);
   const [eventOnline, setEventOnline] = useState(false);
   const [artifacts, setArtifacts] = useState<{ path: string; size: number }[]>([]);
-  const [preview, setPreview] = useState<{ path: string; text: string } | null>(null);
+  const [preview, setPreview] = useState<FilePreview | null>(null);
+  const [spacesOpen, setSpacesOpen] = useState(false);
   const [computerOpen, setComputerOpen] = useState(true);
   const [computerExpanded, setComputerExpanded] = useState(false);
   const [mobileTab, setMobileTab] = useState('chat');
   const [filesOpen, setFilesOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setSidebarOpen(false); setPreview(null); } };
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setSidebarOpen(false); setPreview(null); setSpacesOpen(false); ++fileRequest.current; } };
     document.addEventListener('keydown', close);
     return () => document.removeEventListener('keydown', close);
   }, []);
@@ -165,17 +167,22 @@ export default function Home() {
   const ready = auth && (auth.provider === 'codex' ? auth.codex_connected : auth.openai_configured);
   const openFile = async (path: string) => {
     const request = ++fileRequest.current;
+    setSpacesOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview({ path, loading: true });
+    if (/\.(png|jpe?g|gif|webp|pdf)$/i.test(path)) { setPreview({ path }); return; }
     try {
       const file = await api<{ path: string; text: string }>('/artifacts/' + path.split('/').map(encodeURIComponent).join('/'));
+      if (fileRequest.current === request) setPreview(file);
+    } catch (e) {
       if (fileRequest.current !== request) return;
-      setPreview(file); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat');
-    } catch (e) { if (fileRequest.current === request) setError((e as Error).message); }
+      setPreview(e instanceof ApiError && [413, 415].includes(e.status) ? { path } : { path, error: (e as Error).message });
+    }
   };
-  const openComputer = () => { setComputerOpen(true); setMobileTab('computer'); setPreview(null); setSidebarOpen(false); };
+  const openSpaces = () => { ++fileRequest.current; setSpacesOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview(null); setSidebarOpen(false); };
+  const openComputer = () => { ++fileRequest.current; setSpacesOpen(false); setComputerOpen(true); setMobileTab('computer'); setPreview(null); setSidebarOpen(false); };
   return <div className={'dots-shell ' + (sidebarOpen ? 'with-sidebar ' : '') + (onboarding ? 'is-onboarding' : '')}>
-    <DotRail sidebarOpen={sidebarOpen} onSidebar={() => setSidebarOpen(!sidebarOpen)} onHome={() => showContext('profile')} onFiles={() => showContext('outputs')} onActivity={() => showContext('activity')} onSettings={() => setSettingsOpen(true)} />
+    <DotRail sidebarOpen={sidebarOpen} onSidebar={() => setSidebarOpen(!sidebarOpen)} onHome={() => showContext('profile')} onFiles={openSpaces} onActivity={() => showContext('activity')} onSettings={() => setSettingsOpen(true)} />
     {sidebarOpen && <DotSidebar profile={profile} conversations={conversations} currentId={conversation?.id} onSelect={id => { void selectConversation(id).catch(e => setError(e.message)); setSidebarOpen(false); }} onNew={() => { void newConversation(); setSidebarOpen(false); }} onHome={() => { showContext('profile'); setSidebarOpen(false); }} onClose={() => setSidebarOpen(false)} onSetup={() => updateProfile({ ...profile, setupCompleted: false, setupStep: 0 })} />}
-    {!profileLoaded ? <section className="dot-loading" aria-label="설정 불러오는 중"><DotAvatar profile={profile} size={96} /><p>내 dot을 준비하고 있어요</p></section> : onboarding ? <><Onboarding profile={profile} auth={auth} computer={computer} onChange={updateProfile} onFinish={finishSetup} onSettings={() => setSettingsOpen(true)} />{error && <div className="setup-error" role="alert">{error}</div>}</> : <main className={'app-shell ' + (computerOpen ? '' : 'computer-hidden ') + (computerExpanded ? 'computer-expanded ' : '') + (preview ? 'has-artifact ' : '') + (!computerOpen && !preview && contextOpen ? 'has-context ' : '') + 'tab-' + mobileTab}>
+    {!profileLoaded ? <section className="dot-loading" aria-label="설정 불러오는 중"><DotAvatar profile={profile} size={96} /><p>내 dot을 준비하고 있어요</p></section> : onboarding ? <><Onboarding profile={profile} auth={auth} computer={computer} onChange={updateProfile} onFinish={finishSetup} onSettings={() => setSettingsOpen(true)} />{error && <div className="setup-error" role="alert">{error}</div>}</> : <main className={'app-shell ' + (computerOpen ? '' : 'computer-hidden ') + (computerExpanded ? 'computer-expanded ' : '') + (spacesOpen ? 'has-artifact ' : '') + (!computerOpen && !spacesOpen && contextOpen ? 'has-context ' : '') + 'tab-' + mobileTab}>
     <section className="chat-panel" aria-label="OhMyDots 대화">
       <header className="chat-heading">
         <button className="icon-button new-chat-heading" aria-label="새 대화" title="새 대화" onClick={newConversation}><SquarePen size={20} /></button>
@@ -195,9 +202,9 @@ export default function Home() {
       <div className="composer-area">{question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionCard key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}{question && questionKey === dismissedQuestion && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (shouldSend(e.key, e.shiftKey, e.metaKey || e.ctrlKey, e.nativeEvent.isComposing, preferences.sendWith)) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div></div>
     </section>
     {computerOpen && <ComputerView name={profile.name} accent={accent} computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onClose={() => { setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); }} onBack={() => { setComputerExpanded(false); setMobileTab('chat'); }} onToggleExpanded={() => setComputerExpanded(!computerExpanded)} expanded={computerExpanded} />}
-    {!computerOpen && (preview ? <ArtifactWorkspace file={preview} files={artifacts} onFile={openFile} onClose={() => setPreview(null)} /> : contextOpen && <DotContext profile={profile} computer={computer} conversation={conversation} execution={execution} artifacts={artifacts} online={eventOnline} section={contextSection} onCustomize={() => setProfileOpen(true)} onComputer={openComputer} onFile={openFile} onSettings={() => setSettingsOpen(true)} onClose={() => setContextOpen(false)} />)}
+    {!computerOpen && (spacesOpen ? <SpacesWorkspace preview={preview} files={artifacts} onFile={openFile} onClose={() => { ++fileRequest.current; setPreview(null); setSpacesOpen(false); }} /> : contextOpen && <DotContext profile={profile} computer={computer} conversation={conversation} execution={execution} artifacts={artifacts} online={eventOnline} section={contextSection} onCustomize={() => setProfileOpen(true)} onComputer={openComputer} onFile={openFile} onSettings={() => setSettingsOpen(true)} onClose={() => setContextOpen(false)} />)}
   </main>}
-    <Presence show={settingsOpen}><Settings onClose={() => { setSettingsOpen(false); refreshAuth(); }} onSaved={refreshAuth} /></Presence>
+    <Presence show={settingsOpen}><Settings onClose={() => { setSettingsOpen(false); refreshAuth(); }} onSaved={refreshAuth} onOpenComputer={state => { setSettingsOpen(false); controlChanged(state); openComputer(); }} /></Presence>
     {profileOpen && <CustomizeDot profile={profile} onSave={value => { updateProfile(value); setProfileOpen(false); }} onClose={() => setProfileOpen(false)} />}
   </div>;
 }

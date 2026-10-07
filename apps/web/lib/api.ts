@@ -30,4 +30,4 @@ export type AuthSettings = { provider: 'codex' | 'openai'; model: string; openai
 
 export type UsageSummary = { recorded_runs: number; providers: { provider: string; runs: number; input_tokens: number; output_tokens: number; cached_input_tokens: number }[] };
 
-export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: "pet" | "ring"; computer_id: string; profile_saved: boolean };
+export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: import("./dot-profile").DotAvatarId; computer_id: string; profile_saved: boolean };

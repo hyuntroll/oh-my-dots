@@ -9,6 +9,8 @@ from sqlalchemy import select
 from .runtime import Runtime
 from .store import Conversation, Dot, Run
 
+AVATARS = {'ring', 'pet', 'iggy', 'felipe', 'todd', 'alfred', 'jojo'}
+
 COLORS = {'silver': '#bdc1d2', 'blue': '#19b6de', 'yellow': '#ffcf35',
           'pink': '#d875d7', 'lime': '#b7d91a', 'rose': '#f2a5bb'}
 

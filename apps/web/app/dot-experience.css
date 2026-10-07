@@ -280,3 +280,9 @@ html[data-theme='light'] .settings-nav-group button[aria-current='page'] { color
 
 .sidebar-conversations { flex: 1; }
 .sidebar-dots { margin-top: auto; }
+
+.character-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.character-options button { width:100%; gap:5px; padding:8px 4px; color:var(--ink); }
+.character-options small { font-size:11px; white-space:nowrap; }
+.character-help { font-size:11px; line-height:1.6; color:var(--muted); margin:12px 0 0; }
+@media(max-width:600px) { .character-options { grid-template-columns:repeat(3,minmax(0,1fr)); } }

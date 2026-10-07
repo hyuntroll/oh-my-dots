@@ -66,6 +66,11 @@ async def test_separate_dot_profiles_conversations_and_computer_routes(app):
         profiles = (await client.get('/api/dots')).json()
         assert next(d for d in profiles if d['id']=='dot-1')['color'] == 'silver'
         assert next(d for d in profiles if d['id']==second['id'])['color'] == 'pink'
+        for character in ('iggy', 'felipe', 'todd', 'alfred', 'jojo'):
+            saved = await client.put('/api/dots/' + second['id'], json={'name':'Ocean','color':'pink','avatar':character})
+            assert saved.status_code == 200 and saved.json()['avatar'] == character
+            assert next(d for d in (await client.get('/api/dots')).json() if d['id']==second['id'])['avatar'] == character
+        assert (await client.put('/api/dots/' + second['id'], json={'name':'Ocean','avatar':'unknown'})).status_code == 422
         assert (await client.get('/api/computer-sessions/missing')).status_code == 404
         assert (await client.post('/api/runs/missing/cancel')).status_code == 404
 

@@ -16,7 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from .config import Config
-from .dots import COLORS, DotComputers
+from .dots import AVATARS, COLORS, DotComputers
 from .model_catalog import model_catalog
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
@@ -133,7 +133,7 @@ def create_app(config=None):
 
     @app.post("/api/dots", dependencies=[Depends(auth)])
     async def create_dot(body: DotAppearance):
-        if body.color not in COLORS or body.avatar not in {"ring", "pet"} or not body.name.strip():
+        if body.color not in COLORS or body.avatar not in AVATARS or not body.name.strip():
             raise HTTPException(422, "Invalid dot appearance")
         async with creation_lock:
             if len(dots.listing()) >= 8:
@@ -156,7 +156,7 @@ def create_app(config=None):
 
     @app.put("/api/dots/{dot_id}", dependencies=[Depends(auth)])
     async def update_dot(dot_id: str, body: DotAppearance):
-        if body.color not in COLORS or body.avatar not in {"ring", "pet"} or not body.name.strip():
+        if body.color not in COLORS or body.avatar not in AVATARS or not body.name.strip():
             raise HTTPException(422, "Invalid dot appearance")
         rt = await check_dot(dot_id)
         with store.session() as db:

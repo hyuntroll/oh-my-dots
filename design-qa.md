@@ -116,3 +116,15 @@ final result: passed
 미리보기는 표시 시 및 5분마다 새로 캡처하며, 컴퓨터 패널은 실시간 VNC입니다. 시작 직후 데스크톱이 준비 중이면 첫 PNG가 빈 배경일 수 있으며 다음 갱신에 실제 앱 화면을 표시합니다. 새 Dot의 생성에는 로컬 Docker 배포가 필요합니다.
 
 final result: passed
+
+
+# Five additional Dots characters — 2026-10-07
+
+- Added Iggy, Felipe, Todd, Alfred and Jojo to the existing shared Dot creation/customization picker; ring and OhMyDots remain available.
+- Icons are transparent reconstructions based on user-provided promotional images, not exact official standalone assets. Provenance and sprite mapping are recorded in `apps/web/public/dot-characters/README.md`.
+- Actual Chrome capture: `docs/assets/dots-ui/characters-picker.png`. All seven choices and selected-character preview visibly fit the desktop dialog. No opaque image background or clipping observed.
+- Saved Felipe through the UI, reloaded and confirmed the selected option persisted. Restored the tested Dot’s original pet/blue profile afterwards. Final capture shows an unsaved Felipe preview.
+- Frontend typecheck, 16 web tests and production build passed. Both Dot backend tests passed, including persistence of all five character IDs and rejection of unknown IDs.
+- Mobile CSS uses a three-column picker; mobile browser verification was not performed in this change.
+
+final result: passed

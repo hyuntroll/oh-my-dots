@@ -4,16 +4,14 @@ import json
 import os
 import shutil
 import signal
-import sys
 import tempfile
-from pathlib import Path
 
 from .execution import OutputStream, record_usage
 from .tool_registry import TOOLS
 
 
-async def run_streamed_codex(runtime, run, history):
-    from .providers import Outcome, codex_args, final_answer, instructions_for
+async def run_streamed_codex(runtime, run, history, tools):
+    from .providers import CODEX_TOOL_INSTRUCTIONS, Outcome, codex_args, final_answer, instructions_for
 
     if not shutil.which(runtime.config.codex_bin):
         raise RuntimeError("CODEX_NOT_INSTALLED")
@@ -21,13 +19,14 @@ async def run_streamed_codex(runtime, run, history):
     args = codex_args(runtime.config)
     # Carry over the same disabled host tools as the noninteractive runner.
     overrides = [part for i, value in enumerate(args) if value == "-c" for part in args[i:i + 2]]
-    bridge = str(Path(__file__).with_name("mcp_bridge.py").resolve())
-    dot_server = {
-        "command": sys.executable, "args": [bridge], "required": True,
-        "default_tools_approval_mode": "approve", "tool_timeout_sec": 3600,
-        "env": {"DOT_TOOL_URL": runtime.config.internal_url + "/internal/runs/" + run.id + "/tools",
-                "DOT_RUN_TOKEN": runtime.tool_tokens[run.id]},
-    }
+    # Register the bounded product tools directly, without deferred MCP discovery.
+    dynamic_tools = [{**definition, "type": "function", "deferLoading": False,
+                       "description": definition["description"] +
+                       " Returns a JSON string; parse with JSON.parse. If image_url is present, "
+                       "emit it with image(result.image_url) in functions.exec; do not print base64."}
+                     for definition in TOOLS]
+    tool_names = {definition["name"] for definition in TOOLS}
+    thread_id = None
     with tempfile.TemporaryDirectory(prefix="ohmydot-stream-") as cwd:
         proc = await asyncio.create_subprocess_exec(
             runtime.config.codex_bin, "app-server", "--listen", "stdio://", *overrides,
@@ -63,9 +62,20 @@ async def run_streamed_codex(runtime, run, history):
         async def notification(event):
             nonlocal answer, usage_input, usage_requests, usage_count_known
             method, params = event.get("method"), event.get("params", {})
-            # Reject any unexpected host tool/approval request; only our MCP tools run.
             if "id" in event and method:
-                await send({"id": event["id"], "error": {"code": -32601, "message": "Unsupported request"}})
+                if (method == "item/tool/call" and params.get("threadId") == thread_id
+                        and params.get("namespace") is None and params.get("tool") in tool_names):
+                    result = dict(await tools.invoke(params["tool"], params.get("arguments", {})))
+                    # Code-mode forwards dynamic-tool content as a string. Return
+                    # structured JSON so its image() helper can emit actual pixels;
+                    # inputImage here would become a raw data URL in model context.
+                    await send({"id": event["id"], "result": {
+                        "success": "error" not in result, "contentItems": [{
+                            "type": "inputText", "text": json.dumps(result, ensure_ascii=False)}]}})
+                else:
+                    # Reject host tools, foreign threads and unexpected approvals.
+                    await send({"id": event["id"], "error": {
+                        "code": -32601, "message": "Unsupported request"}})
                 return
             if method == "item/started" and params.get("item", {}).get("type") == "agentMessage":
                 item = params["item"]
@@ -99,24 +109,23 @@ async def run_streamed_codex(runtime, run, history):
                                              "capabilities": {"experimentalApi": True}})
             await send({"method": "initialized"})
             # app-server has no exec's --ignore-user-config flag. Config tables
-            # merge, so assigning mcp_servers={dot=...} alone keeps host servers.
+            # merge, so assigning mcp_servers={} alone keeps host servers.
             # Read names through the protocol (never log config/auth values), and
             # disable inherited servers only for this ephemeral product thread.
             effective = await request(2, "config/read", {"includeLayers": False, "cwd": cwd})
             inherited = effective["config"].get("mcp_servers", {})
             # The discovery flag alone does not remove the installed skill catalog
             # in all CLI versions. Disable its paths explicitly for this thread;
-            # product skills remain available through our own MCP tools.
+            # product skills remain available through our own tools.
             catalog = await request(3, "skills/list", {"cwds": [cwd], "forceReload": False})
             host_skills = sorted({skill["path"] for entry in catalog["data"] for skill in entry["skills"]})
             thread = await request(4, "thread/start", {
                 "cwd": cwd, "ephemeral": True, "approvalPolicy": "never", "sandbox": "read-only",
                 # Supply the product's full instructions as the base instead of
                 # appending them to the large general-purpose coding-agent prompt.
-                "baseInstructions": instructions_for(run), "developerInstructions": "",
-                "config": {"mcp_servers": {**{name: {"enabled": False}
-                                             for name in inherited if name != "dot"},
-                                           "dot": dot_server},
+                "baseInstructions": instructions_for(run) + "\n" + CODEX_TOOL_INSTRUCTIONS, "developerInstructions": "",
+                "dynamicTools": dynamic_tools,
+                "config": {"mcp_servers": {name: {"enabled": False} for name in inherited},
                            "skills": {"config": [{"path": path, "enabled": False} for path in host_skills]}},
                 **({"model": run.model} if run.model else {}),
             })
@@ -124,16 +133,14 @@ async def run_streamed_codex(runtime, run, history):
             inventory = await request(5, "mcpServerStatus/list", {
                 "threadId": thread_id, "limit": 100, "detail": "toolsAndAuthOnly"})
             servers = inventory["data"]
-            dot = next((row for row in servers if row["name"] == "dot"), {})
             runtime.store.event("run.toolset", "도구 연결 확인", run.id, {
-                "provider": "codex", "tool_count": len(dot.get("tools", {})),
-                "host_tools": sum(len(row.get("tools", {})) for row in servers if row["name"] != "dot"),
-                "tool_names": sorted(tool["name"] for tool in dot.get("tools", {}).values()),
+                "provider": "codex", "transport": "dynamic", "tool_count": len(dynamic_tools),
+                "host_tools": sum(len(row.get("tools", {})) for row in servers),
+                "tool_names": sorted(tool_names),
                 "host_skills_disabled": len(host_skills),
             })
             if (inventory.get("nextCursor") or
-                    any(row.get("tools") for row in servers if row["name"] != "dot") or
-                    {tool["name"] for tool in dot.get("tools", {}).values()} != {tool["name"] for tool in TOOLS}):
+                    any(row.get("tools") for row in servers)):
                 raise RuntimeError("CODEX_TOOLSET_MISMATCH")
             prompt = "\n\n".join(item["role"] + ": " + item["content"] for item in history)
             await request(6, "turn/start", {"threadId": thread_id,

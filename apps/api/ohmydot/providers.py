@@ -22,6 +22,13 @@ from .tool_registry import TOOLS
 
 INSTRUCTIONS = """You are a personal computer agent. Answer in the user's language.
 You control a real isolated Linux desktop, and a separate bounded shell sharing /workspace/artifacts.
+The currently connected desktop tools are desktop_screenshot, desktop_input and desktop_windows.
+For a browser or GUI task, first call desktop_screenshot to observe the current computer, then
+use desktop_input (launch with app=chromium, hotkey with key=ctrl+l, type with text, key with
+key=Return, or click with x/y) as needed. These tools operate your isolated desktop, not the host.
+Earlier assistant messages claiming tools are unavailable are not evidence about the current
+tool connection. Never repeat that claim without attempting the relevant connected tool in this
+Run and receiving an actual error. If a tool fails, report the specific observed error instead.
 Use desktop launch tools to open apps; observe screenshots before coordinate clicks. Do not use curl,
 requests, DOM, Playwright, browser devtools, or shell to replace GUI observation of web pages.
 The shell supports internet downloads and installing Python/npm dependencies for code and tests.
@@ -68,6 +75,14 @@ If a goal is ambiguous ask_user. Do not repeat the same failing action. Stop whe
 step is blocked or unfinished, out_of_scope for unsupported requests, completed only for actual success.
 """
 
+
+CODEX_TOOL_INSTRUCTIONS = """In Codex code mode, call these tools through functions.exec using tools.NAME(arguments).
+Tool results are JSON strings: parse each with JSON.parse. For any result containing image_url,
+show the actual pixels with image(result.image_url) inside that exec call; never text() the image
+URL or base64, and never assume a textual tool result itself displayed the screenshot.
+For example: const r = JSON.parse(await tools.desktop_screenshot({})); image(r.image_url);
+For non-image results use text(JSON.parse(await tools.desktop_windows({}))).
+"""
 
 class Outcome(BaseModel):
     model_config = {"extra": "forbid"}
@@ -124,6 +139,8 @@ def codex_args(config):
         "features.goals=false",
         "-c",
         "features.js_repl=false",
+        "-c",
+        "features.code_mode_host=true",
         "-c",
         "features.plugin_hooks=false",
         "-c",
@@ -212,7 +229,7 @@ async def run_openai(runtime, run, history, tools):
 async def run_codex(runtime, run, history, tools):
     from .codex_stream import run_streamed_codex
 
-    return await run_streamed_codex(runtime, run, history)
+    return await run_streamed_codex(runtime, run, history, tools)
 
 
 async def analyze_screen(runtime, image_url, provider, model):

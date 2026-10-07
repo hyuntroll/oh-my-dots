@@ -1,6 +1,7 @@
 import asyncio
 import json
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 from ohmydot.execution import OutputStream
@@ -86,21 +87,24 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
         elif request.get("method") == "thread/start":
             assert request["params"]["sandbox"] == "read-only"
             assert request["params"]["ephemeral"]
-            from ohmydot.providers import instructions_for
-            assert request["params"]["baseInstructions"] == instructions_for(SimpleNamespace())
+            from ohmydot.providers import CODEX_TOOL_INSTRUCTIONS, instructions_for
+            assert request["params"]["baseInstructions"] == instructions_for(SimpleNamespace()) + "\n" + CODEX_TOOL_INSTRUCTIONS
             assert request["params"]["developerInstructions"] == ""
             assert request["params"]["approvalPolicy"] == "never"
             servers = request["params"]["config"]["mcp_servers"]
             assert set(servers) == {"host-server", "dot"}
             assert servers["host-server"] == {"enabled": False}
-            assert servers["dot"]["required"]
-            assert servers["dot"]["env"]["DOT_TOOL_URL"] == "http://local/internal/runs/run/tools"
+            assert servers["dot"] == {"enabled": False}
+            from ohmydot.tool_registry import TOOLS
+            registered = request["params"]["dynamicTools"]
+            assert [tool["name"] for tool in registered] == [tool["name"] for tool in TOOLS]
+            assert all(not tool["deferLoading"] and tool["type"] == "function" for tool in registered)
+            assert [tool["inputSchema"] for tool in registered] == [tool["inputSchema"] for tool in TOOLS]
             assert request["params"]["config"]["skills"] == {
                 "config": [{"path": "/private/host/SKILL.md", "enabled": False}]}
             feed({"id": request["id"], "result": {"thread": {"id": "thread"}}})
         elif request.get("method") == "mcpServerStatus/list":
-            from ohmydot.tool_registry import TOOLS
-            servers = [{"name": "dot", "tools": {tool["name"]: tool for tool in TOOLS}}]
+            servers = []
             if unexpected_host_tools:
                 servers.append({"name": "host-server", "tools": {"host_shell": {"name": "host_shell"}}})
             feed({"id": request["id"], "result": {"data": servers}})
@@ -108,6 +112,12 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
             assert not unexpected_host_tools  # No model request with inherited host tools.
             assert "outputSchema" in request["params"]
             feed({"id": request["id"], "result": {}})
+            for rpc_id, thread_id, tool in [(101, "foreign", "desktop_screenshot"),
+                                            (102, "thread", "host_shell"),
+                                            (103, "thread", "desktop_screenshot")]:
+                feed({"id": rpc_id, "method": "item/tool/call", "params": {
+                    "threadId": thread_id, "turnId": "turn", "callId": str(rpc_id),
+                    "tool": tool, "arguments": {}}})
             feed({"method": "item/agentMessage/delta", "params": {"itemId": "a", "delta": final[:-8]}})
             feed({"method": "item/completed", "params": {"item": {
                 "type": "agentMessage", "id": "a", "phase": "final_answer", "text": final}}})
@@ -117,6 +127,12 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
                                    "last": {"inputTokens": 6}}}})
             feed({"method": "turn/completed", "params": {"turn": {"status": "completed"}}})
 
+        elif request.get("id") in (101, 102):
+            assert request["error"]["code"] == -32601
+        elif request.get("id") == 103:
+            assert request["result"] == {"success": True, "contentItems": [
+                {"type": "inputText", "text": '{"image_url": "data:image/png;base64,test", "epoch": 2}'}]}
+
     async def drain():
         pass
 
@@ -125,6 +141,7 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
 
     async def spawn(*args, **kwargs):
         assert "app-server" in args and "features.shell_tool=false" in args
+        assert "features.code_mode_host=true" in args
         return proc
 
     proc.stdin = SimpleNamespace(write=write, drain=drain)
@@ -134,13 +151,17 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
     monkeypatch.setattr(codex_stream.os, "killpg", lambda pid, sig: killed.append(pid))
     runtime = SimpleNamespace(config=SimpleNamespace(codex_bin="codex", internal_url="http://local"),
                               store=store, tool_tokens={"run": "private"})
+    tool_result = {"image_url": "data:image/png;base64,test", "epoch": 2}
+    tools = SimpleNamespace(invoke=AsyncMock(return_value=tool_result))
     if unexpected_host_tools:
         with pytest.raises(RuntimeError, match="CODEX_TOOLSET_MISMATCH"):
-            await run_codex(runtime, SimpleNamespace(id="run", model=""), [], None)
+            await run_codex(runtime, SimpleNamespace(id="run", model=""), [], tools)
         assert killed == [proc.pid]
         return
-    result = await run_codex(runtime, SimpleNamespace(id="run", model=""), [], None)
+    result = await run_codex(runtime, SimpleNamespace(id="run", model=""), [], tools)
     assert result == "hello world"
+    tools.invoke.assert_awaited_once_with("desktop_screenshot", {})
+    assert tool_result["image_url"] == "data:image/png;base64,test"
     assert next(e for e in store.events if e["type"] == "message.updated")["payload"]["text"] != result
     assert store.events[-1]["payload"]["cached_input_tokens"] == 2
     assert store.events[-1]["payload"]["model_requests"] == 2

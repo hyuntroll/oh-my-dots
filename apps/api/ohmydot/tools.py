@@ -29,6 +29,8 @@ class Tools:
             raise asyncio.CancelledError()
         descriptions = {
             "skills_list": "작업에 맞는 스킬을 찾고 있어요",
+            "capabilities_resolve": "연결된 앱의 실행 경로를 확인하고 있어요",
+            "integration_read": "연결된 앱에서 자료를 읽고 있어요",
             "skill_read": "작업 절차를 읽고 있어요",
             "desktop_screenshot": "현재 화면을 살펴보고 있어요",
             "desktop_input": "컴퓨터를 조작하고 있어요",
@@ -110,6 +112,10 @@ class Tools:
             self.active_seconds += time.monotonic() - started
 
     async def _invoke(self, name, args):
+        if name == "capabilities_resolve":
+            return self.runtime.integrations.resolve(**args)
+        if name == "integration_read":
+            return await self.runtime.integrations.read(**args)
         if name == "skills_list":
             return {"skills": list_skills()}
         if name == "skill_read":

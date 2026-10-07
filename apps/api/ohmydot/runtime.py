@@ -5,6 +5,7 @@ import time
 
 from sqlalchemy import or_, select
 
+from .integrations import Integrations
 from .providers import TaskFailure, run_codex, run_openai
 from .store import Event, Message, Run
 from .tools import Adapter, Tools
@@ -14,6 +15,7 @@ class Runtime:
     def __init__(self, config, store):
         self.config = config
         self.store = store
+        self.integrations = Integrations(config)
         self.desktop = Adapter(config.computer_url, config.computer_token)
         self.shell = Adapter(config.shell_url, config.shell_token)
         self.queue = asyncio.Queue()

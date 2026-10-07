@@ -430,6 +430,50 @@ def create_app(config=None):
         current = store.get_setting(provider + "_model", config.model if provider == "openai" else "")
         return await model_catalog(provider, current, api_key(config) if provider == "openai" else "")
 
+    @app.get("/api/integrations", dependencies=[Depends(auth)])
+    async def integration_catalog():
+        return {"services": runtime.integrations.catalog()}
+
+    @app.post("/api/integrations/{service}/connect", dependencies=[Depends(auth)])
+    async def integration_connect(service: str, response: Response):
+        from .integrations import IntegrationError
+        try:
+            nonce = secrets.token_urlsafe(32)
+            url = runtime.integrations.start(service, nonce)
+            response.set_cookie("dot_oauth_" + service, nonce, max_age=600, httponly=True,
+                                secure=config.origin.startswith("https://"), samesite="lax",
+                                path="/api/integrations/" + service + "/callback")
+            return {"url": url}
+        except IntegrationError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/api/integrations/{service}/callback")
+    async def integration_callback(service: str, request: Request, state: str = "", code: str = "", error: str = ""):
+        from .integrations import IntegrationError
+        from fastapi.responses import HTMLResponse
+        session = request.cookies.get("dot_oauth_" + service, "")
+        if not session:
+            raise HTTPException(401, "로그인한 브라우저에서 연결을 다시 시작해 주세요.")
+        try:
+            # Cross-site OAuth navigation is validated by a single-use, session-bound state.
+            if error or not code:
+                raise IntegrationError("연결이 취소되었습니다. 설정에서 다시 시도해 주세요.")
+            await runtime.integrations.finish(service, state, code, session)
+        except IntegrationError as exc:
+            raise HTTPException(400, str(exc))
+        response = HTMLResponse('<!doctype html><html lang="ko"><meta charset="utf-8"><title>앱 연결 완료</title><h1>앱이 연결되었습니다</h1><p>설정으로 돌아가 연결된 기능을 확인하세요.</p><a href="/">OhMyDots로 돌아가기</a></html>', headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+        response.delete_cookie("dot_oauth_" + service, path="/api/integrations/" + service + "/callback")
+        return response
+
+    @app.delete("/api/integrations/{service}", dependencies=[Depends(auth)])
+    async def integration_disconnect(service: str):
+        from .integrations import IntegrationError
+        try:
+            await runtime.integrations.disconnect(service)
+            return {"disconnected": True}
+        except IntegrationError as exc:
+            raise HTTPException(422, str(exc))
+
     @app.post("/api/connections/{service}/open", dependencies=[Depends(auth)])
     async def open_connection(service: str):
         if service not in {"gmail", "calendar", "drive", "slack"}:
@@ -573,6 +617,13 @@ def create_app(config=None):
         from urllib.parse import quote
 
         try:
+            if path.lower().endswith('.docx'):
+                from .document_preview import docx_preview
+                content = await runtime.shell.get('/artifact-download/' + quote(path, safe='/'), raw=True)
+                try:
+                    return {"path": path, **docx_preview(content)}
+                except ValueError as exc:
+                    raise HTTPException(415, str(exc))
             return await runtime.shell.get("/artifacts/" + quote(path, safe="/"))
         except httpx.HTTPStatusError as exc:
             detail = {

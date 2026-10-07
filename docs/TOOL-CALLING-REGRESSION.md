@@ -19,3 +19,14 @@ The app-server schema was generated from the installed codex-cli 0.159.3. The up
 - Real localhost:3080 retry on the same Dot and failed conversation called desktop_screenshot, desktop_windows and desktop_input instead of claiming unavailable tools.
 - After image emission correction, the real model completed a screenshot-only task and accurately described Chromium showing Google’s unusual-traffic/reCAPTCHA page. No CAPTCHA was solved and no game completion is claimed.
 - Evidence: .local/qa/tool-calling-fixed.png (local screenshot, not committed). Live visual test used gpt-6-luna; other Codex models were not individually tested.
+
+## Follow-up regression and correction
+
+The screenshot-only verification above was insufficient. The next short message, “돌아가서 다시 해봐”, again returned an unavailable-desktop-tools refusal with zero tool calls (run b394c75d-4ad6-4e20-85be-084cc46b2d77), despite the correct dynamic inventory.
+
+Conversation history was flattened into a single user message, including earlier assistant refusals. Inject prior messages with their original user/assistant roles using the installed app-server's experimental thread/inject_items API, and send only the latest request as the new turn. If a failed answer claims tools are unavailable without invoking any, call the actual Dot screenshot tool through the existing budget/validation boundary and provide its result for one bounded corrective turn. Preserve actual failures; the correction does not manufacture success.
+
+- 78 Python tests passed; Ruff and git diff --check passed. Protocol tests cover role-preserving history and the bounded correction with a real image input, in addition to existing dispatch boundaries.
+- Real same-conversation follow-up on gpt-6-luna (run 88caf0fe-66a6-4c7e-9ce8-d8cce583c415) completed five desktop_screenshot and six desktop_input calls. No corrective turn was needed in this live run.
+- The visible desktop showed Google search and an opened Minesweeper board with revealed squares. The model ended with TASK_NOT_COMPLETED because it did not solve the board, accurately reporting the game remained in progress. Tool availability is verified; game completion is not.
+- Evidence: .local/qa/tool-followup-fixed.png (local screenshot, not committed). The experimental history API was verified against installed codex-cli 0.159.3; future CLI compatibility remains a dependency.

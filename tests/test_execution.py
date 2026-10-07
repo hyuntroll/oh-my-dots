@@ -62,7 +62,8 @@ def test_replay_and_usage_use_latest_report_per_run(tmp_path):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("unexpected_host_tools", [False, True])
-async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpected_host_tools):
+@pytest.mark.parametrize("unavailable_first", [False, True])
+async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpected_host_tools, unavailable_first):
     from ohmydot import codex_stream
     store = Events()
     reader = asyncio.StreamReader()
@@ -108,10 +109,27 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
             if unexpected_host_tools:
                 servers.append({"name": "host-server", "tools": {"host_shell": {"name": "host_shell"}}})
             feed({"id": request["id"], "result": {"data": servers}})
+        elif request.get("method") == "thread/inject_items":
+            assert request["params"]["items"] == [
+                {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "play game"}]},
+                {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "tools unavailable"}]}]
+            feed({"id": request["id"], "result": {}})
         elif request.get("method") == "turn/start":
             assert not unexpected_host_tools  # No model request with inherited host tools.
             assert "outputSchema" in request["params"]
+            if request["id"] == 6:
+                assert request["params"]["input"] == [{"type": "text", "text": "try again"}]
+            else:
+                assert unavailable_first and request["id"] == 8
+                assert request["params"]["input"][1] == {"type": "image", "url": "data:image/png;base64,test"}
+                assert "base64" not in request["params"]["input"][0]["text"]
             feed({"id": request["id"], "result": {}})
+            if unavailable_first and request["id"] == 6:
+                feed({"method": "item/completed", "params": {"item": {
+                    "type": "agentMessage", "id": "refusal", "phase": "final_answer",
+                    "text": '{"status":"failed","message":"desktop tools unavailable"}'}}})
+                feed({"method": "turn/completed", "params": {"turn": {"status": "completed"}}})
+                return
             for rpc_id, thread_id, tool in [(101, "foreign", "desktop_screenshot"),
                                             (102, "thread", "host_shell"),
                                             (103, "thread", "desktop_screenshot")]:
@@ -153,14 +171,20 @@ async def test_codex_streams_before_completion_and_cleans_up(monkeypatch, unexpe
                               store=store, tool_tokens={"run": "private"})
     tool_result = {"image_url": "data:image/png;base64,test", "epoch": 2}
     tools = SimpleNamespace(invoke=AsyncMock(return_value=tool_result))
+    history = [{"role": "user", "content": "play game"},
+               {"role": "assistant", "content": "tools unavailable"},
+               {"role": "user", "content": "try again"}]
     if unexpected_host_tools:
         with pytest.raises(RuntimeError, match="CODEX_TOOLSET_MISMATCH"):
-            await run_codex(runtime, SimpleNamespace(id="run", model=""), [], tools)
+            await run_codex(runtime, SimpleNamespace(id="run", model=""), history, tools)
         assert killed == [proc.pid]
         return
-    result = await run_codex(runtime, SimpleNamespace(id="run", model=""), [], tools)
+    result = await run_codex(runtime, SimpleNamespace(id="run", model=""), history, tools)
     assert result == "hello world"
-    tools.invoke.assert_awaited_once_with("desktop_screenshot", {})
+    assert tools.invoke.await_count == (2 if unavailable_first else 1)
+    assert all(call.args == ("desktop_screenshot", {}) for call in tools.invoke.await_args_list)
+    rechecks = [event for event in store.events if event["type"] == "run.tool_recheck"]
+    assert len(rechecks) == int(unavailable_first)
     assert tool_result["image_url"] == "data:image/png;base64,test"
     assert next(e for e in store.events if e["type"] == "message.updated")["payload"]["text"] != result
     assert store.events[-1]["payload"]["cached_input_tokens"] == 2

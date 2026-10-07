@@ -9,16 +9,16 @@ import ModelPicker from './ModelPicker';
 import Connections from './Connections';
 
 const sections = [
-  { id: 'accounts', label: 'AI 연결', icon: KeyRound, group: 'AI', description: 'Codex 로그인 OpenAI API 키 계정 인증' },
-  { id: 'agent', label: '에이전트', icon: Bot, group: 'AI', description: '모델 기본 제공자 실행' },
-  { id: 'skills', label: '스킬', icon: BookOpen, group: 'AI', description: '작업 절차 설명서 내장 검증 skills' },
-  { id: 'usage', label: '사용량', icon: ChartNoAxesCombined, group: 'AI', description: '입력 출력 캐시 토큰 작업' },
-  { id: 'connections', label: '앱', icon: Blocks, group: '환경', description: '연결 Gmail 이메일 Google Calendar Drive Slack 캘린더 슬랙' },
-  { id: 'general', label: '일반', icon: SlidersHorizontal, group: '환경', description: '전송 Enter 키 애니메이션 모션 시작 화면' },
-  { id: 'computer', label: '컴퓨터', icon: Monitor, group: '환경', description: '연결 해상도 제어권 원격 데스크톱' },
+  { id: 'general', label: '일반', icon: SlidersHorizontal, group: '개인', description: '전송 Enter 키 애니메이션 모션 시작 화면' },
+  { id: 'agent', label: '에이전트', icon: Bot, group: '개인', description: '모델 기본 제공자 실행' },
+  { id: 'usage', label: '사용량', icon: ChartNoAxesCombined, group: '개인', description: '입력 출력 캐시 토큰 작업' },
+  { id: 'accounts', label: 'AI 연결', icon: KeyRound, group: '통합', description: 'Codex 로그인 OpenAI API 키 계정 인증' },
+  { id: 'connections', label: '플러그인', icon: Blocks, group: '통합', description: '연결 Gmail 이메일 Google Calendar Drive Slack 캘린더 슬랙 앱 plugin' },
+  { id: 'skills', label: '스킬', icon: BookOpen, group: '통합', description: '작업 절차 설명서 내장 검증 skills' },
+  { id: 'computer', label: '컴퓨터 사용', icon: Monitor, group: '통합', description: '연결 해상도 제어권 원격 데스크톱' },
 ];
-export default function Settings({ onClose, onSaved, onOpenComputer }: { onClose: () => void; onSaved: () => void; onOpenComputer: (state: Computer) => void }) {
-  const [section, setSection] = useState('accounts');
+export default function Settings({ onClose, onSaved, onOpenComputer, onCompose }: { onClose: () => void; onSaved: () => void; onOpenComputer: (state: Computer) => void; onCompose: (prompt: string) => void }) {
+  const [section, setSection] = useState('general');
   const [query, setQuery] = useState('');
   const [settings, setSettings] = useState<AuthSettings | null>(null);
   const [provider, setProvider] = useState<'codex' | 'openai'>('codex');
@@ -67,10 +67,10 @@ export default function Settings({ onClose, onSaved, onOpenComputer }: { onClose
   const dirty = !!settings && (provider !== settings.provider || model !== settings.model || !!key);
   const aiSection = active?.id === 'accounts' || active?.id === 'agent';
   return <dialog ref={dialog} className="settings-workspace" aria-label="OhMyDots 설정" onCancel={e => { e.preventDefault(); onClose(); }} onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') { e.preventDefault(); search.current?.focus(); } }}>
-    <aside className="settings-sidebar">
+    <aside className="settings-sidebar"><h2 className="settings-sidebar-title">설정</h2>
       <button className="settings-back" onClick={onClose}><ArrowLeft size={18} />대화로 돌아가기</button>
       <label className="settings-search"><Search size={16} /><input ref={search} aria-label="설정 검색" placeholder="설정 검색" value={query} onChange={e => setQuery(e.target.value)} /><kbd>⌘ F</kbd></label>
-      <nav aria-label="설정 메뉴">{['AI', '환경'].map(group => <div className="settings-nav-group" key={group}>{matches.some(s => s.group === group) && <small>{group === 'AI' ? 'AI 기능' : '작업 환경'}</small>}{matches.filter(s => s.group === group).map(s => <button key={s.id} aria-current={active?.id === s.id ? 'page' : undefined} onClick={() => { setSection(s.id); setSaved(''); }}><s.icon size={17} />{s.label}</button>)}</div>)}</nav>
+      <nav aria-label="설정 메뉴">{['개인', '통합'].map(group => <div className="settings-nav-group" key={group}>{matches.some(s => s.group === group) && <small>{group}</small>}{matches.filter(s => s.group === group).map(s => <button key={s.id} aria-current={active?.id === s.id ? 'page' : undefined} onClick={() => { setSection(s.id); setSaved(''); }}><s.icon size={17} />{s.label}</button>)}</div>)}</nav>
       <div className="settings-brand"><img src="/dot-pet.png" alt="" /><span>OhMyDots<small>v0.0.1 · 나의 컴퓨터 에이전트</small></span></div>
     </aside>
     <main className="settings-main"><div className="settings-content">
@@ -86,7 +86,7 @@ export default function Settings({ onClose, onSaved, onOpenComputer }: { onClose
           <button className={'provider-select ' + (provider === p ? 'selected' : '')} aria-pressed={provider === p} onClick={() => changeProvider(p)}>{provider === p ? <Check size={15} /> : <span className="provider-radio" />}{provider === p ? '기본 제공자로 선택됨' : '기본 제공자로 선택'}</button>
         </section>)}</div>}
         {active.id === 'accounts' && <section className="settings-card"><h2>기본 모델</h2><ModelPicker provider={provider} configured={!!settings?.openai_configured} value={model} onChange={value => { setModel(value); setSaved(''); }} /></section>}
-        {active.id === 'connections' && <Connections onOpenComputer={onOpenComputer} />}
+        {active.id === 'connections' && <Connections onOpenComputer={onOpenComputer} onCompose={onCompose} />}
         {active.id === 'agent' && <section className="settings-card"><h2>기본 실행 설정</h2><label className="settings-field">AI 제공자<select value={provider} onChange={e => changeProvider(e.target.value as 'codex' | 'openai')}><option value="codex">Codex</option><option value="openai">OpenAI API</option></select></label><ModelPicker provider={provider} configured={!!settings?.openai_configured} value={model} onChange={value => { setModel(value); setSaved(''); }} /><p className="settings-help">다음 작업부터 적용됩니다. 실행 중인 작업이 있다면 완료하거나 취소한 뒤 저장해 주세요.</p><div className="settings-rule"><CircleCheck size={17} /><span>한 번에 한 작업씩 실행하며 추가 요청은 순서대로 이어갑니다.</span></div></section>}
         {active.id === 'skills' && <SkillsCatalog />}
         {active.id === 'general' && <section className="settings-card"><h2>대화와 화면</h2><div className="preference-row"><div><strong>메시지 전송 키</strong><p>Shift + Enter는 항상 줄을 바꿉니다.</p></div><select aria-label="메시지 전송 키" value={preferences.sendWith} onChange={e => preference({ sendWith: e.target.value as Preferences['sendWith'] })}><option value="enter">Enter</option><option value="modifier-enter">⌘ / Ctrl + Enter</option></select></div>{([{ field: 'showComputer', label: '시작 시 컴퓨터 표시', description: '다음에 앱을 열 때 컴퓨터 패널을 함께 표시합니다.' }, { field: 'reduceMotion', label: '애니메이션 줄이기', description: '대화 화면의 전환과 움직임을 줄입니다.' }] as const).map(row => <div className="preference-row" key={row.field}><div><strong>{row.label}</strong><p>{row.description}</p></div><button className="preference-switch" role="switch" aria-label={row.label} aria-checked={preferences[row.field]} onClick={() => preference({ [row.field]: !preferences[row.field] })}><span /></button></div>)}<p className="settings-help">이 설정은 현재 브라우저에 자동으로 저장됩니다.</p></section>}

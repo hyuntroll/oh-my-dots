@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from .config import Config
+from .model_catalog import model_catalog
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
 from .skills import list_skills, read_skill
@@ -422,6 +423,28 @@ def create_app(config=None):
             raise HTTPException(404, "Unknown tool")
         return await runtime.tools[run_id].invoke(name, await request.json())
 
+    @app.get("/api/settings/models", dependencies=[Depends(auth)])
+    async def models(provider: str):
+        if provider not in {"codex", "openai"}:
+            raise HTTPException(422, "Unknown provider")
+        current = store.get_setting(provider + "_model", config.model if provider == "openai" else "")
+        return await model_catalog(provider, current, api_key(config) if provider == "openai" else "")
+
+    @app.post("/api/connections/{service}/open", dependencies=[Depends(auth)])
+    async def open_connection(service: str):
+        if service not in {"gmail", "calendar", "drive", "slack"}:
+            raise HTTPException(404, "Unknown service")
+        try:
+            async with handoff_lock:
+                state = await runtime.desktop.post("/control/takeover")
+                runtime.control_returned.clear()
+                save_control(state)
+                await runtime.desktop.post("/input", {"actor": "USER", "epoch": state["epoch"],
+                                                     "action": "launch", "app": "chromium", "service": service})
+                return state
+        except httpx.HTTPError:
+            raise HTTPException(503, "컴퓨터 연결을 확인하고 다시 시도해 주세요.")
+
     @app.get("/api/settings", dependencies=[Depends(auth)])
     async def settings():
         connected = False
@@ -528,6 +551,22 @@ def create_app(config=None):
             return await runtime.shell.get("/artifacts")
         except httpx.HTTPError:
             raise HTTPException(503, "Artifact storage is unavailable")
+
+    @app.get("/api/artifact-download/{path:path}", dependencies=[Depends(auth)])
+    async def download_artifact(path: str, download: bool = False):
+        import mimetypes
+        from urllib.parse import quote
+        try:
+            content = await runtime.shell.get("/artifact-download/" + quote(path, safe="/"), raw=True)
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(exc.response.status_code, "파일을 열 수 없습니다.")
+        except httpx.HTTPError:
+            raise HTTPException(503, "Artifact storage is unavailable")
+        kind = mimetypes.guess_type(path)[0] or "application/octet-stream"
+        inline = not download and kind in {"image/png", "image/jpeg", "image/gif", "image/webp", "application/pdf"}
+        return Response(content, media_type=kind if inline else "application/octet-stream", headers={
+            "Content-Disposition": ("inline" if inline else "attachment") + "; filename*=UTF-8''" + quote(Path(path).name, safe=""),
+            "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "sandbox", "Cache-Control": "no-store"})
 
     @app.get("/api/artifacts/{path:path}", dependencies=[Depends(auth)])
     async def artifact(path: str):

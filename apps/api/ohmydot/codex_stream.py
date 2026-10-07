@@ -13,7 +13,7 @@ from .tool_registry import TOOLS
 
 
 async def run_streamed_codex(runtime, run, history):
-    from .providers import instructions_for, Outcome, codex_args, final_answer
+    from .providers import Outcome, codex_args, final_answer, instructions_for
 
     if not shutil.which(runtime.config.codex_bin):
         raise RuntimeError("CODEX_NOT_INSTALLED")

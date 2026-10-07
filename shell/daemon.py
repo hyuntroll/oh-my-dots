@@ -7,6 +7,7 @@ import signal
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 TOKEN = os.environ.get("SHELL_TOKEN", "")
@@ -140,7 +141,7 @@ async def list_artifacts():
     return [
         {"path": str(p.relative_to(root)), "size": p.stat().st_size}
         for p in root.rglob("*")
-        if p.is_file() and not p.is_symlink()
+        if p.is_file() and not p.is_symlink() and p.resolve().is_relative_to(root.resolve())
     ][:200]
 
 
@@ -157,3 +158,14 @@ async def read_artifact(path: str):
     except UnicodeDecodeError:
         raise HTTPException(415, "UTF-8 text preview only")
     return {"path": path, "text": text, "verified": True}
+
+
+@app.get("/artifact-download/{path:path}")
+async def download_artifact(path: str):
+    root = (ROOT / "artifacts").resolve()
+    target = (root / path).resolve()
+    if not target.is_relative_to(root) or not target.is_file():
+        raise HTTPException(404, "Artifact not found")
+    if target.stat().st_size > 20 * 1024 * 1024:
+        raise HTTPException(413, "Artifact exceeds download limit")
+    return FileResponse(target, media_type="application/octet-stream")

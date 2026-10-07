@@ -83,6 +83,33 @@ async def test_failed_analysis_keeps_user_control(desktop, monkeypatch):
     assert gate.owner == "USER" and not gate.handoff
 
 
+async def test_service_launcher_uses_fixed_urls_and_respects_control(desktop, monkeypatch):
+    calls = []
+
+    async def spawn(*args, **kwargs):
+        calls.append(args)
+
+    monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
+    monkeypatch.setattr(desktop, 'command', lambda *args: asyncio.sleep(0, result=''))
+    gate = desktop.Gate()
+    with pytest.raises(HTTPException):
+        await gate.apply(desktop.Input(actor='USER', epoch=gate.epoch, action='launch',
+                                       app='chromium', service='gmail'))
+    assert not calls
+    await gate.takeover()
+    for service, url in [('gmail', 'https://mail.google.com/'),
+                         ('calendar', 'https://calendar.google.com/'),
+                         ('drive', 'https://drive.google.com/'),
+                         ('slack', 'https://slack.com/signin')]:
+        await gate.apply(desktop.Input(actor='USER', epoch=gate.epoch, action='launch',
+                                       app='chromium', service=service))
+        assert calls[-1] == ('dot-browser', url)
+    with pytest.raises(HTTPException) as error:
+        await gate.apply(desktop.Input(actor='USER', epoch=gate.epoch, action='launch',
+                                       app='terminal', service='gmail'))
+    assert error.value.status_code == 422 and len(calls) == 4
+
+
 async def test_agent_action_is_discarded_after_return(monkeypatch):
     from types import SimpleNamespace
 

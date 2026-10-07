@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+
 from computer.appearance import Appearance, write_appearance
 
 

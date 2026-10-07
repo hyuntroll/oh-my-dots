@@ -8,8 +8,9 @@ import re
 import secrets
 import time
 from contextlib import asynccontextmanager
-from typing import Literal
 from pathlib import Path
+from typing import Literal
+
 try:
     from .appearance import Appearance, write_appearance
 except ImportError:
@@ -84,6 +85,7 @@ class Input(BaseModel):
     text: str = Field("", max_length=4000)
     key: str = Field("", max_length=80)
     app: Literal["chromium", "terminal", "files"] = "chromium"
+    service: Literal["gmail", "calendar", "drive", "slack"] | None = None
     window_id: str = ""
 
 
@@ -204,6 +206,12 @@ class Gate:
                     "terminal": ["xfce4-terminal"],
                     "files": ["thunar", "/workspace/artifacts"],
                 }
+                if body.service:
+                    if body.app != "chromium":
+                        raise HTTPException(422, "Services require Chromium")
+                    urls = {"gmail": "https://mail.google.com/", "calendar": "https://calendar.google.com/",
+                            "drive": "https://drive.google.com/", "slack": "https://slack.com/signin"}
+                    apps["chromium"].append(urls[body.service])
                 await asyncio.create_subprocess_exec(
                     *apps[body.app],
                     stdout=asyncio.subprocess.DEVNULL,

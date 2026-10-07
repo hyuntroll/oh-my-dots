@@ -77,3 +77,30 @@ async def test_created_artifacts_remain_group_writable(shell):
     assert result['exit_code'] == 0
     assert (shell.ROOT / 'artifacts/shared').stat().st_mode & 0o020
     assert (shell.ROOT / 'artifacts/shared/file.txt').stat().st_mode & 0o020
+
+
+async def test_binary_download_requires_auth_and_preserves_bytes(shell):
+    import httpx
+
+    content = b'\x89PNG\r\n\x00binary'
+    (shell.ROOT / 'artifacts/이미지.png').write_bytes(content)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=shell.app), base_url='http://test') as client:
+        path = '/artifact-download/이미지.png'
+        assert (await client.get(path)).status_code == 401
+        response = await client.get(path, headers={'Authorization': 'Bearer test-shell'})
+    assert response.status_code == 200 and response.content == content
+
+
+async def test_download_rejects_escape_symlink_and_oversized_files(shell):
+    (shell.ROOT / 'outside.txt').write_text('private')
+    (shell.ROOT / 'artifacts/link.txt').symlink_to(shell.ROOT / 'outside.txt')
+    for path in ('../outside.txt', 'link.txt'):
+        with pytest.raises(HTTPException) as error:
+            await shell.download_artifact(path)
+        assert error.value.status_code == 404
+    assert not await shell.list_artifacts()
+    with (shell.ROOT / 'artifacts/large.bin').open('wb') as stream:
+        stream.truncate(20 * 1024 * 1024 + 1)
+    with pytest.raises(HTTPException) as error:
+        await shell.download_artifact('large.bin')
+    assert error.value.status_code == 413

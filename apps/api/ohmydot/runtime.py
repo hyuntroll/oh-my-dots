@@ -30,8 +30,8 @@ class Runtime:
         self.waiting = set()
         self.pump = None
 
-    async def start(self):
-        recovered = self.store.recover()
+    async def start(self, recover=True):
+        recovered = self.store.recover() if recover else []
         for run_id in recovered:
             try:
                 await self.shell.post("/cancel/" + run_id)

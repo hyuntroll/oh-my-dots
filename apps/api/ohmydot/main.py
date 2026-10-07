@@ -16,11 +16,24 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from .config import Config
+from .dots import COLORS, DotComputers
 from .model_catalog import model_catalog
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
 from .skills import list_skills, read_skill
-from .store import ComputerSession, Conversation, Event, Message, Run, Setting, Store, Task, serialize
+from .store import (
+    ComputerSession,
+    Conversation,
+    Dot,
+    Event,
+    Message,
+    Run,
+    Setting,
+    Store,
+    Task,
+    serialize,
+    uid,
+)
 from .tool_registry import TOOLS
 
 
@@ -28,6 +41,16 @@ class Submit(BaseModel):
     dot_name: str = Field(default="OhMyDots", min_length=1, max_length=32)
     text: str = Field(min_length=1, max_length=16000)
     idempotency_key: str = Field(min_length=1, max_length=100)
+
+
+class DotAppearance(BaseModel):
+    name: str = Field(min_length=1, max_length=32)
+    color: str = "silver"
+    avatar: str = "pet"
+
+
+class NewConversation(BaseModel):
+    dot_id: str = "dot-1"
 
 
 class Answer(BaseModel):
@@ -45,6 +68,8 @@ def create_app(config=None):
     config = config or Config()
     store = Store(config.database_url)
     runtime = Runtime(config, store)
+    dots = DotComputers(config, store, runtime)
+    creation_lock = asyncio.Lock()
     submit_lock = asyncio.Lock()
     handoff_lock = asyncio.Lock()
     login_state = {"state": "idle"}
@@ -52,15 +77,16 @@ def create_app(config=None):
 
     @asynccontextmanager
     async def lifespan(app):
-        await runtime.start()
+        await dots.start()
         yield
-        await runtime.stop()
+        await dots.stop()
         if login_task:
             login_task.cancel()
 
     app = FastAPI(title="OhMyDots API", lifespan=lifespan)
     app.state.runtime = runtime
     app.state.store = store
+    app.state.dots = dots
 
     def allowed_origin(headers):
         origin = headers.get("origin")
@@ -72,22 +98,82 @@ def create_app(config=None):
             raise HTTPException(401, "Unauthorized")
 
     async def private_auth(request: Request, run_id: str):
-        expected = runtime.tool_tokens.get(run_id)
+        run_runtime = next((rt for rt in dots.runtimes.values() if run_id in rt.tool_tokens), None)
+        expected = run_runtime.tool_tokens.get(run_id) if run_runtime else None
         if not expected or not secrets.compare_digest(
             request.headers.get("authorization", ""), "Bearer " + expected
         ):
             raise HTTPException(401, "Unauthorized")
+        request.state.run_runtime = run_runtime
 
-    def check_session(session_id):
-        if session_id != "computer-1":
-            raise HTTPException(404, "Computer session not found")
+    async def check_dot(dot_id):
+        try:
+            return await dots.get(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
 
-    def save_control(state):
+    async def check_session(session_id):
         with store.session() as db:
-            row = db.get(ComputerSession, "computer-1")
+            row = db.get(ComputerSession, session_id)
+            if not row:
+                raise HTTPException(404, "Computer session not found")
+            dot_id = row.dot_id
+        return await check_dot(dot_id)
+
+    def save_control(state, session_id="computer-1"):
+        with store.session() as db:
+            row = db.get(ComputerSession, session_id)
             row.control_owner, row.epoch = state["owner"], state["epoch"]
             db.commit()
-        store.event("control.changed", "제어권: " + state["owner"], payload=state)
+        store.event("control.changed", "제어권: " + state["owner"], payload={**state, "session_id": session_id})
+
+    @app.get("/api/dots", dependencies=[Depends(auth)])
+    async def dot_list():
+        return dots.listing()
+
+    @app.post("/api/dots", dependencies=[Depends(auth)])
+    async def create_dot(body: DotAppearance):
+        if body.color not in COLORS or body.avatar not in {"ring", "pet"} or not body.name.strip():
+            raise HTTPException(422, "Invalid dot appearance")
+        async with creation_lock:
+            if len(dots.listing()) >= 8:
+                raise HTTPException(409, "현재 서버에서는 Dot을 최대 8개까지 만들 수 있습니다.")
+            dot_id = "dot-" + uid()
+            try:
+                endpoints = await dots.provision(dot_id)
+            except ValueError as exc:
+                raise HTTPException(503, str(exc))
+            with store.session() as db:
+                dot = Dot(id=dot_id, name=body.name.strip())
+                db.add(dot)
+                db.flush()
+                db.add(ComputerSession(id="computer-" + dot_id, dot_id=dot_id))
+                db.add(Setting(key="dot-profile:" + dot_id, value=json.dumps(body.model_dump())))
+                db.add(Setting(key="dot-computer:" + dot_id, value=json.dumps(endpoints)))
+                db.commit()
+            await dots.get(dot_id)
+            return dots.profile(dot)
+
+    @app.put("/api/dots/{dot_id}", dependencies=[Depends(auth)])
+    async def update_dot(dot_id: str, body: DotAppearance):
+        if body.color not in COLORS or body.avatar not in {"ring", "pet"} or not body.name.strip():
+            raise HTTPException(422, "Invalid dot appearance")
+        rt = await check_dot(dot_id)
+        with store.session() as db:
+            dot = db.get(Dot, dot_id)
+            dot.name = body.name.strip()
+            key = "dot-profile:" + dot_id
+            setting = db.get(Setting, key)
+            if setting:
+                setting.value = json.dumps(body.model_dump())
+            else:
+                db.add(Setting(key=key, value=json.dumps(body.model_dump())))
+            db.commit()
+        try:
+            await rt.desktop.post("/appearance", {"accent": COLORS[body.color], "name": body.name.strip()})
+        except httpx.HTTPError:
+            pass  # Saved appearance is reapplied when the computer reconnects.
+        return dots.profile(dot)
 
     @app.get("/api/skills", dependencies=[Depends(auth)])
     async def skill_catalog():
@@ -126,17 +212,19 @@ def create_app(config=None):
         return response
 
     @app.get("/api/conversations", dependencies=[Depends(auth)])
-    async def conversations():
+    async def conversations(dot_id: str = "dot-1"):
+        await check_dot(dot_id)
         with store.session() as db:
             return [
                 serialize(c)
-                for c in db.scalars(select(Conversation).order_by(Conversation.created_at.desc()))
+                for c in db.scalars(select(Conversation).where(Conversation.dot_id == dot_id).order_by(Conversation.created_at.desc()))
             ]
 
     @app.post("/api/conversations", dependencies=[Depends(auth)])
-    async def create_conversation():
+    async def create_conversation(body: NewConversation = NewConversation()):
+        await check_dot(body.dot_id)
         with store.session() as db:
-            row = Conversation()
+            row = Conversation(dot_id=body.dot_id)
             db.add(row)
             db.commit()
             return serialize(row)
@@ -184,7 +272,7 @@ def create_app(config=None):
                     return serialize(existing)
                 provider = store.get_setting("provider", config.provider)
                 model = store.get_setting(provider + "_model", config.model if provider == "openai" else "")
-                task = Task(conversation_id=conversation_id, prompt=body.text)
+                task = Task(dot_id=conversation.dot_id, conversation_id=conversation_id, prompt=body.text)
                 db.add(task)
                 db.flush()
                 run = Run(
@@ -206,11 +294,18 @@ def create_app(config=None):
                     raise HTTPException(409, "Duplicate submission")
                 result = serialize(run)
             store.event("run.queued", "작업 대기 중", run.id, {"dot_name": body.dot_name.strip() or "OhMyDots"})
-            await runtime.queue.put(run.id)
+            await (await dots.for_run(run.id)).queue.put(run.id)
             return result
+
+    async def runtime_for_run(run_id):
+        try:
+            return await dots.for_run(run_id)
+        except ValueError:
+            raise HTTPException(404, "Run not found")
 
     @app.post("/api/runs/{run_id}/cancel", dependencies=[Depends(auth)])
     async def cancel(run_id: str):
+        runtime = await runtime_for_run(run_id)
         with store.session() as db:
             row = db.get(Run, run_id)
             if not row:
@@ -226,6 +321,7 @@ def create_app(config=None):
 
     @app.post("/api/runs/{run_id}/answer", dependencies=[Depends(auth)])
     async def answer(run_id: str, body: Answer):
+        runtime = await runtime_for_run(run_id)
         future = runtime.answers.get(run_id)
         if not future or future.done() or runtime.question_ids.get(run_id) != body.question_id:
             raise HTTPException(409, "Run is not waiting for an answer")
@@ -285,7 +381,7 @@ def create_app(config=None):
 
     @app.get("/api/computer-sessions/{session_id}", dependencies=[Depends(auth)])
     async def computer(session_id: str):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         try:
             state = await runtime.desktop.get("/health")
             return {**state, "id": session_id, "connected": True}
@@ -294,7 +390,7 @@ def create_app(config=None):
 
     @app.post("/api/computer-sessions/{session_id}/appearance", dependencies=[Depends(auth)])
     async def appearance(session_id: str, request: Request):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         body = await request.json()
         if not isinstance(body, dict) or not isinstance(body.get("accent"), str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", body["accent"]):
             raise HTTPException(422, "Invalid dot accent")
@@ -308,7 +404,7 @@ def create_app(config=None):
 
     @app.post("/api/computer-sessions/{session_id}/input", dependencies=[Depends(auth)])
     async def input(session_id: str, request: Request):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         body = await request.json()
         if not isinstance(body, dict):
             raise HTTPException(422, "Input must be an object")
@@ -321,7 +417,7 @@ def create_app(config=None):
 
     @app.post("/api/computer-sessions/{session_id}/release", dependencies=[Depends(auth)])
     async def release(session_id: str, request: Request):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         body = await request.json()
         try:
             state = await runtime.desktop.get("/control")
@@ -335,16 +431,16 @@ def create_app(config=None):
 
     @app.post("/api/computer-sessions/{session_id}/takeover", dependencies=[Depends(auth)])
     async def takeover(session_id: str):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         async with handoff_lock:
             state = await runtime.desktop.post("/control/takeover")
             runtime.control_returned.clear()
-            save_control(state)
+            save_control(state, session_id)
             return state
 
     @app.post("/api/computer-sessions/{session_id}/return", dependencies=[Depends(auth)])
     async def return_control(session_id: str):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         async with handoff_lock:
             observation = await runtime.desktop.post("/control/prepare-return")
             image = "data:image/png;base64," + observation["image"]
@@ -355,7 +451,7 @@ def create_app(config=None):
                 # Model receives fresh image before GUI ownership can be restored.
                 state = await runtime.desktop.post("/control/finish-return", {"epoch": observation["epoch"]})
                 store.event("computer.observed", summary, runtime.active_id)
-                save_control(state)
+                save_control(state, session_id)
                 runtime.control_returned.set()
                 return state
             except BaseException:
@@ -363,7 +459,7 @@ def create_app(config=None):
                     state = await runtime.desktop.post(
                         "/control/abort-return", {"epoch": observation["epoch"]}
                     )
-                    save_control(state)
+                    save_control(state, session_id)
                 except httpx.HTTPError:
                     pass
                 raise HTTPException(
@@ -372,7 +468,7 @@ def create_app(config=None):
 
     @app.get("/api/computer-sessions/{session_id}/screen", dependencies=[Depends(auth)])
     async def screen(session_id: str):
-        check_session(session_id)
+        runtime = await check_session(session_id)
         return Response(
             await runtime.desktop.get("/screen", raw=True),
             media_type="image/png",
@@ -382,15 +478,19 @@ def create_app(config=None):
     @app.websocket("/api/computer-sessions/{session_id}/stream")
     async def stream(ws: WebSocket, session_id: str):
         if (
-            session_id != "computer-1"
-            or not secrets.compare_digest(ws.cookies.get("dot_session", ""), config.session_token)
+            not secrets.compare_digest(ws.cookies.get("dot_session", ""), config.session_token)
             or not allowed_origin(ws.headers)
         ):
             await ws.close(1008)
             return
+        try:
+            runtime = await check_session(session_id)
+        except HTTPException:
+            await ws.close(1008)
+            return
         await ws.accept()
         try:
-            async with websockets.connect(config.vnc_url, subprotocols=["binary"], max_size=2**23) as remote:
+            async with websockets.connect(runtime.config.vnc_url, subprotocols=["binary"], max_size=2**23) as remote:
 
                 async def upstream():
                     while True:
@@ -421,7 +521,7 @@ def create_app(config=None):
     async def internal_tool(run_id: str, name: str, request: Request):
         if name not in {t["name"] for t in TOOLS}:
             raise HTTPException(404, "Unknown tool")
-        return await runtime.tools[run_id].invoke(name, await request.json())
+        return await request.state.run_runtime.tools[run_id].invoke(name, await request.json())
 
     @app.get("/api/settings/models", dependencies=[Depends(auth)])
     async def models(provider: str):
@@ -449,8 +549,9 @@ def create_app(config=None):
 
     @app.get("/api/integrations/{service}/callback")
     async def integration_callback(service: str, request: Request, state: str = "", code: str = "", error: str = ""):
-        from .integrations import IntegrationError
         from fastapi.responses import HTMLResponse
+
+        from .integrations import IntegrationError
         session = request.cookies.get("dot_oauth_" + service, "")
         if not session:
             raise HTTPException(401, "로그인한 브라우저에서 연결을 다시 시작해 주세요.")
@@ -475,14 +576,16 @@ def create_app(config=None):
             raise HTTPException(422, str(exc))
 
     @app.post("/api/connections/{service}/open", dependencies=[Depends(auth)])
-    async def open_connection(service: str):
+    async def open_connection(service: str, dot_id: str = "dot-1"):
+        runtime = await check_dot(dot_id)
+        session_id = "computer-1" if dot_id == "dot-1" else "computer-" + dot_id
         if service not in {"gmail", "calendar", "drive", "slack"}:
             raise HTTPException(404, "Unknown service")
         try:
             async with handoff_lock:
                 state = await runtime.desktop.post("/control/takeover")
                 runtime.control_returned.clear()
-                save_control(state)
+                save_control(state, session_id)
                 await runtime.desktop.post("/input", {"actor": "USER", "epoch": state["epoch"],
                                                      "action": "launch", "app": "chromium", "service": service})
                 return state
@@ -520,7 +623,7 @@ def create_app(config=None):
     async def change_settings(body: Settings):
         if body.provider not in ("openai", "codex"):
             raise HTTPException(422, "Invalid provider")
-        if runtime.active_id:
+        if any(rt.active_id for rt in dots.runtimes.values()):
             raise HTTPException(409, "실행 중인 작업을 마치거나 취소한 뒤 설정을 변경하세요.")
         if body.api_key and body.api_key.get_secret_value().strip():
             target = Path(config.data_dir) / "openai-key"
@@ -547,7 +650,7 @@ def create_app(config=None):
     @app.post("/api/settings/codex/login", dependencies=[Depends(auth)])
     async def codex_login():
         nonlocal login_task
-        if runtime.active_id:
+        if any(rt.active_id for rt in dots.runtimes.values()):
             raise HTTPException(409, "작업 종료 후 로그인하세요.")
         if not shutil.which(config.codex_bin):
             raise HTTPException(503, "Codex CLI is not installed")
@@ -590,14 +693,16 @@ def create_app(config=None):
         return login_state
 
     @app.get("/api/artifacts", dependencies=[Depends(auth)])
-    async def artifacts():
+    async def artifacts(dot_id: str = "dot-1"):
+        runtime = await check_dot(dot_id)
         try:
             return await runtime.shell.get("/artifacts")
         except httpx.HTTPError:
             raise HTTPException(503, "Artifact storage is unavailable")
 
     @app.get("/api/artifact-download/{path:path}", dependencies=[Depends(auth)])
-    async def download_artifact(path: str, download: bool = False):
+    async def download_artifact(path: str, download: bool = False, dot_id: str = "dot-1"):
+        runtime = await check_dot(dot_id)
         import mimetypes
         from urllib.parse import quote
         try:
@@ -613,7 +718,8 @@ def create_app(config=None):
             "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "sandbox", "Cache-Control": "no-store"})
 
     @app.get("/api/artifacts/{path:path}", dependencies=[Depends(auth)])
-    async def artifact(path: str):
+    async def artifact(path: str, dot_id: str = "dot-1"):
+        runtime = await check_dot(dot_id)
         from urllib.parse import quote
 
         try:

@@ -5,14 +5,15 @@ import Markdown from 'react-markdown';
 export type FilePreview = { path: string; text?: string; loading?: boolean; error?: string; format?: string; blocks?: { kind: string; text?: string; rows?: string[][] }[]; notice?: string };
 type Artifact = { path: string; size: number };
 function kind(path: string) { return /\.(png|jpe?g|gif|webp)$/i.test(path) ? 'images' : /\.(md|txt|csv|json|pdf|docx|xlsx|pptx|html)$/i.test(path) ? 'documents' : 'other'; }
-function fileUrl(path: string, download = false) { return '/api/artifact-download/' + path.split('/').map(encodeURIComponent).join('/') + '?download=' + download; }
+function artifactUrl(path: string, dotId: string, download = false) { return '/api/artifact-download/' + path.split('/').map(encodeURIComponent).join('/') + '?download=' + download + '&dot_id=' + encodeURIComponent(dotId); }
 function size(bytes: number) { return bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
 function FileIcon({ path }: { path: string }) { return kind(path) === 'images' ? <ImageIcon size={21} /> : <FileText size={21} />; }
-export default function SpacesWorkspace({ files, preview, onFile, onClose, onBack, onCompose }: { files: Artifact[]; preview: FilePreview | null; onFile: (path: string) => void; onClose: () => void; onBack: () => void; onCompose: (prompt: string) => void }) {
+export default function SpacesWorkspace({ dotId = "dot-1", files, preview, onFile, onClose, onBack, onCompose }: { dotId?: string; files: Artifact[]; preview: FilePreview | null; onFile: (path: string) => void; onClose: () => void; onBack: () => void; onCompose: (prompt: string) => void }) {
+  const fileUrl = (path: string, download = false) => artifactUrl(path, dotId, download);
   const [collection, setCollection] = useState('recommended');
   const [favorites, setFavorites] = useState<string[]>([]);
-  useEffect(() => { try { const values = JSON.parse(localStorage.getItem('ohmydots-file-favorites') || '[]'); if (Array.isArray(values)) setFavorites(values.filter((v: unknown) => typeof v === 'string')); } catch {} }, []);
-  const toggleFavorite = (path: string) => { const values = favorites.includes(path) ? favorites.filter(value => value !== path) : [...favorites, path]; try { localStorage.setItem('ohmydots-file-favorites', JSON.stringify(values)); setFavorites(values); } catch {} };
+  useEffect(() => { try { const values = JSON.parse(localStorage.getItem(dotId === 'dot-1' ? 'ohmydots-file-favorites' : 'ohmydots-file-favorites:' + dotId) || '[]'); if (Array.isArray(values)) setFavorites(values.filter((v: unknown) => typeof v === 'string')); } catch {} }, []);
+  const toggleFavorite = (path: string) => { const values = favorites.includes(path) ? favorites.filter(value => value !== path) : [...favorites, path]; try { localStorage.setItem(dotId === 'dot-1' ? 'ohmydots-file-favorites' : 'ohmydots-file-favorites:' + dotId, JSON.stringify(values)); setFavorites(values); } catch {} };
   const [query, setQuery] = useState(''); const [filter, setFilter] = useState('all'); const [grid, setGrid] = useState(false); const [zoom, setZoom] = useState('100'); const [question, setQuestion] = useState(''); const [sidebar, setSidebar] = useState(false);
   useEffect(() => { setQuestion(''); setZoom('100'); }, [preview?.path]);
   const matches = files.filter(file => file.path.toLowerCase().includes(query.toLowerCase()) && (filter === 'all' || (filter === 'sites' ? /\.html$/i.test(file.path) : kind(file.path) === filter)) && (collection !== 'favorites' || favorites.includes(file.path)) && collection !== 'shared');

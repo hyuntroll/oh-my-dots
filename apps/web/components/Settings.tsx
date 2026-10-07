@@ -28,7 +28,7 @@ const sections = [
   { id: 'skills', label: '스킬', icon: BookOpen, group: '통합', description: '작업 절차 설명서 내장 검증 skills' },
   { id: 'computer', label: '컴퓨터 사용', icon: Monitor, group: '통합', description: '연결 해상도 제어권 원격 데스크톱' },
 ];
-export default function Settings({ onClose, onSaved, onOpenComputer, onCompose, profile, onProfile, onFiles, onHome, onActivity }: { onClose: () => void; onSaved: () => void; onOpenComputer: (state: Computer) => void; onCompose: (prompt: string) => void; profile: DotProfile; onProfile: (profile: DotProfile) => void; onFiles: () => void; onHome: () => void; onActivity: () => void }) {
+export default function Settings({ sessionId = "computer-1", dotId = "dot-1", onClose, onSaved, onOpenComputer, onCompose, profile, onProfile, onFiles, onHome, onActivity }: { sessionId?: string; dotId?: string; onClose: () => void; onSaved: () => void; onOpenComputer: (state: Computer) => void; onCompose: (prompt: string) => void; profile: DotProfile; onProfile: (profile: DotProfile) => void; onFiles: () => void; onHome: () => void; onActivity: () => void }) {
   const [section, setSection] = useState('general');
   const [query, setQuery] = useState('');
   const [settings, setSettings] = useState<AuthSettings | null>(null);
@@ -47,7 +47,7 @@ export default function Settings({ onClose, onSaved, onOpenComputer, onCompose, 
   const dialog = useRef<HTMLDialogElement>(null);
   const search = useRef<HTMLInputElement>(null);
   const refresh = async () => {
-    const [auth, tokens, desktop] = await Promise.allSettled([api<AuthSettings>('/settings'), api<UsageSummary>('/usage'), api<Computer>('/computer-sessions/computer-1')]);
+    const [auth, tokens, desktop] = await Promise.allSettled([api<AuthSettings>('/settings'), api<UsageSummary>('/usage'), api<Computer>('/computer-sessions/' + sessionId)]);
     if (tokens.status === 'fulfilled') { setUsage(tokens.value); setUsageError(false); } else setUsageError(true);
     setComputer(desktop.status === 'fulfilled' ? desktop.value : null);
     if (auth.status === 'rejected') throw auth.reason;
@@ -100,7 +100,7 @@ export default function Settings({ onClose, onSaved, onOpenComputer, onCompose, 
           <button className={'provider-select ' + (provider === p ? 'selected' : '')} aria-pressed={provider === p} onClick={() => changeProvider(p)}>{provider === p ? <Check size={15} /> : <span className="provider-radio" />}{provider === p ? '기본 제공자로 선택됨' : '기본 제공자로 선택'}</button>
         </section>)}</div>}
         {active.id === 'accounts' && <section className="settings-card"><h2>기본 모델</h2><ModelPicker provider={provider} configured={!!settings?.openai_configured} value={model} onChange={value => { setModel(value); setSaved(''); }} /></section>}
-        {active.id === 'connections' && <Connections onOpenComputer={onOpenComputer} onCompose={onCompose} />}
+        {active.id === 'connections' && <Connections dotId={dotId} onOpenComputer={onOpenComputer} onCompose={onCompose} />}
         {active.id === 'agent' && <section className="settings-card"><h2>기본 실행 설정</h2><label className="settings-field">AI 제공자<select value={provider} onChange={e => changeProvider(e.target.value as 'codex' | 'openai')}><option value="codex">Codex</option><option value="openai">OpenAI API</option></select></label><ModelPicker provider={provider} configured={!!settings?.openai_configured} value={model} onChange={value => { setModel(value); setSaved(''); }} /><p className="settings-help">다음 작업부터 적용됩니다. 실행 중인 작업이 있다면 완료하거나 취소한 뒤 저장해 주세요.</p><div className="settings-rule"><CircleCheck size={17} /><span>한 번에 한 작업씩 실행하며 추가 요청은 순서대로 이어갑니다.</span></div></section>}
         {active.id === 'skills' && <SkillsCatalog />}
         {['profile', 'pets'].includes(active.id) && <section className="settings-card"><IdentityEditor profile={profile} onSave={value => { onProfile(value); setSaved('이름과 모습을 저장했습니다.'); }} /></section>}

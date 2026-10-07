@@ -5,16 +5,16 @@ import { api, post, Computer } from '../lib/api';
 import Presence from './Presence';
 import { RemoteInputQueue } from '../lib/remote-input';
 
-const PREFIX = '/computer-sessions/computer-1';
 const special: Record<string, string> = { Enter: 'Return', Backspace: 'BackSpace', Tab: 'Tab', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', Delete: 'Delete', Home: 'Home', End: 'End', PageUp: 'Page_Up', PageDown: 'Page_Down', Control: 'Control_L', Meta: 'Control_L', Shift: 'Shift_L', Alt: 'Alt_L', ' ': 'space' };
-export default function ComputerView({ name = 'OhMyDots', accent, computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { name?: string; accent: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
+export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDots', accent, computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { sessionId?: string; name?: string; accent: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
+  const PREFIX = "/computer-sessions/" + sessionId;
   useEffect(() => {
     if (!computer.connected) return;
     const controller = new AbortController();
     void api(PREFIX + '/appearance', { ...post({ accent, name }), signal: controller.signal })
       .catch(error => { if (!controller.signal.aborted) onError('컴퓨터 색상을 적용하지 못했어요: ' + (error as Error).message); });
     return () => controller.abort();
-  }, [accent, name, computer.connected, onError]);
+  }, [PREFIX, accent, name, computer.connected, onError]);
   const host = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
@@ -36,7 +36,7 @@ export default function ComputerView({ name = 'OhMyDots', accent, computer, onRe
     () => state.current,
     (entry, signal) => api(PREFIX + (entry.release ? '/release' : '/input'), { ...post({ ...entry.body, epoch: entry.epoch }), signal }),
     error => { keys.current.clear(); onError((error as Error).message); refresh(); setReconnect(n => n + 1); },
-  ), [onError, refresh]);
+  ), [PREFIX, onError, refresh]);
   useEffect(() => {
     queue.reset(); keys.current.clear();
     if (computer.connected && computer.owner === 'USER' && !computer.handoff) queue.release();

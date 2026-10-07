@@ -23,9 +23,11 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}, 
 export const post = (body: unknown = {}) => ({ method: 'POST', body: JSON.stringify(body) });
 export type Run = { id: string; status: string; wait_reason: string | null; error: string | null; task_id: string; started_at?: number | null; finished_at?: number | null };
 export type Message = { sequence: number; role: string; text: string; run_id: string | null };
-export type Conversation = { id: string; title: string; messages?: Message[]; runs?: Run[]; execution?: Activity[] };
+export type Conversation = { id: string; dot_id: string; title: string; messages?: Message[]; runs?: Run[]; execution?: Activity[] };
 export type Computer = { connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; handoff: boolean; width?: number; height?: number };
 export type Activity = { sequence: number; run_id: string | null; type: string; summary: string; created_at: number; payload: Record<string, unknown> };
 export type AuthSettings = { provider: 'codex' | 'openai'; model: string; openai_configured: boolean; codex_installed: boolean; codex_connected: boolean; login: { state: string; url?: string; code?: string } };
 
 export type UsageSummary = { recorded_runs: number; providers: { provider: string; runs: number; input_tokens: number; output_tokens: number; cached_input_tokens: number }[] };
+
+export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: "pet" | "ring"; computer_id: string; profile_saved: boolean };

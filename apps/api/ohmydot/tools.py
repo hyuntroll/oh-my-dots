@@ -1,10 +1,14 @@
 import asyncio
 import base64
+import hashlib
+import io
 import json
+import struct
 import time
 import uuid
 
 import httpx
+from PIL import Image, ImageChops
 
 from .skills import list_skills, read_skill
 from .tool_registry import ToolInputError, validate_input
@@ -20,6 +24,58 @@ class Tools:
         self.written = set()
         self.last_failure = None
         self.active_seconds = 0
+        self.desktop_actions = 0
+        self.last_desktop_action_call = 0
+        self.last_observation_call = 0
+        self.screen_hash = None
+        self.screen_size = None
+        self.screen_pixels = None
+        self.unchanged_action = None
+        self.unchanged_count = 0
+        self.last_error = None
+        self.last_user_answer = None
+
+    async def capability_state(self):
+        state = {"computer": {"available": None, "registered": True,
+                              "capabilities": ["screenshot", "mouse_click", "mouse_move", "keyboard", "scroll"]}}
+        try:
+            control = await self.runtime.desktop.get("/control")
+            state["computer"].update(available=True, control_owner=control["owner"],
+                                      takeover=bool(control["handoff"]))
+        except Exception as exc:
+            state["computer"].update(available=False, connection_error=type(exc).__name__, retryable=True)
+        self.runtime.store.event("run.capabilities", "컴퓨터 연결 상태 확인", self.run_id, state)
+        return state
+
+    async def observe(self, target=None):
+        image_url = await self.runtime.desktop.image()
+        # Compare actual PNG pixels in memory; never store the screenshot in events.
+        digest = hashlib.sha256(image_url.encode()).hexdigest()
+        changed = None if self.screen_hash is None else digest != self.screen_hash
+        self.screen_hash = digest
+        self.last_observation_call = self.calls
+        result = {"image_url": image_url, "screen_changed": changed, "observation_id": self.calls}
+        raw = base64.b64decode(image_url.split(",", 1)[1]) if image_url.startswith("data:image/png;base64,") else b""
+        if raw.startswith(b"\x89PNG\r\n\x1a\n") and len(raw) >= 24:
+            self.screen_size = struct.unpack(">II", raw[16:24])
+            result.update(screen_width=self.screen_size[0], screen_height=self.screen_size[1])
+            try:
+                current = Image.open(io.BytesIO(raw)).convert("RGB")
+                if self.screen_pixels is not None and self.screen_pixels.size == current.size:
+                    diff = ImageChops.difference(self.screen_pixels, current)
+                    result["screen_changed"] = diff.getbbox() is not None
+                    if target is not None:
+                        x, y = target
+                        # Compare the clicked region; a timer elsewhere is not evidence that a click worked.
+                        region = diff.crop((max(0, x - 16), max(0, y - 16),
+                                            min(current.width, x + 17), min(current.height, y + 17)))
+                        result["target_changed"] = region.getbbox() is not None
+                self.screen_pixels = current
+            except OSError:
+                pass  # Legacy adapters may only provide dimensions/hash comparison.
+        if result.get("target_changed", result["screen_changed"]) is False:
+            result["notice"] = "Capture is unchanged. Inspect focus, overlays and target coordinates; re-ground before retry."
+        return result
 
     async def invoke(self, name, args):
         self.runtime.check_run(self.run_id)
@@ -65,16 +121,18 @@ class Tools:
                 raise validation_error
             result = await self._invoke(name, args)
             self.runtime.check_run(self.run_id)
-            if result.get("exit_code", 0) != 0 or result.get("timed_out", False):
+            if "error" in result or result.get("exit_code", 0) != 0 or result.get("timed_out", False):
                 fingerprint = (name, json.dumps(args, sort_keys=True))
                 self.failures = self.failures + 1 if fingerprint == self.last_failure else 1
                 self.last_failure = fingerprint
+                self.last_error = str(result.get("error") or result.get("stderr") or "Tool execution failed")[:400]
             else:
                 self.failures = 0
                 self.last_failure = None
+                self.last_error = None
             details = {
                 key: result[key]
-                for key in ("exit_code", "timed_out", "stdout_truncated", "stderr_truncated")
+                for key in ("exit_code", "timed_out", "stdout_truncated", "stderr_truncated", "screen_changed", "target_changed", "observation_id")
                 if key in result
             }
             details.update(call_id=call_id, duration_ms=round((time.monotonic() - started) * 1000))
@@ -99,6 +157,7 @@ class Tools:
                                          {"call_id": call_id, "duration_ms": round((time.monotonic() - started) * 1000)})
             raise
         except Exception as exc:
+            self.last_error = str(exc)[:400]
             fingerprint = (name, json.dumps(args, sort_keys=True))
             self.failures = self.failures + 1 if fingerprint == self.last_failure else 1
             self.last_failure = fingerprint
@@ -121,7 +180,7 @@ class Tools:
         if name == "skill_read":
             return read_skill(args["skill_id"])
         if name == "desktop_screenshot":
-            return {"image_url": await self.runtime.desktop.image()}
+            return await self.observe()
         if name == "desktop_windows":
             return await self.runtime.desktop.get("/windows")
         if name == "desktop_input":
@@ -130,9 +189,19 @@ class Tools:
                 await self.runtime.wait_control(self.run_id)
                 # Drop stale coordinates instead of executing a queued GUI action.
                 return {
-                    "image_url": await self.runtime.desktop.image(),
+                    **await self.observe(),
                     "notice": "Control returned. Previous action was discarded. Replan from this new screen.",
                 }
+            coordinate_action = args["action"] in ("click", "double_click", "move")
+            if coordinate_action:
+                if not self.screen_size:
+                    raise ValueError("Observe desktop_screenshot before coordinate input")
+                if not (0 <= args.get("x", -1) < self.screen_size[0] and
+                        0 <= args.get("y", -1) < self.screen_size[1]):
+                    raise ValueError("Coordinates outside the observed screen; re-observe and re-ground")
+                fingerprint = json.dumps(args, sort_keys=True)
+                if fingerprint == self.unchanged_action and self.unchanged_count >= 2:
+                    raise ValueError("Two identical actions produced unchanged captures. Choose a different target or recovery action.")
             payload = {**args, "actor": "AGENT", "epoch": state["epoch"]}
             try:
                 await self.runtime.desktop.post("/input", payload)
@@ -141,11 +210,20 @@ class Tools:
                     raise
                 await self.runtime.wait_control(self.run_id)
                 return {
-                    "image_url": await self.runtime.desktop.image(),
+                    **await self.observe(),
                     "notice": "Control changed; action discarded. Observe and replan.",
                 }
+            self.desktop_actions += 1
+            self.last_desktop_action_call = self.calls
+            self.last_observation_call = 0
             await asyncio.sleep(0.2)
-            return {"image_url": await self.runtime.desktop.image()}
+            result = await self.observe((args["x"], args["y"]) if coordinate_action else None)
+            if coordinate_action and result.get("target_changed", result["screen_changed"]) is False:
+                self.unchanged_count = self.unchanged_count + 1 if fingerprint == self.unchanged_action else 1
+                self.unchanged_action = fingerprint
+            else:
+                self.unchanged_action, self.unchanged_count = None, 0
+            return result
         if name == "shell_exec":
             result = await self.runtime.shell.post("/exec", {**args, "run_id": self.run_id}, timeout=args.get("timeout", 120) + 10)
             if result["exit_code"] != 0 or result["timed_out"]:
@@ -186,8 +264,9 @@ class Tools:
                 self.verified.add(path)
             return result
         if name == "ask_user":
-            return {"answer": await self.runtime.ask_user(self.run_id, args["question"],
-                                                          args.get("options"), args.get("recommended_index", 0))}
+            self.last_user_answer = await self.runtime.ask_user(self.run_id, args["question"],
+                                                               args.get("options"), args.get("recommended_index", 0))
+            return {"answer": self.last_user_answer}
         raise ValueError("Unknown tool")
 
 

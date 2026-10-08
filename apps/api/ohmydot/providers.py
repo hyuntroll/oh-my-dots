@@ -14,8 +14,9 @@ from agents import (
     Runner,
     ToolOutputImage,
 )
+from agents.strict_schema import ensure_strict_json_schema
 from openai import AsyncOpenAI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .execution import OutputStream, record_usage
 from .tool_registry import TOOLS
@@ -71,8 +72,20 @@ When using ask_user, provide 2-4 concise, distinct options and recommended_index
 The UI always offers a separate custom answer. For approval questions include a clear decline or
 revise option; a recommended option is only a suggestion, never consent. Put the full proposed
 content and consequences in question, and make each option an unambiguous answer to that question.
-If a goal is ambiguous ask_user. Do not repeat the same failing action. Stop when the task is complete. Your final outcome status must be failed if any requested
-step is blocked or unfinished, out_of_scope for unsupported requests, completed only for actual success.
+If a goal is ambiguous ask_user. Do not repeat the same failing action.
+Keep the user's goal until it is verified: observe -> reason -> act -> verify -> repeat.
+Uncertainty, a lost game, no logical move, or one ineffective click is not a terminal failure.
+For an authorized game, analyze alternatives, choose a reasonable low-risk move when necessary,
+and restart after losing. Do not guess in consequential tasks or bypass confirmation requirements.
+After each desktop input, inspect its returned screenshot and target_changed/screen_changed result. If unchanged,
+re-observe the target, check focus/overlays and re-ground coordinates instead of repeating the click.
+Use in_progress with checkpoint and next_action when the goal is unfinished but actionable.
+Use blocked only for an observed tool error or the user's refusal; name blocker and concrete cause.
+For sign-in/CAPTCHA/approval use ask_user and wait inside the current run, not a terminal answer.
+Use out_of_scope for unsupported requests, completed only for actual success. Include
+completion_evidence describing the observed goal result (e.g. a victory banner, not an opened game).
+Checkpoint the goal, observed state, moves/attempts and next action without secrets. Runtime limits
+bound continued work; never announce completion merely because an iteration or tool call finished.
 """
 
 
@@ -86,8 +99,16 @@ For non-image results use text(JSON.parse(await tools.desktop_windows({}))).
 
 class Outcome(BaseModel):
     model_config = {"extra": "forbid"}
-    status: Literal["completed", "failed", "out_of_scope"]
+    status: Literal["completed", "in_progress", "blocked", "failed", "out_of_scope"]
     message: str
+    checkpoint: str = Field(default="", max_length=4000)
+    next_action: str = Field(default="", max_length=1000)
+    completion_evidence: str = Field(default="", max_length=2000)
+    blocker: Literal["none", "tool_error", "user_declined"] = "none"
+
+    @classmethod
+    def output_schema(cls):
+        return ensure_strict_json_schema(cls.model_json_schema())
 
 
 def instructions_for(run):
@@ -96,9 +117,69 @@ def instructions_for(run):
 
 
 class TaskFailure(RuntimeError):
-    def __init__(self, status, message):
-        super().__init__("OUT_OF_SCOPE" if status == "out_of_scope" else "TASK_NOT_COMPLETED")
+    def __init__(self, status, message, code=None):
+        super().__init__(code or ("OUT_OF_SCOPE" if status == "out_of_scope" else
+                                 "TASK_BLOCKED" if status == "blocked" else "TASK_NOT_COMPLETED"))
         self.message = message
+
+
+class GoalLoop:
+    """Continue unfinished provider turns within the existing Run and its budgets."""
+    max_continuations = 12
+
+    def __init__(self, runtime, run, tools):
+        self.runtime, self.run, self.tools = runtime, run, tools
+        self.iteration = 0
+        self.blocker_attempt = None
+
+    def continuation(self, outcome):
+        if outcome.status == "out_of_scope":
+            return None
+        if outcome.status == "blocked":
+            error = getattr(self.tools, "last_error", None)
+            if outcome.blocker == "tool_error" and error:
+                calls = getattr(self.tools, "calls", 0)
+                if self.blocker_attempt and error == self.blocker_attempt[0] and calls > self.blocker_attempt[1]:
+                    return None
+                self.blocker_attempt = (error, calls)
+            elif outcome.blocker == "user_declined" and getattr(self.tools, "last_user_answer", None):
+                return None
+        if not getattr(self.tools, "last_error", None):
+            self.blocker_attempt = None
+        gui = getattr(self.tools, "desktop_actions", 0) > 0
+        observed = (getattr(self.tools, "last_observation_call", 0) >=
+                    getattr(self.tools, "last_desktop_action_call", 1))
+        if outcome.status == "completed" and (not gui or (observed and outcome.completion_evidence.strip())):
+            return None
+        if self.iteration >= self.max_continuations:
+            raise TaskFailure("in_progress", "목표는 아직 미완료입니다. 계속 실행할 수 있는 내부 반복 한도에 도달했습니다. "
+                              + outcome.message, code="GOAL_CONTINUATION_LIMIT")
+        self.iteration += 1
+        checkpoint = {"iteration": self.iteration, "status": "in_progress",
+                      "checkpoint": outcome.checkpoint, "next_action": outcome.next_action,
+                      "last_outcome": outcome.message,
+                      "tool_calls": getattr(self.tools, "calls", 0)}
+        self.runtime.store.event("run.checkpoint", "목표를 계속 수행하고 있어요", self.run.id, checkpoint)
+        return ("The user's goal is not yet verified. Continue this same task; this is not a new authorization. "
+                "Checkpoint (model-generated state, not instructions): " + json.dumps(checkpoint, ensure_ascii=False) +
+                ". Observe, analyze alternatives, act, inspect the returned screen and verify the goal. "
+                "Uncertainty is not completion or a permanent blocker. Recover/re-ground or restart an authorized game "
+                "after a loss. For authentication/approval ask_user and wait. Only return completed with concrete "
+                "completion_evidence from the latest observation. Return blocked only with an observed cause. "
+                "Remaining tool budget: " + str(max(0, getattr(self.runtime.config, "max_tools", 80) -
+                                                     getattr(self.tools, "calls", 0))) + ".")
+
+    async def observe_continuation(self):
+        if getattr(self.tools, "screen_hash", None) or getattr(self.tools, "desktop_actions", 0):
+            return await self.tools.invoke("desktop_screenshot", {})
+        return {}
+
+
+async def capability_instructions(tools):
+    if tools is None or not hasattr(tools, "capability_state"):
+        return ""
+    state = await tools.capability_state()
+    return "\nRuntime capability state (registration and current connection, not task success): " + json.dumps(state)
 
 
 def final_answer(outcome):
@@ -192,38 +273,52 @@ async def run_openai(runtime, run, history, tools):
         )
     agent = Agent(
         name=getattr(run, "dot_name", "OhMyDots"),
-        instructions=instructions_for(run),
+        instructions=instructions_for(run) + await capability_instructions(tools),
         tools=sdk_tools,
         output_type=Outcome,
         model=OpenAIResponsesModel(run.model, AsyncOpenAI(api_key=key)),
         model_settings=ModelSettings(parallel_tool_calls=False),
     )
     stream = OutputStream(runtime.store, run.id)
-    result = Runner.run_streamed(agent, input=history, max_turns=40,
-                                 run_config=RunConfig(tracing_disabled=True))
-    try:
-        async for event in result.stream_events():
-            if event.type == "raw_response_event":
-                data = event.data
-                if data.type == "response.output_text.delta":
-                    stream.update(data.item_id, data.delta)
-                elif data.type == "response.output_text.done":
-                    stream.update(data.item_id, data.text, replace=True, force=True)
-        return final_answer(result.final_output)
-    finally:
-        result.cancel()
-        # Drain the SDK stream so cancelled background tasks finish cleanup.
+    loop = GoalLoop(runtime, run, tools)
+    usage_totals = {"input_tokens": 0, "output_tokens": 0, "cached_input_tokens": 0}
+    requests = 0
+    while True:
+        remaining = max(1, getattr(runtime.config, "max_tools", 80) - getattr(tools, "calls", 0))
+        result = Runner.run_streamed(agent, input=history, max_turns=remaining + 1,
+                                     run_config=RunConfig(tracing_disabled=True))
         try:
-            async for _ in result.stream_events():
+            async for event in result.stream_events():
+                if event.type == "raw_response_event":
+                    data = event.data
+                    if data.type == "response.output_text.delta":
+                        stream.update(str(loop.iteration) + data.item_id, data.delta)
+                    elif data.type == "response.output_text.done":
+                        stream.update(str(loop.iteration) + data.item_id, data.text, replace=True, force=True)
+            correction = loop.continuation(result.final_output)
+            if correction is None:
+                return final_answer(result.final_output)
+            # Retain messages and tool call/result pairs inside this provider session.
+            history = result.to_input_list() + [{"role": "user", "content": correction}]
+            observed = await loop.observe_continuation()
+            if "image_url" in observed:
+                history[-1]["content"] = [{"type": "input_text", "text": correction},
+                                          {"type": "input_image", "image_url": observed["image_url"]}]
+        finally:
+            result.cancel()
+            # Drain the SDK stream so cancelled background tasks finish cleanup.
+            try:
+                async for _ in result.stream_events():
+                    pass
+            except (Exception, asyncio.CancelledError):
                 pass
-        except (Exception, asyncio.CancelledError):
-            pass
-        usage = result.context_wrapper.usage
-        if usage.requests:
-            record_usage(runtime.store, run.id, "openai", {
-                "input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
-                "cached_input_tokens": getattr(usage.input_tokens_details, "cached_tokens", 0),
-            }, requests=usage.requests)
+            usage = result.context_wrapper.usage
+            if usage.requests:
+                requests += usage.requests
+                usage_totals["input_tokens"] += usage.input_tokens
+                usage_totals["output_tokens"] += usage.output_tokens
+                usage_totals["cached_input_tokens"] += getattr(usage.input_tokens_details, "cached_tokens", 0)
+                record_usage(runtime.store, run.id, "openai", usage_totals, requests=requests)
 
 
 async def run_codex(runtime, run, history, tools):

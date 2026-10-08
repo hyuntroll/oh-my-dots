@@ -30,3 +30,29 @@ Conversation history was flattened into a single user message, including earlier
 - Real same-conversation follow-up on gpt-6-luna (run 88caf0fe-66a6-4c7e-9ce8-d8cce583c415) completed five desktop_screenshot and six desktop_input calls. No corrective turn was needed in this live run.
 - The visible desktop showed Google search and an opened Minesweeper board with revealed squares. The model ended with TASK_NOT_COMPLETED because it did not solve the board, accurately reporting the game remained in progress. Tool availability is verified; game completion is not.
 - Evidence: .local/qa/tool-followup-fixed.png (local screenshot, not committed). The experimental history API was verified against installed codex-cli 0.159.3; future CLI compatibility remains a dependency.
+
+## Persistent goal loop — 2026-10-08
+
+### Root cause
+
+The shared instructions explicitly classified every unfinished step as failed. Outcome exposed only completed/failed/out_of_scope, and both providers immediately returned final_answer to Runtime.execute. This ended an actionable game at the first model final answer. Desktop input already returned a screenshot, but did not check whether the target changed. Previous capability errors in assistant history could also contaminate the next attempt.
+
+### Implementation
+
+- A shared GoalLoop consumes in_progress and legacy failed outcomes and starts another provider turn within the same Run. Codex retains the same thread; the OpenAI SDK retains message/tool call/result pairs. Checkpoints record observed state and next action as events while the Run remains RUNNING.
+- GUI completion requires a post-action observation and nonempty completion_evidence. Missing evidence causes continuation. An observed tool blocker gets a recovery attempt before it can terminate; repeated model claims without a new tool attempt do not count. Authentication/approval continues to use ask_user and the existing WAITING_USER/takeover flow.
+- The runtime injects the registered computer capabilities and probes the actual Dot's control endpoint. Connection failure is a retryable observed error, not proof of missing registration.
+- Each action returns a new screenshot with screen dimensions, observation_id and pixel-change metadata. Click verification additionally compares a 33×33 region around the target, so a running timer elsewhere cannot count as target change. A third identical ineffective coordinate action is rejected and requires a different target or recovery. Coordinates outside the observed screen are rejected.
+- Each unfinished GUI turn gets another real screenshot attached as a native image to the continuation. The screenshot goes through Tools.invoke, preserving budget, cancellation and takeover checks. Screenshots stay out of persisted event payloads.
+- The Codex output schema is normalized to the strict required-properties format; adding defaulted checkpoint fields without this normalization caused a real CODEX_RUN_FAILED and was corrected.
+- Existing limits remain: 80 total tool calls, 600 active seconds and three identical tool errors. An additional 12 continuation ceiling prevents tool-free model loops. Limits produce truthful incomplete errors, never success. User cancellation still stops the current provider process.
+
+### Validation and limits
+
+- Regression-first tests failed before GoalLoop existed. After implementation, 89 Python tests passed; Ruff and git diff --check passed. Tests cover both provider continuations, retained tool history, native corrective images, strict schemas, completion evidence, blocker recovery, bounded loops, cancellation, coordinate bounds, ineffective-click recovery and timer-only changes.
+- Live run 9c0bbdf5-ad59-4f18-8286-9e91a01f3ce4 continued across two model checkpoints and 80 tool calls instead of ending at its first unfinished answer. It ultimately ended TOOL_LIMIT_EXCEEDED; no game win is claimed. Docker restart had changed the Dot's published ports; the existing local connection settings were repaired before testing.
+- Follow-up run f57c5920-1f65-4e79-876a-3047802c2f51 on gpt-6-luna used the native corrective image and target-region comparison. Its first unfinished answer at tool call 10 was followed by a real screenshot and more desktop actions within the same Run. The checkpoint described the actual Minesweeper.Online beginner board rather than the earlier Google reCAPTCHA page. Live comparison recorded target_changed=False despite screen_changed=True, confirming the timer distinction.
+- That follow-up ended TOOL_LIMIT_EXCEEDED after 80 completed tools and five checkpoints; game-over checkpoints led to further restart attempts. It recorded 63 changed targets and seven unchanged targets. The final visible board was game over, not victory. Evidence: .local/qa/goal-loop-running.png and .local/qa/goal-loop-result.png (local screenshots, not committed).
+- This is a bounded persistence/recovery controller, not a Minesweeper solver. Completion evidence is model-interpreted; nonempty evidence plus a fresh observation is not an independent semantic victory detector. Local pixel change is a grounding aid, not proof of a correct move. Checkpoints survive in events, but automatic resumption after process restart is not implemented. Google itself may require user takeover for CAPTCHA; the live playable board was Minesweeper.Online, not Google's own game.
+
+Status: DONE_WITH_CONCERNS — premature finalization is fixed and reproduced; game completion and independent semantic detection remain unverified.

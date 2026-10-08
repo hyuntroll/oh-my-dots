@@ -18,7 +18,15 @@ def unavailable_tool_claim(message):
 
 
 async def run_streamed_codex(runtime, run, history, tools):
-    from .providers import CODEX_TOOL_INSTRUCTIONS, Outcome, codex_args, final_answer, instructions_for
+    from .providers import (
+        CODEX_TOOL_INSTRUCTIONS,
+        GoalLoop,
+        Outcome,
+        capability_instructions,
+        codex_args,
+        final_answer,
+        instructions_for,
+    )
 
     if not shutil.which(runtime.config.codex_bin):
         raise RuntimeError("CODEX_NOT_INSTALLED")
@@ -132,7 +140,8 @@ async def run_streamed_codex(runtime, run, history, tools):
                 "cwd": cwd, "ephemeral": True, "approvalPolicy": "never", "sandbox": "read-only",
                 # Supply the product's full instructions as the base instead of
                 # appending them to the large general-purpose coding-agent prompt.
-                "baseInstructions": instructions_for(run) + "\n" + CODEX_TOOL_INSTRUCTIONS, "developerInstructions": "",
+                "baseInstructions": instructions_for(run) + "\n" + CODEX_TOOL_INSTRUCTIONS +
+                                    await capability_instructions(tools), "developerInstructions": "",
                 "dynamicTools": dynamic_tools,
                 "config": {"mcp_servers": {name: {"enabled": False} for name in inherited},
                            "skills": {"config": [{"path": path, "enabled": False} for path in host_skills]}},
@@ -161,8 +170,10 @@ async def run_streamed_codex(runtime, run, history, tools):
             prompt = history[-1]["content"] if history else ""
             await request(6, "turn/start", {"threadId": thread_id,
                                            "input": [{"type": "text", "text": prompt}],
-                                           "outputSchema": Outcome.model_json_schema()})
+                                           "outputSchema": Outcome.output_schema()})
             availability_rechecked = False
+            loop = GoalLoop(runtime, run, tools)
+            continuation_id = 9
             while True:
                 event = await read()
                 await notification(event)
@@ -188,9 +199,20 @@ async def run_streamed_codex(runtime, run, history, tools):
                             correction.append({"type": "image", "url": observed["image_url"]})
                         answer = ""
                         await request(8, "turn/start", {"threadId": thread_id, "input": correction,
-                                                       "outputSchema": Outcome.model_json_schema()})
+                                                       "outputSchema": Outcome.output_schema()})
                         continue
-                    return final_answer(outcome)
+                    correction = loop.continuation(outcome)
+                    if correction is None:
+                        return final_answer(outcome)
+                    inputs = [{"type": "text", "text": correction}]
+                    observed = await loop.observe_continuation()
+                    if "image_url" in observed:
+                        inputs.append({"type": "image", "url": observed["image_url"]})
+                    answer = ""
+                    await request(continuation_id, "turn/start", {
+                        "threadId": thread_id, "input": inputs,
+                        "outputSchema": Outcome.output_schema()})
+                    continuation_id += 1
         finally:
             if proc.returncode is None:
                 try:

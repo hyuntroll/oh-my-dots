@@ -34,3 +34,12 @@ The protected deployment was exercised through HTTP and WebSocket clients. The a
 This is one owner per installation, with multiple Dots. It does not implement team accounts, tenant isolation or billing. Linux bridge binding and generated systemd configuration are implemented, but a real Linux server reboot has not been exercised. Public DNS, Caddy certificate issuance and Tailscale access have documented setup paths; no public endpoint was created or verified. Long-duration network stability is not part of this hosting verification.
 
 The temporary QA service is stopped after verification. Its test configuration and data-directory snapshot are retained under ignored `.local/qa/hosting-instance-2026-10-13/`; the normal local development service remains at localhost:3080. Test container volumes are retained while the QA containers and networks are removed. A fresh user installation can choose its own password and origin.
+
+## One-command terminal installer
+
+- `install.sh` clones the official main branch, uses the controlling terminal even with `curl | bash`, prepares missing Python/Node under the installation directory and starts `scripts/cli.py setup`.
+- The wizard chooses port/origin/project/login, masks and confirms the password, builds production services, creates the `ohmydots` launcher and optionally starts the server. Start waits for API/web readiness and a password-protected gateway. It optionally adds the command directory to bash/zsh configuration.
+- Existing configuration and password are retained on reinstallation. Updates reject modified checkouts, foreign origins and non-main branches. A launcher belonging to another installation or program is preserved.
+- An actual controlling-terminal run on macOS installed project `ohmydots-install-qa` on port 3090, completed the production build and started the service. The captured transcript contained no password. Authenticated HTTP/API/PNG/VNC and creation of a separate Dot computer passed again. The normal development server was retained.
+- Automated installer checks exercise real piped Bash inside an isolated PTY, missing-Python and missing-Node bootstrap paths with fixture downloads, rejection of a bad Node checksum, port conflicts, quoted installation paths, launcher ownership, private failure logs, retained configuration and update guards. Runtime-download fixtures do not claim actual Linux binary compatibility.
+- Python suite: 115 tests. Bash syntax, Ruff and whitespace checks pass. No frontend implementation changed for the installer.

@@ -5,20 +5,64 @@ OhMyDots의 호스팅 모드는 한 소유자가 여러 Dot을 사용하는 개�
 ## 준비
 
 - Linux의 Docker Engine 또는 macOS의 Docker Desktop과 Docker Compose 2.24.4 이상.
-- Python 3.11 이상, Node.js 24 이상과 npm, Git.
+- Git, curl, tar. Python 3.11+·Node.js 24+와 npm은 기존 설치를 사용하거나 설치기가 사용자 폴더에 준비합니다.
 - 시작 기준으로 여유 메모리 4 GB 이상. Dot 컴퓨터가 늘어나면 그만큼 자원이 더 필요합니다.
 - Linux에서는 Docker 명령을 실행할 수 있는 일반 사용자 계정을 사용합니다. API와 웹의 운영 프로세스는 그 계정으로 실행됩니다. 네이티브 Windows와 rootless Docker는 아직 검증하지 않았습니다.
+
+## 터미널에서 한 번에 설치하기
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hyuntroll/oh-my-dots/main/install.sh | bash
+```
+
+[Hermes의 터미널 설치 흐름](https://hermes-agent.nousresearch.com/docs/getting-started/installation)을 참고했습니다. 실행 중인 Docker는 먼저 준비해야 합니다. Docker 설치·실행이나 관리자 권한 변경은 자동으로 수행하지 않습니다. 설치기는 필요한 항목을 검사하고, 부족하면 안내하고 종료합니다.
+
+터미널에서 다음 순서로 설정합니다. 엔터를 누르면 표시된 기본값을 사용합니다.
+
+1. **설치 폴더:** 기본 `~/.ohmydots`. 다른 절대 경로를 입력할 수 있습니다.
+2. **접속 포트:** 기본 3080. 이미 사용 중이면 빈 포트를 제안하며 직접 바꿀 수 있습니다.
+3. **접속 주소:** 기본 로컬 주소. 원격 접속은 준비한 HTTPS 프록시 주소를 입력합니다. 도메인·프록시·인증서는 별도로 설정합니다.
+4. **설치 이름:** 기본 `ohmydots`. 이미 같은 이름의 컨테이너가 있으면 다른 이름을 선택합니다.
+5. **로그인 이름과 비밀번호:** 기본 `owner`, 비밀번호는 12자 이상·UTF-8 72바이트 이하이며 입력 중 표시하지 않습니다.
+6. **명령어 경로와 서버 시작:** 셸 경로 추가 여부와 지금 시작할지 선택합니다. 웹·API·비밀번호 게이트웨이가 준비되면 로컬 접속 주소를 표시합니다.
+
+Python이 부족하면 [uv](https://docs.astral.sh/uv/)로 Python 3.12를 준비합니다. Node가 부족하면 공식 배포의 Node.js 24.19.0을 내려받아 SHA-256을 확인합니다. 두 도구는 설치 폴더의 `.local/runtime/` 안에 두며 시스템 Python·Node를 바꾸지 않습니다. 자동 Node 설치는 macOS/Linux의 arm64·x64를 지원합니다. Alpine/musl 등 공식 Node 바이너리가 실행되지 않는 환경은 Node.js 24+를 먼저 설치하세요.
+
+다운로드·빌드 로그는 `.local/hosting/install.log`에 저장하고 소유자만 읽을 수 있게 합니다. 실패하면 로그를 확인한 뒤 다시 실행합니다. 비밀번호를 설정한 뒤 빌드가 실패해도 다음 실행에서 저장한 비밀번호를 재사용합니다. 취소하려면 Ctrl+C를 누릅니다.
+
+설치 후 새 터미널에서:
+
+```sh
+ohmydots start
+ohmydots stop
+ohmydots status
+ohmydots setup
+ohmydots update
+ohmydots doctor
+ohmydots password --user owner
+```
+
+`~/.local/bin/ohmydots` 실행기를 만듭니다. bash/zsh의 경로 추가 질문에 동의하면 `.bashrc`/`.zshrc` 끝에 PATH 한 줄을 추가합니다. 현재 터미널은 `~/.local/bin/ohmydots`를 직접 실행합니다. `setup`은 현재 체크아웃을 다시 빌드하고 기존 포트·주소·비밀번호·데이터를 유지합니다. 기준 주소 변경은 `ohmydots stop` → `ohmydots configure --origin https://내주소` → `ohmydots start`입니다. 포트 변경은 현재 별도 체크아웃의 새 설치로 진행합니다.
+
+`update`는 변경 사항 없는 main 브랜치의 공식 저장소만 fast-forward로 갱신하고 설정 마법사를 다시 실행합니다. 로컬 수정이 있으면 덮어쓰지 않고 중단합니다. 이미 실행 중이면 먼저 중지하며, 설치 후 다시 실행할지 묻습니다. systemd로 관리한다면 먼저 `systemctl --user stop ohmydots`를 실행하고 업데이트 후 해당 서비스를 다시 시작하세요.
+
+인터랙티브 터미널이 없는 CI에서는 설치 마법사가 진행되지 않습니다. 자동화에는 아래 수동 설치와 `host.py install --password-stdin`을 사용하고 비밀번호는 비밀 저장소에서 표준 입력으로 전달하세요.
+
+### 소스를 직접 받아 설치하기
+
+Python 3.11+·Node.js 24+·npm을 직접 준비한 경우:
 
 ```sh
 git clone https://github.com/hyuntroll/oh-my-dots.git
 cd oh-my-dots
-python3 scripts/host.py install
-python3 scripts/host.py start --detach
+python3 scripts/cli.py setup
 ```
+
+마법사 없이 설치하려면 `python3 scripts/host.py install`과 `python3 scripts/host.py start --detach`를 사용합니다. 설치기를 먼저 읽거나 보관하려면 루트의 [install.sh](../install.sh)를 내려받아 `bash install.sh --dir /절대/설치/경로`로 실행할 수도 있습니다.
 
 설치 도중 호스팅용 비밀번호를 두 번 입력합니다. 입력값은 화면에 표시하거나 평문으로 저장하지 않습니다. 기본 로그인 이름은 `owner`이며 `install --user 이름`으로 바꿀 수 있습니다. 브라우저가 표시하는 HTTP 인증 창에서 로그인합니다. 모델 계정 로그인과는 별도의 호스팅 접속 비밀번호입니다.
 
-포트 3080이 이미 사용 중이면 처음 설치할 때 지정합니다.
+수동 설치에서 포트 3080이 이미 사용 중이면 처음 설치할 때 지정합니다.
 
 ```sh
 python3 scripts/host.py install --port 3090

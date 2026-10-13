@@ -20,16 +20,24 @@
 
 ## 설치해서 호스팅하기
 
-Linux 또는 macOS에 Docker, Python 3.11+, Node.js 24+를 준비한 뒤 실행합니다.
+Linux 또는 macOS에서 Docker를 설치하고 실행한 뒤, 터미널에 한 줄을 붙여 넣으세요.
 
 ```sh
-git clone https://github.com/hyuntroll/oh-my-dots.git
-cd oh-my-dots
-python3 scripts/host.py install
-python3 scripts/host.py start --detach
+curl -fsSL https://raw.githubusercontent.com/hyuntroll/oh-my-dots/main/install.sh | bash
 ```
 
-**http://localhost:3080/** 에서 설치할 때 정한 비밀번호로 로그인합니다. 기본 로그인 이름은 `owner`입니다. 설치기는 운영용 웹 빌드, Codex CLI와 격리된 Linux 컴퓨터를 준비합니다. 데이터와 브라우저 프로필은 재시작 후에도 보관합니다.
+터미널에서 **설치 폴더 → 접속 포트·주소 → 로그인 이름·비밀번호 → 실행 여부**를 정합니다. 기본 폴더는 `~/.ohmydots`, 기본 주소는 **http://localhost:3080/** 입니다. Python·Node가 부족하면 사용자 폴더에 준비하고 운영용 웹, Codex CLI와 격리된 Linux 컴퓨터를 설치합니다. Git·curl·tar와 실행 중인 Docker/Compose는 필요합니다. AI 계정은 설치 후 웹 설정에서 연결합니다.
+
+```sh
+ohmydots start    # 실행
+ohmydots stop     # 중지 (데이터 유지)
+ohmydots status   # 상태 확인
+ohmydots setup    # 설정 확인 및 다시 설치
+ohmydots update   # 최신 코드로 업데이트
+ohmydots doctor   # 설치 환경 점검
+```
+
+명령어 경로 추가에 동의했다면 새 터미널에서 사용할 수 있습니다. 현재 창에서는 `~/.local/bin/ohmydots`로 실행하세요. 데이터와 브라우저 프로필은 재시작 후에도 보관합니다.
 
 포트 변경, HTTPS 도메인·Tailscale 접속, Linux 자동 시작, 업데이트와 백업은 [셀프 호스팅 가이드](docs/SELF-HOSTING.md)를 참고하세요.
 

@@ -31,11 +31,22 @@ def test_missing_pip_recovers_without_recreating_environment(tmp_path, monkeypat
     run.assert_called_once_with(expected)
 
 
-def test_missing_pip_without_uv_has_actionable_error(tmp_path, monkeypatch):
+def test_missing_pip_without_uv_bootstraps_private_uv(tmp_path, monkeypatch):
     monkeypatch.setattr(host, 'ROOT', tmp_path)
     monkeypatch.setattr(host.subprocess, 'run', lambda *args, **kwargs: Mock(returncode=1))
-    with pytest.raises(ValueError, match='settings and data are retained'):
-        host.install_api_dependencies()
+    calls = []
+    uv = tmp_path / '.local/runtime/uv/uv'
+    def run(args, **kwargs):
+        calls.append(args)
+        if args[0] == 'sh':
+            assert kwargs['env']['UV_INSTALL_DIR'] == str(uv.parent)
+            assert kwargs['env']['UV_NO_MODIFY_PATH'] == '1'
+            uv.touch()
+    monkeypatch.setattr(host, 'run', run)
+    host.install_api_dependencies()
+    assert calls[0][0] == 'curl'
+    assert 'https://astral.sh/uv/install.sh' in calls[0]
+    assert calls[-1] == [uv, 'pip', 'install', '--python', host.PYTHON, '-r', 'requirements.txt']
 
 
 @pytest.mark.parametrize('value', ['https://dots.example.com', 'http://localhost:3090', 'http://127.0.0.1:3090'])

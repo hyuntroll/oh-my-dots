@@ -13,6 +13,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -131,13 +132,21 @@ def install_api_dependencies():
         subprocess.run([PYTHON, '-m', 'ensurepip', '--upgrade'], **quiet)
         if subprocess.run(probe, **quiet).returncode:
             uv = ROOT / '.local/runtime/uv/uv'
-            if uv.is_file():
-                # Managed Python distributions can omit pip/ensurepip; uv does not need them.
-                run([uv, 'pip', 'install', '--python', PYTHON, '-r', 'requirements.txt'])
-                return
-            raise ValueError('This Python environment has neither pip nor ensurepip. '
-                             'Install your Python distribution\'s venv/pip support and retry setup; '
-                             'existing settings and data are retained.')
+            if not uv.is_file():
+                print('Python has no pip/ensurepip; preparing a private uv installer…', flush=True)
+                uv.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                with tempfile.TemporaryDirectory(prefix='ohmydots-uv-') as directory:
+                    script = Path(directory) / 'install.sh'
+                    run(['curl', '--fail', '--show-error', '--silent', '--location',
+                         '--proto', '=https', '--tlsv1.2', 'https://astral.sh/uv/install.sh', '-o', script])
+                    run(['sh', script], stdin=subprocess.DEVNULL, env={**os.environ,
+                        'UV_INSTALL_DIR': str(uv.parent), 'UV_NO_MODIFY_PATH': '1'})
+            if not uv.is_file():
+                raise ValueError('uv installation did not produce its executable; retry setup after '
+                                 'checking the installation log. Existing settings and data are retained.')
+            # Distribution Python can omit pip/ensurepip even when Python itself was preinstalled.
+            run([uv, 'pip', 'install', '--python', PYTHON, '-r', 'requirements.txt'])
+            return
     run([PYTHON, '-m', 'pip', 'install', '-r', 'requirements.txt'])
 
 

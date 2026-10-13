@@ -1,6 +1,10 @@
 # OhMyDots
+[![Last Commit](https://img.shields.io/github/last-commit/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/commits/main)
+[![Issues](https://img.shields.io/github/issues/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/issues)
 
 **대화하면서 함께 사용하는 AI 컴퓨터.**
+
+![OhMyDots이미지](https://github.com/hyuntroll/oh-my-dots/blob/main/docs/assets/dots-ui/multi-dot-computer.png)
 
 OhMyDots는 AI와의 대화, 원격 컴퓨터 화면, 작업 기록을 한 공간에 연결하는 로컬 앱입니다. 원하는 작업을 메시지로 요청하고, AI가 브라우저와 셸을 사용하는 모습을 실시간으로 확인할 수 있습니다. 필요할 때는 직접 컴퓨터를 조작하고 다시 AI에게 제어권을 넘길 수 있습니다.
 

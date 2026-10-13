@@ -15,6 +15,25 @@ host = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(host)
 
 
+@pytest.mark.parametrize('address', [None, '0.0.0.0', '192.168.1.20'])
+def test_gateway_binding_is_saved_without_changing_private_ports(tmp_path, monkeypatch, address):
+    monkeypatch.setattr(host, 'BASE', tmp_path)
+    config = {'database_password': 'test', 'port': 3080, 'api_port': 4001, 'web_port': 4002, 'subnets': {}}
+    if address is not None:
+        config['bind_address'] = address
+    host.write_config(config)
+    values = dict(line.split('=', 1) for line in (tmp_path / 'hosting.env').read_text().splitlines())
+    assert values['DOT_BIND_ADDRESS'] == (address or '127.0.0.1')
+    assert values['DOT_API_PORT'] == '4001' and values['DOT_WEB_PORT'] == '4002'
+
+
+def test_invalid_gateway_binding_does_not_write_settings(tmp_path, monkeypatch):
+    monkeypatch.setattr(host, 'BASE', tmp_path)
+    with pytest.raises(ValueError):
+        host.write_config({'bind_address': '0.0.0.0\nINJECTED=value'})
+    assert not (tmp_path / 'settings.json').exists()
+
+
 @pytest.mark.parametrize('repaired', [True, False])
 def test_missing_pip_recovers_without_recreating_environment(tmp_path, monkeypatch, repaired):
     monkeypatch.setattr(host, 'ROOT', tmp_path)

@@ -17,7 +17,7 @@ services:
     ports: !override ["127.0.0.1::8766"]
   gateway:
     restart: unless-stopped
-    ports: !override ["127.0.0.1:${DOT_PORT:-3080}:8080"]
+    ports: !override ["${DOT_BIND_ADDRESS:-127.0.0.1}:${DOT_PORT:-3080}:8080"]
     environment:
       DOT_API_PORT: ${DOT_API_PORT:?Initialize hosting first}
       DOT_WEB_PORT: ${DOT_WEB_PORT:?Initialize hosting first}

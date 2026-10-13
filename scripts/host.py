@@ -90,9 +90,12 @@ def compose(config):
 
 
 def write_config(config):
+    # Only the authenticated public gateway is configurable; private services stay on loopback.
+    bind_address = str(ipaddress.IPv4Address(config.get('bind_address', '127.0.0.1')))
     private_write(BASE / 'settings.json', json.dumps(config, indent=2) + '\n')
     values = {
         'DOT_DATABASE_PASSWORD': config['database_password'], 'DOT_PORT': config['port'],
+        'DOT_BIND_ADDRESS': bind_address,
         'DOT_API_PORT': config['api_port'], 'DOT_WEB_PORT': config['web_port'],
     }
     values.update({'DOT_' + key + '_SUBNET': value for key, value in config['subnets'].items()})
@@ -295,7 +298,8 @@ def main():
     commands.add_parser('stop')
     commands.add_parser('status')
     configure = commands.add_parser('configure')
-    configure.add_argument('--origin', required=True)
+    configure.add_argument('--origin')
+    configure.add_argument('--bind', type=ipaddress.IPv4Address, help='Gateway IPv4 address, e.g. 0.0.0.0')
     change = commands.add_parser('password')
     change.add_argument('--user', default='owner')
     commands.add_parser('systemd')
@@ -333,12 +337,17 @@ def main():
     elif args.command == 'status':
         print('Running' if service_pid() else 'Stopped')
     elif args.command == 'configure':
+        if args.origin is None and args.bind is None:
+            parser.error('configure requires --origin or --bind')
         if service_pid():
-            raise ValueError('Stop hosting before changing its public origin.')
+            raise ValueError('Stop hosting before changing its gateway configuration.')
         config = settings()
-        config['origin'] = validate_origin(args.origin)
+        if args.origin is not None:
+            config['origin'] = validate_origin(args.origin)
+        if args.bind is not None:
+            config['bind_address'] = str(args.bind)
         write_config(config)
-        print('Origin saved. Start hosting again to apply it.')
+        print('Gateway configuration saved. Start hosting again to apply it.')
     elif args.command == 'password':
         password(args.user)
         print('Hosting login password updated.')

@@ -93,6 +93,16 @@ python3 scripts/host.py install --port 3090
 
 ## 다른 기기에서 접속하기
 
+Nginx Proxy Manager 등에서 서버 IP로 연결하려면 게이트웨이를 모든 IPv4 인터페이스에 열 수 있습니다. 도메인을 실제 주소로 바꾸세요.
+
+```sh
+ohmydots stop
+ohmydots configure --bind 0.0.0.0 --origin https://dots.example.com
+ohmydots start
+```
+
+NPM은 `http` → 서버 IP → 설치한 포트(기본 `3080`)로 전달하고 Websockets Support와 HTTPS를 켭니다. 게이트웨이 비밀번호 보호는 유지됩니다. 접속 포트를 NPM에서 접근 가능하게 허용하세요. 로컬 전용으로 되돌리려면 중지 후 `ohmydots configure --bind 127.0.0.1`을 실행합니다. 이 옵션은 게이트웨이에만 적용되며 DB·컴퓨터·셸의 포트는 loopback을 유지합니다.
+
 비밀번호만으로 HTTP 통신이 암호화되지는 않습니다. 원격 접속에는 HTTPS 프록시를 사용하고, 게이트웨이의 loopback 바인딩은 유지합니다. [Nginx HTTP 인증](https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html)은 페이지·API·화면 WebSocket 전체에 적용됩니다.
 
 ### 개인 기기끼리: Tailscale

@@ -9,8 +9,13 @@ services:
     volumes: [postgres:/var/lib/postgresql]
     networks: [backend]
     healthcheck:
-      test: [CMD-SHELL, pg_isready -U dots]
+      # The entrypoint's temporary initialization server listens only on a Unix socket.
+      # Wait for the final TCP server and allow slow first-time disk initialization.
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, dots, -d, dots]
       interval: 3s
+      timeout: 5s
+      start_period: 45s
+      retries: 15
   computer:
     build:
       context: .

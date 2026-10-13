@@ -31,6 +31,8 @@ The protected deployment was exercised through HTTP and WebSocket clients. The a
 
 ## Scope and remaining checks
 
+First-start PostgreSQL health checks now allow 45 seconds of initialization grace and 15 retries, and check TCP on 127.0.0.1 rather than the entrypoint's temporary Unix-socket server. A fresh isolated container with a deliberately delayed initialization script verified that the temporary server is rejected, initialization remains `starting`, and the final server becomes `healthy` without an early unhealthy result.
+
 This is one owner per installation, with multiple Dots. It does not implement team accounts, tenant isolation or billing. Linux bridge binding and generated systemd configuration are implemented, but a real Linux server reboot has not been exercised. Public DNS, Caddy certificate issuance and Tailscale access have documented setup paths; no public endpoint was created or verified. Long-duration network stability is not part of this hosting verification.
 
 The temporary QA service is stopped after verification. Its test configuration and data-directory snapshot are retained under ignored `.local/qa/hosting-instance-2026-10-13/`; the normal local development service remains at localhost:3080. Test container volumes are retained while the QA containers and networks are removed. A fresh user installation can choose its own password and origin.

@@ -44,7 +44,7 @@ ohmydots password --user owner
 
 `~/.local/bin/ohmydots` 실행기를 만듭니다. bash/zsh의 경로 추가 질문에 동의하면 `.bashrc`/`.zshrc` 끝에 PATH 한 줄을 추가합니다. 현재 터미널은 `~/.local/bin/ohmydots`를 직접 실행합니다. `setup`은 현재 체크아웃을 다시 빌드하고 기존 포트·주소·비밀번호·데이터를 유지합니다. 기준 주소 변경은 `ohmydots stop` → `ohmydots configure --origin https://내주소` → `ohmydots start`입니다. 포트 변경은 현재 별도 체크아웃의 새 설치로 진행합니다.
 
-`update`는 변경 사항 없는 main 브랜치의 공식 저장소만 fast-forward로 갱신하고 설정 마법사를 다시 실행합니다. 로컬 수정이 있으면 덮어쓰지 않고 중단합니다. 이미 실행 중이면 먼저 중지하며, 설치 후 다시 실행할지 묻습니다. systemd로 관리한다면 먼저 `systemctl --user stop ohmydots`를 실행하고 업데이트 후 해당 서비스를 다시 시작하세요.
+`update`는 변경 사항 없는 main 브랜치의 공식 저장소만 fast-forward로 갱신하고 기존 설정으로 다시 빌드합니다. 로컬 수정이 있으면 덮어쓰지 않고 중단합니다. 업데이트 진행 여부를 묻고, 이미 실행 중이면 먼저 중지하며, 설치 후 다시 실행할지 묻습니다. 빌드가 실패하면 시작하지 않고 로그를 안내합니다. systemd로 관리한다면 먼저 `systemctl --user stop ohmydots`를 실행하고 업데이트 후 해당 서비스를 다시 시작하세요.
 
 인터랙티브 터미널이 없는 CI에서는 설치 마법사가 진행되지 않습니다. 자동화에는 아래 수동 설치와 `host.py install --password-stdin`을 사용하고 비밀번호는 비밀 저장소에서 표준 입력으로 전달하세요.
 

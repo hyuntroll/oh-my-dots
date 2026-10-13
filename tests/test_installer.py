@@ -151,6 +151,37 @@ def test_start_waits_for_api_web_and_auth_gateway(install_home, monkeypatch):
     assert requests == ['http://127.0.0.1:4001/health', 'http://127.0.0.1:4002/', 'http://127.0.0.1:4003/']
 
 
+@pytest.mark.parametrize('build_fails', [False, True])
+def test_update_builds_before_restart_and_keeps_configuration(install_home, monkeypatch, build_fails):
+    _, base = install_home
+    (base / 'settings.json').write_text('retained config')
+    (base / 'htpasswd').write_text('retained hash')
+    monkeypatch.setattr(cli, 'doctor', lambda: None)
+    monkeypatch.setattr(host, 'output', lambda args: cli.REPO if 'get-url' in args else (
+        'main' if 'branch' in args else ''))
+    monkeypatch.setattr(host, 'service_pid', lambda: 123)
+    monkeypatch.setattr(cli, 'yes', lambda *args, **kwargs: True)
+    calls = []
+    monkeypatch.setattr(host, 'run', lambda args, **kwargs: calls.append(args))
+    def build(args):
+        assert calls[-1] == ['git', 'pull', '--ff-only']
+        calls.append('build')
+        if build_fails:
+            raise ValueError('Build failed')
+    monkeypatch.setattr(cli, 'build', build)
+    monkeypatch.setattr(cli, 'start', lambda: calls.append('start'))
+    if build_fails:
+        with pytest.raises(ValueError, match='Build failed'):
+            cli.update()
+        assert 'start' not in calls
+    else:
+        cli.update()
+        assert calls[-2:] == ['build', 'start']
+    assert calls[0][-1] == 'stop'
+    assert (base / 'settings.json').read_text() == 'retained config'
+    assert (base / 'htpasswd').read_text() == 'retained hash'
+
+
 def executable(path, value):
     path.write_text(value)
     path.chmod(0o755)

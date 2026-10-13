@@ -209,12 +209,20 @@ def update():
         raise ValueError('Switch to main before updating.')
     if host.output(['git', 'status', '--porcelain', '--untracked-files=normal']):
         raise ValueError('Save your checkout changes before updating; no files were reset.')
+    if not (host.BASE / 'settings.json').exists() or not (host.BASE / 'htpasswd').exists():
+        raise ValueError('먼저 ohmydots setup을 완료하세요.')
+    if not yes('서버를 중지하고 최신 버전을 설치할까요? (설정·데이터 유지)'):
+        return
     was_running = bool(host.service_pid())
     if was_running:
         host.run([host.PYTHON, host.ROOT / 'scripts/host.py', 'stop'])
     host.run(['git', 'pull', '--ff-only'], stdin=subprocess.DEVNULL)
-    # Run the updated wizard in a fresh interpreter so it uses the updated implementation.
-    host.run([host.PYTHON, host.ROOT / 'scripts/cli.py', 'setup'])
+    # Build via the updated host.py before offering to run the changed source.
+    build([])
+    create_launcher()
+    print('✓ 업데이트 완료', flush=True)
+    if yes('업데이트 후 서버를 실행할까요?', default=was_running):
+        start()
 
 
 def main():

@@ -24,6 +24,8 @@ class Config:
     data_dir: str = os.getenv("DOT_DATA_DIR", ".local")
     run_seconds: int = 600
     max_tools: int = 80
+    compose_project: str = os.getenv("DOT_COMPOSE_PROJECT", "ohmydot")
+    managed_computers: bool = os.getenv("DOT_MANAGED_COMPUTERS", "0") == "1"
 
     def __post_init__(self):
         Path(self.data_dir).mkdir(parents=True, exist_ok=True)

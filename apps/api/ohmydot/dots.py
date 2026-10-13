@@ -7,7 +7,7 @@ import httpx
 from sqlalchemy import select
 
 from .runtime import Runtime
-from .store import Conversation, Dot, Run
+from .store import Conversation, Dot, Run, Setting
 
 AVATARS = {'ring', 'pet', 'iggy', 'felipe', 'todd', 'alfred', 'jojo'}
 
@@ -42,6 +42,11 @@ class DotComputers:
                 endpoints = json.loads(self.store.get_setting('dot-computer:' + dot_id, '{}'))
                 if not endpoints:
                     raise ValueError('Computer not configured')
+                if self.config.managed_computers:
+                    endpoints = await self.container_endpoints(dot_id)
+                    with self.store.session() as db:
+                        db.get(Setting, 'dot-computer:' + dot_id).value = json.dumps(endpoints)
+                        db.commit()
                 runtime = Runtime(replace(self.config, **endpoints), self.store)
                 await runtime.start(recover=False)
                 self.runtimes[dot_id] = runtime
@@ -96,25 +101,27 @@ class DotComputers:
         try:
             for service, token, port in [('computer', self.config.computer_token, 8765),
                                           ('shell', self.config.shell_token, 8766)]:
-                ids = (await self.docker('ps', '-q', '--filter', 'label=com.docker.compose.project=ohmydot',
+                ids = (await self.docker('ps', '-q', '--filter', 'label=com.docker.compose.project=' + self.config.compose_project,
                          '--filter', 'label=com.docker.compose.service=' + service)).splitlines()
                 if len(ids) != 1:
                     raise ValueError('기본 Dot 컴퓨터 배포를 찾을 수 없습니다.')
                 base = json.loads(await self.docker('inspect', ids[0]))[0]
                 host = base['HostConfig']
                 networks = list(base['NetworkSettings']['Networks'])
-                name = 'ohmydot-' + dot_id + '-' + service
+                prefix = self.config.compose_project
+                name = prefix + '-' + dot_id + '-' + service
                 args = ['create', '--name', name, '--label', 'ohmydots.dot=' + dot_id,
+                        '--label', 'ohmydots.project=' + prefix,
                         '--restart', 'unless-stopped', '--network', networks[0],
                         '-e', service.upper() + '_TOKEN=' + token,
                         '-p', '127.0.0.1::' + str(port),
-                        '--mount', 'type=volume,source=ohmydot-' + dot_id + '-artifacts,target=/workspace/artifacts',
+                        '--mount', 'type=volume,source=' + prefix + '-' + dot_id + '-artifacts,target=/workspace/artifacts',
                         '--cap-drop', 'ALL']
                 if service == 'computer':
                     args += ['-p', '127.0.0.1::6080', '--mount',
-                             'type=volume,source=ohmydot-' + dot_id + '-home,target=/home/dot']
+                             'type=volume,source=' + prefix + '-' + dot_id + '-home,target=/home/dot']
                 else:
-                    args += ['--mount', 'type=volume,source=ohmydot-' + dot_id + '-tools,target=/workspace/.tools']
+                    args += ['--mount', 'type=volume,source=' + prefix + '-' + dot_id + '-tools,target=/workspace/.tools']
                 for cap in host.get('CapAdd') or []:
                     args += ['--cap-add', cap]
                 for opt in host.get('SecurityOpt') or []:
@@ -156,3 +163,17 @@ class DotComputers:
             for name in created:
                 await self.docker('rm', '-f', name)
             raise
+
+    async def container_endpoints(self, dot_id):
+        """Refresh ephemeral published ports after Docker/host restarts."""
+        endpoints = {}
+        for service, port in [('computer', '8765/tcp'), ('shell', '8766/tcp')]:
+            row = json.loads(await self.docker('inspect', self.config.compose_project + '-' + dot_id + '-' + service))[0]
+            labels = row['Config'].get('Labels') or {}
+            if labels.get('ohmydots.project') != self.config.compose_project or labels.get('ohmydots.dot') != dot_id:
+                raise ValueError('Computer identity mismatch')
+            ports = row['NetworkSettings']['Ports']
+            endpoints[service + '_url'] = 'http://127.0.0.1:' + ports[port][0]['HostPort']
+            if service == 'computer':
+                endpoints['vnc_url'] = 'ws://127.0.0.1:' + ports['6080/tcp'][0]['HostPort']
+        return endpoints

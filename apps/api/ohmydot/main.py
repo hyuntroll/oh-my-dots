@@ -6,6 +6,7 @@ import secrets
 import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 import websockets
@@ -192,10 +193,11 @@ def create_app(config=None):
 
     @app.get("/api/session")
     async def session(request: Request):
-        # Local demo bootstrap. Cross-site browser requests cannot obtain the HttpOnly session cookie.
+        # The protected hosting gateway supplies this secret; browsers cannot mint
+        # sessions directly. Only the configured origin's host is added remotely.
         if (
             not secrets.compare_digest(request.headers.get("x-dot-bootstrap", ""), config.session_token)
-            or request.url.hostname not in ("localhost", "127.0.0.1", "testserver")
+            or request.url.hostname not in ("localhost", "127.0.0.1", "testserver", urlsplit(config.origin).hostname)
             or not allowed_origin(request.headers)
         ):
             raise HTTPException(403, "Local access only")

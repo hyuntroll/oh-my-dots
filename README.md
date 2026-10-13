@@ -1,18 +1,41 @@
 # OhMyDots
+
+**내 컴퓨터와 서버에 설치하는, 나만의 AI 작업 공간.**
+
 [![Last Commit](https://img.shields.io/github/last-commit/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/commits/main)
 [![Issues](https://img.shields.io/github/issues/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/issues)
+![Self-hosted](https://img.shields.io/badge/self--hosted-your%20server-f4c95d?style=flat-square)
 
-**대화하면서 함께 사용하는 AI 컴퓨터.**
+[설치하고 호스팅하기](docs/SELF-HOSTING.md) · [주요 기능](#하나의-대화-하나의-컴퓨터) · [개발 환경](#개발-모드로-실행하기)
 
-![OhMyDots이미지](https://github.com/hyuntroll/oh-my-dots/blob/main/docs/assets/dots-ui/multi-dot-computer.png)
+![대화와 실제 Linux 컴퓨터를 나란히 사용하는 OhMyDots](docs/assets/readme/workspace.png)
 
-OhMyDots는 AI와의 대화, 원격 컴퓨터 화면, 작업 기록을 한 공간에 연결하는 로컬 앱입니다. 원하는 작업을 메시지로 요청하고, AI가 브라우저와 셸을 사용하는 모습을 실시간으로 확인할 수 있습니다. 필요할 때는 직접 컴퓨터를 조작하고 다시 AI에게 제어권을 넘길 수 있습니다.
+| 나에게 맞는 설정 | 필요한 앱과 연결 |
+| :---: | :---: |
+| ![OhMyDots 설정](docs/assets/readme/settings.png) | ![Gmail·Calendar·Drive 앱 연결](docs/assets/readme/connections.png) |
 
-현재 버전은 **v0.0.1**입니다.
+메시지로 일을 요청하고, AI가 브라우저와 컴퓨터를 사용하는 모습을 실시간으로 확인하세요. 필요하면 **Take over**로 직접 조작하고, 만든 파일은 **Spaces**에서 모아 봅니다. Dot마다 이름·색상·컴퓨터를 따로 두고, Codex Auth 또는 OpenAI API로 모델을 연결할 수 있습니다.
+
+개인 컴퓨터에서는 로컬 앱처럼, 개인 서버에서는 브라우저로 접속하는 서비스처럼 사용할 수 있습니다. 현재 버전은 **v0.0.1**, 한 소유자를 위한 설치형 서비스입니다.
+
+## 설치해서 호스팅하기
+
+Linux 또는 macOS에 Docker, Python 3.11+, Node.js 24+를 준비한 뒤 실행합니다.
+
+```sh
+git clone https://github.com/hyuntroll/oh-my-dots.git
+cd oh-my-dots
+python3 scripts/host.py install
+python3 scripts/host.py start --detach
+```
+
+**http://localhost:3080/** 에서 설치할 때 정한 비밀번호로 로그인합니다. 기본 로그인 이름은 `owner`입니다. 설치기는 운영용 웹 빌드, Codex CLI와 격리된 Linux 컴퓨터를 준비합니다. 데이터와 브라우저 프로필은 재시작 후에도 보관합니다.
+
+포트 변경, HTTPS 도메인·Tailscale 접속, Linux 자동 시작, 업데이트와 백업은 [셀프 호스팅 가이드](docs/SELF-HOSTING.md)를 참고하세요.
 
 ## 하나의 대화, 하나의 컴퓨터
 
-- **시작하기:** AI 연결 확인, 작업할 컴퓨터 안내, 이름·모습 선택을 따라 시작합니다. 중간 단계가 저장되며 탐색 메뉴에서 가이드를 다시 열 수 있습니다.
+- **시작하기:** AI 연결 확인, 작업할 컴퓨터 안내, 이름·모습 선택을 따라 시작합니다. 이름과 모습을 선택하고 Dot마다 따로 컴퓨터를 준비합니다.
 - **대화:** 요청과 응답을 저장하고, 새 대화와 이전 대화를 오가며 작업합니다.
 - **컴퓨터:** Linux 데스크톱을 실시간으로 표시합니다. Chromium, 터미널, 파일 관리자를 Dock에서 열 수 있습니다.
 - **직접 제어:** `Take over`로 컴퓨터를 직접 조작하고, `Return control`로 AI에게 돌려줍니다. 제어권을 가져와도 대화와 셸 작업은 이어집니다.
@@ -22,12 +45,12 @@ OhMyDots는 AI와의 대화, 원격 컴퓨터 화면, 작업 기록을 한 공�
 - **스킬:** 필요한 작업 설명서만 불러와 활용합니다. 설정에서 내장 스킬의 절차를 읽고, 대화의 작업 기록에서 에이전트가 읽은 설명서를 확인할 수 있습니다.
 - **사용량:** 최근 작업의 누적 입력·출력 토큰을 확인하고 펼쳐서 캐시·비캐시, 보고된 모델 호출 수와 마지막 요청 입력을 구분합니다. 설정에서는 제공자별 누적 사용량을 확인합니다. 모델이 보고한 값이며 계정의 잔여 한도나 청구 금액을 뜻하지 않습니다.
 - **활동과 결과물:** 대화 옆 프로필 패널에서 작업 상태와 결과 파일을 확인합니다. Spaces에서 파일을 검색하고 종류별로 모아 봅니다. Markdown·텍스트·이미지·PDF를 미리 보고 원본을 다운로드할 수 있습니다.
-- **앱 연결:** Gmail, Google Calendar, Google Drive, Slack을 찾아 dot 컴퓨터에서 로그인합니다. 직접 로그인한 뒤 제어권을 돌려주면 AI가 같은 브라우저로 작업합니다.
+- **앱 연결:** Gmail, Google Calendar, Google Drive, Slack의 지원되는 읽기 작업은 연결한 OAuth/API로 처리합니다. 지원되지 않는 작업은 Dot 컴퓨터의 브라우저로 이어갑니다.
 - **인증 설정:** Codex Auth 또는 OpenAI API를 선택해 AI를 연결합니다.
 
-대화를 중심으로 탐색 메뉴, 프로필, 활동과 결과물을 배치하고 필요할 때 컴퓨터를 펼칩니다. 이름과 색상, 주황색 캐릭터, 다크·라이트 테마를 선택할 수 있으며 모습 설정은 현재 브라우저에 저장됩니다. 화면 크기에 따라 대화와 컴퓨터를 분할하거나 탭으로 전환합니다. 저장한 dot 이름은 다음 요청의 AI 지침에도 전달됩니다. 서버 계정의 이름은 바꾸지 않습니다.
+대화를 중심으로 탐색 메뉴, 프로필, 활동과 결과물을 배치하고 필요할 때 컴퓨터를 펼칩니다. Dot마다 이름과 색상, 캐릭터를 선택하고 다크·라이트 테마를 사용할 수 있습니다. 화면 크기에 따라 대화와 컴퓨터를 분할하거나 탭으로 전환합니다. 저장한 dot 이름은 다음 요청의 AI 지침에도 전달됩니다. 서버 계정의 이름은 바꾸지 않습니다.
 
-## 실행하기
+## 개발 모드로 실행하기
 
 Docker Desktop, Node.js 24, Python 3.11 이상이 필요합니다. Codex Auth를 사용할 때는 `codex` CLI도 설치되어 있어야 합니다.
 
@@ -51,7 +74,7 @@ npm ci --prefix apps/web
 
 모델 이름을 직접 입력하는 대신 목록에서 선택합니다. Codex는 로컬 모델 목록과 계정 기본 모델을, OpenAI API는 저장한 키로 조회한 모델 목록을 제공합니다. 목록을 검색하거나 새로고침할 수 있으며 다음 작업부터 적용됩니다.
 
-앱 연결은 dot 컴퓨터의 브라우저 로그인 방식입니다. 별도의 Google·Slack OAuth/API 연결이나 계정 동기화는 아직 제공하지 않습니다.
+앱의 OAuth/API를 쓰려면 해당 서비스의 앱 등록 정보가 필요합니다. 등록하지 않은 서비스는 Dot 컴퓨터에서 직접 로그인해 브라우저로 사용할 수 있습니다.
 
 인증값은 서버에서 관리하며 API 키를 브라우저 번들에 포함하지 않습니다. `.env.local`은 Git에서 제외됩니다.
 
@@ -96,7 +119,7 @@ open output/desktop/OhMyDots-darwin-arm64/OhMyDots.app
 | `apps/desktop` | Electron macOS 앱 |
 | `computer` | Linux 데스크톱 · GUI 입력 · 화면 스트림 · Dock |
 | `shell` | 별도 셸 실행 환경 |
-| `infra` | localhost 게이트웨이 |
+| `infra` | 개발·호스팅 게이트웨이 |
 | `scripts` | 실행 및 실제 환경 검증 |
 | `tests` | 제어권 · 작업 큐 · 취소 · 셸 · 입력 복구 테스트 |
 
@@ -120,7 +143,7 @@ npm run build --prefix apps/web
 .venv/bin/python scripts/live_smoke.py
 ```
 
-OhMyDots는 localhost에서 사용하는 단일 사용자 앱입니다. 로컬 서비스 접근은 게이트웨이 쿠키와 전용 토큰으로 인증하고, GUI와 셸 실행 환경을 분리합니다. 사용자가 요청한 공개 페이지와 개인 계정의 메일·일정·문서를 GUI로 확인하고 작업을 준비합니다. 온라인 문서·일정 생성이나 수정, 메일·초대장 발송, 업로드·공유·삭제는 대상과 내용을 제시한 뒤 대화에서 확인받고 실행합니다. 자동 저장되는 편집기는 입력 전에 확인받습니다. 로그인·비밀번호·MFA·CAPTCHA는 사용자가 Take over로 직접 처리합니다. 이 확인 절차는 에이전트의 공통 지침으로 적용되며, 별도의 서버 측 승인 게이트는 아닙니다.
+OhMyDots는 한 소유자를 위한 설치형 서비스입니다. 개발 모드는 localhost에서, 호스팅 모드는 비밀번호로 보호되는 게이트웨이 뒤에서 사용합니다. 로컬 서비스 접근은 게이트웨이 쿠키와 전용 토큰으로 인증하고, GUI와 셸 실행 환경을 분리합니다. 사용자가 요청한 공개 페이지와 개인 계정의 메일·일정·문서를 GUI로 확인하고 작업을 준비합니다. 온라인 문서·일정 생성이나 수정, 메일·초대장 발송, 업로드·공유·삭제는 대상과 내용을 제시한 뒤 대화에서 확인받고 실행합니다. 자동 저장되는 편집기는 입력 전에 확인받습니다. 로그인·비밀번호·MFA·CAPTCHA는 사용자가 Take over로 직접 처리합니다. 이 확인 절차는 에이전트의 공통 지침으로 적용되며, 별도의 서버 측 승인 게이트는 아닙니다.
 
 ## 에이전트 구조를 이해하기
 

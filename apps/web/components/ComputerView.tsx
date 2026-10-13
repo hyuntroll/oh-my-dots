@@ -4,6 +4,7 @@ import { Globe, Terminal, Folder, Monitor, RotateCcw, Plus, Columns2, PanelsTopL
 import { api, post, Computer } from '../lib/api';
 import Presence from './Presence';
 import { RemoteInputQueue } from '../lib/remote-input';
+import { connectComputerStream } from '../lib/computer-stream';
 
 const special: Record<string, string> = { Enter: 'Return', Backspace: 'BackSpace', Tab: 'Tab', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', Delete: 'Delete', Home: 'Home', End: 'End', PageUp: 'Page_Up', PageDown: 'Page_Down', Control: 'Control_L', Meta: 'Control_L', Shift: 'Shift_L', Alt: 'Alt_L', ' ': 'space' };
 export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDots', accent, computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { sessionId?: string; name?: string; accent: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
@@ -16,6 +17,7 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
     return () => controller.abort();
   }, [PREFIX, accent, name, computer.connected, onError]);
   const host = useRef<HTMLDivElement>(null);
+  const stream = useRef<ReturnType<typeof connectComputerStream> | null>(null);
   const panel = useRef<HTMLElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const state = useRef(computer);
@@ -35,7 +37,7 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
   const queue = useMemo(() => new RemoteInputQueue(
     () => state.current,
     (entry, signal) => api(PREFIX + (entry.release ? '/release' : '/input'), { ...post({ ...entry.body, epoch: entry.epoch }), signal }),
-    error => { keys.current.clear(); onError((error as Error).message); refresh(); setReconnect(n => n + 1); },
+    error => { keys.current.clear(); onError((error as Error).message); refresh(); },
   ), [PREFIX, onError, refresh]);
   useEffect(() => {
     queue.reset(); keys.current.clear();
@@ -57,35 +59,14 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
   }, [queue, release, refresh]);
   useEffect(() => {
     const node = host.current;
-    if (!node || !computer.connected) return;
-    let disposed = false;
-    let closed = false;
-    let rfb: import('@novnc/novnc').default | undefined;
-    let timer: ReturnType<typeof setTimeout>;
-    const retry = () => {
-      if (disposed) return;
-      queue.reset(); release(); refresh();
-      setConnection('disconnected');
-      clearTimeout(timer);
-      timer = setTimeout(() => setReconnect(n => n + 1), 2500);
-    };
-    setConnection('connecting');
-    timer = setTimeout(() => { rfb?.disconnect(); retry(); }, 10_000);
-    import('@novnc/novnc').then(({ default: RFB }) => {
-      if (disposed) return;
-      rfb = new RFB(node, `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api${PREFIX}/stream`);
-      rfb.viewOnly = true;
-      rfb.scaleViewport = true;
-      rfb.resizeSession = false;
-      rfb.background = '#f49a80';
-      rfb.addEventListener('connect', () => { if (!disposed) { clearTimeout(timer); setConnection('connected'); } });
-      rfb.addEventListener('disconnect', () => {
-        closed = true;
-        retry();
-      });
-    }).catch(retry);
-    return () => { disposed = true; clearTimeout(timer); if (!closed) rfb?.disconnect(); node.replaceChildren(); };
-  }, [computer.connected, reconnect, queue, release, refresh]);
+    if (!node) return;
+    const connection = connectComputerStream(node,
+      `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api${PREFIX}/stream`,
+      () => import('@novnc/novnc').then(module => module.default), setConnection,
+      () => { queue.reset(); release(); refresh(); }, () => setReconnect(n => n + 1));
+    stream.current = connection;
+    return () => { stream.current = null; connection.close(); };
+  }, [PREFIX, reconnect, queue, release, refresh]);
   useEffect(() => {
     window.addEventListener('blur', release);
     const hidden = () => { if (document.hidden) release(); };
@@ -93,11 +74,12 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
     return () => { release(); window.removeEventListener('blur', release); document.removeEventListener('visibilitychange', hidden); };
   }, [release]);
   useEffect(() => {
-    const visible = () => { if (!document.hidden) reconnectComputer(); };
-    window.addEventListener('online', reconnectComputer);
+    const resume = () => { refresh(); stream.current?.resume(); };
+    const visible = () => { if (!document.hidden) resume(); };
+    window.addEventListener('online', resume);
     document.addEventListener('visibilitychange', visible);
-    return () => { window.removeEventListener('online', reconnectComputer); document.removeEventListener('visibilitychange', visible); };
-  }, [reconnectComputer]);
+    return () => { window.removeEventListener('online', resume); document.removeEventListener('visibilitychange', visible); };
+  }, [refresh]);
   const point = (event: React.PointerEvent<HTMLTextAreaElement> | React.WheelEvent<HTMLTextAreaElement>) => {
     const rect = host.current?.querySelector('canvas')?.getBoundingClientRect();
     if (!rect || !rect.width || !rect.height || event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return null;
@@ -126,7 +108,7 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
     catch { onError('이 브라우저에서는 전체 화면을 사용할 수 없습니다.'); }
   };
   return <section ref={panel} className={'computer-panel ' + (computer.owner === 'USER' ? 'has-user-control' : '')} aria-label="OhMyDots의 컴퓨터">
-    <header className="computer-heading"><button className="icon-button mobile-computer-back" aria-label="대화로 돌아가기" onClick={onBack}><X size={18} /></button><div className="computer-tab"><Monitor size={13} /><strong>{name}’s computer</strong><button className="icon-button close-computer" aria-label="컴퓨터 탭 닫기" onClick={onClose}><X size={12} /></button></div><button className="icon-button computer-plus" aria-label="컴퓨터 도구 열기" title="컴퓨터 도구" aria-expanded={toolsOpen} onClick={() => setToolsOpen(!toolsOpen)}><Plus size={16} /></button><div className="computer-heading-actions"><span className={'connection ' + (computer.connected && connection === 'connected' ? 'online' : '')} title={!computer.connected ? '오프라인' : connection === 'connected' ? '실시간 연결' : '연결 중'}><i /></span><button className="icon-button" aria-label="컴퓨터 다시 연결" title="컴퓨터 다시 연결" onClick={reconnectComputer}><RotateCcw size={13} /></button><button className="icon-button" aria-label={fullscreen ? '전체 화면 종료' : '컴퓨터 전체 화면'} title="전체 화면" onClick={toggleFullscreen}>{fullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button><button className="icon-button split-toggle" aria-label={expanded ? '대화와 컴퓨터 분할 보기' : '컴퓨터 넓게 보기'} title="분할 보기 전환" onClick={onToggleExpanded}><Columns2 size={14} /></button></div></header>
+    <header className="computer-heading"><button className="icon-button mobile-computer-back" aria-label="대화로 돌아가기" onClick={onBack}><X size={18} /></button><div className="computer-tab"><Monitor size={13} /><strong>{name}’s computer</strong><button className="icon-button close-computer" aria-label="컴퓨터 탭 닫기" onClick={onClose}><X size={12} /></button></div><button className="icon-button computer-plus" aria-label="컴퓨터 도구 열기" title="컴퓨터 도구" aria-expanded={toolsOpen} onClick={() => setToolsOpen(!toolsOpen)}><Plus size={16} /></button><div className="computer-heading-actions"><span className={'connection ' + (connection === 'connected' ? 'online' : '')} title={connection === 'connected' ? '실시간 연결' : '연결 중'}><i /></span><button className="icon-button" aria-label="컴퓨터 다시 연결" title="컴퓨터 다시 연결" onClick={reconnectComputer}><RotateCcw size={13} /></button><button className="icon-button" aria-label={fullscreen ? '전체 화면 종료' : '컴퓨터 전체 화면'} title="전체 화면" onClick={toggleFullscreen}>{fullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button><button className="icon-button split-toggle" aria-label={expanded ? '대화와 컴퓨터 분할 보기' : '컴퓨터 넓게 보기'} title="분할 보기 전환" onClick={onToggleExpanded}><Columns2 size={14} /></button></div></header>
     <div className="computer-stage"><div className="computer-display"><div className="desktop-frame" style={{ aspectRatio: `${computer.width || 1280} / ${computer.height || 960}` }}>
 
       <div className="desktop-surface" ref={host} />
@@ -148,7 +130,7 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
         onCompositionEnd={event => { composition.current = false; if (event.data) send({ action: 'type', text: event.data }); event.currentTarget.value = ''; }}
         onChange={event => { if (!composition.current && event.currentTarget.value) { send({ action: 'type', text: event.currentTarget.value }); event.currentTarget.value = ''; } }}
         onPaste={event => { event.preventDefault(); send({ action: 'type', text: event.clipboardData.getData('text') }); }} />}
-      {(!computer.connected || connection !== 'connected') && <div className="desktop-placeholder"><Monitor size={32} /><strong>{computer.connected ? '컴퓨터에 연결하고 있어요' : '컴퓨터 연결을 기다리고 있어요'}</strong><p>{computer.connected ? '실제 데스크톱 화면이 곧 표시됩니다.' : '연결이 복구되면 화면을 다시 표시합니다.'}</p><button className="button light" onClick={reconnectComputer}><RotateCcw size={14} /> 다시 연결</button></div>}
+      {connection !== 'connected' && <div className="desktop-placeholder"><Monitor size={32} /><strong>{computer.connected ? '컴퓨터에 연결하고 있어요' : '컴퓨터 연결을 기다리고 있어요'}</strong><p>{computer.connected ? '실제 데스크톱 화면이 곧 표시됩니다.' : '연결이 복구되면 화면을 다시 표시합니다.'}</p><button className="button light" onClick={reconnectComputer}><RotateCcw size={14} /> 다시 연결</button></div>}
       {(busy || computer.handoff) && <div className="handoff-overlay"><span className="spinner" />{observing ? '현재 화면을 다시 읽고 있어요' : '제어권을 전환하고 있어요'}</div>}
     </div>
     <div className={'control-bar ' + (computer.owner === 'USER' ? 'user-control' : '')}><strong key={computer.owner} className="control-label">{computer.owner === 'USER' ? 'You have control' : `${name} has control`}</strong><button className="button" disabled={!computer.connected || busy || computer.handoff} onClick={handoff}>{busy ? '전환 중…' : computer.owner === 'USER' ? 'Return control' : 'Take over'}</button></div></div></div>

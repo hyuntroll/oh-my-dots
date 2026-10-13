@@ -2,7 +2,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import httpx
 import pytest
@@ -13,6 +13,29 @@ from ohmydot.store import ComputerSession, Dot, Setting
 spec = importlib.util.spec_from_file_location('host', Path(__file__).resolve().parents[1] / 'scripts/host.py')
 host = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(host)
+
+
+@pytest.mark.parametrize('repaired', [True, False])
+def test_missing_pip_recovers_without_recreating_environment(tmp_path, monkeypatch, repaired):
+    monkeypatch.setattr(host, 'ROOT', tmp_path)
+    uv = tmp_path / '.local/runtime/uv/uv'
+    uv.parent.mkdir(parents=True)
+    uv.touch()
+    results = iter([1, 0 if repaired else 1, 0 if repaired else 1])
+    monkeypatch.setattr(host.subprocess, 'run', lambda *args, **kwargs: Mock(returncode=next(results)))
+    run = Mock()
+    monkeypatch.setattr(host, 'run', run)
+    host.install_api_dependencies()
+    expected = [host.PYTHON, '-m', 'pip', 'install', '-r', 'requirements.txt'] if repaired else [
+        uv, 'pip', 'install', '--python', host.PYTHON, '-r', 'requirements.txt']
+    run.assert_called_once_with(expected)
+
+
+def test_missing_pip_without_uv_has_actionable_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(host, 'ROOT', tmp_path)
+    monkeypatch.setattr(host.subprocess, 'run', lambda *args, **kwargs: Mock(returncode=1))
+    with pytest.raises(ValueError, match='settings and data are retained'):
+        host.install_api_dependencies()
 
 
 @pytest.mark.parametrize('value', ['https://dots.example.com', 'http://localhost:3090', 'http://127.0.0.1:3090'])

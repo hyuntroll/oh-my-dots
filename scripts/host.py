@@ -123,6 +123,24 @@ def service_pid():
     return None
 
 
+def install_api_dependencies():
+    probe = [PYTHON, '-m', 'pip', '--version']
+    quiet = {'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
+    if subprocess.run(probe, **quiet).returncode:
+        print('Preparing pip in the existing virtual environment…', flush=True)
+        subprocess.run([PYTHON, '-m', 'ensurepip', '--upgrade'], **quiet)
+        if subprocess.run(probe, **quiet).returncode:
+            uv = ROOT / '.local/runtime/uv/uv'
+            if uv.is_file():
+                # Managed Python distributions can omit pip/ensurepip; uv does not need them.
+                run([uv, 'pip', 'install', '--python', PYTHON, '-r', 'requirements.txt'])
+                return
+            raise ValueError('This Python environment has neither pip nor ensurepip. '
+                             'Install your Python distribution\'s venv/pip support and retry setup; '
+                             'existing settings and data are retained.')
+    run([PYTHON, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+
+
 def install(args):
     if service_pid():
         raise ValueError('Stop the hosting service before installing an update.')
@@ -151,7 +169,7 @@ def install(args):
     if not PYTHON.exists():
         run([sys.executable, '-m', 'venv', ROOT / '.venv'])
     print('Installing API and Codex dependencies…', flush=True)
-    run([PYTHON, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+    install_api_dependencies()
     run(['npm', 'install', '--prefix', BASE / 'codex', '@openai/codex@0.160.0'])
     web = BASE / 'web'
     if web.exists():

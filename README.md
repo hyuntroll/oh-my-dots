@@ -18,6 +18,19 @@
 
 개인 컴퓨터에서는 로컬 앱처럼, 개인 서버에서는 브라우저로 접속하는 서비스처럼 사용할 수 있습니다. 현재 버전은 **v0.0.1**, 한 소유자를 위한 설치형 서비스입니다.
 
+## 원본 Dots UI 작업본
+
+원본 앱의 React 구성요소·CSS·폰트·네이티브 캐릭터 엔진을 실행하는 별도 로컬 프로젝트는 [`apps/dots-reconstructed`](apps/dots-reconstructed/README.md)에 있습니다. 원본 UI에 로컬 저장소와 OpenCode 연결을 붙인 작업본이며, 원본 클라우드 하네스를 복원한 것은 아닙니다. [검증 범위와 화면 기록](apps/dots-reconstructed/docs/exact-ui/verification.md)을 함께 기록했습니다.
+
+```sh
+cd apps/dots-reconstructed
+npm ci
+npm run original:verify
+npm start
+```
+
+브라우저에서 **http://127.0.0.1:3420/original/webview/** 를 엽니다. 이 프로젝트의 대화·설정은 해당 폴더의 `.data/`에 저장됩니다. 컴퓨터 화면은 Docker Desktop 실행 후 `npm run computer:start`로 준비합니다.
+
 ## 설치해서 호스팅하기
 
 Linux 또는 macOS에서 Docker를 설치하고 실행한 뒤, 터미널에 한 줄을 붙여 넣으세요.

@@ -1,0 +1,1 @@
+import{ast as e,ist as t,ost as n,rst as r,sst as i}from"./app-shared-fc3316d48427.js";e();export{r as appHost,t as appServices,n as setAppHost,i as setAppServices};

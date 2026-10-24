@@ -1,0 +1,2 @@
+import{n as e}from"./rolldown-runtime-2d059c5e81f4.js";import{EOt as t,OOt as n,TOt as r}from"./app-shared-fc3316d48427.js";function i({update:e,motionValues:n}){let i=()=>{t.postRender(e)},a=n.map(e=>e?.on(`change`,i));return{scheduleUpdate:i,disconnect(){for(let e of a)e?.();r(e)}}}function a(){return(a=e((()=>{n()})))()}export{i as n,a as t};
+//# sourceMappingURL=observe-layout-motion-8ddbe01671ce.js.map

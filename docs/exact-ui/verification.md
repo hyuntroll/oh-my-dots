@@ -35,6 +35,8 @@ npm start
 
 Remote packaging verification on 2026-10-25 pinned the extractor's ASAR and parser dependencies in the lockfile, removed personal npm-cache paths, and reproduced all 1,135 file hashes and the CSS ordering into a fresh output directory. The Vite development dependency was updated to 8.3.5 after the registry audit identified advisories in the previous version; the resulting dependency audit reported zero findings. The original UI's component bytes were not changed by that tooling update. Private runtime databases, credentials, environment overrides, node_modules and build caches are excluded from Git.
 
+The committed project was then imported at `apps/dots-reconstructed/` in a clean worktree of `hyuntroll/oh-my-dots`. From that independent copy, `npm ci`, `npm test` (47/47), `npm run build` and `npm run original:verify` all passed. Starting it on API 3415/UI 3425 with an empty local database rendered the original Korean welcome screen; `docs/qa/exact-ui/clean-checkout-welcome.png` records that browser result. The existing user's runtime data was not needed for this check. The temporary verification server was stopped afterward; the normal local UI remains on 3420.
+
 Browser captures are in `docs/qa/exact-ui/`: `native-editor.png`, `approval-pending.png`, `chat-tool-complete.png`, `file-preview.png`, and `computer-panel.png`. Earlier failed provider attempts remain visible in QA history rather than being erased.
 
 REA parent evidence: `ev_aea4ead6a40d52de06d739e63d2bc36bad410d133b1b4c05fcf63623fc18cde9`; summary evidence `ev_eb07a75c7d27cf44aefbf01193159713884b822e52ea20e4977a466a1289e909`. See `rea-summary-2026-10-25.json` and the scoped source contracts in this directory. Static evidence does not itself observe runtime execution.

@@ -1,0 +1,137 @@
+{
+  "verified_at": "2026-10-18T17:01:47.099Z",
+  "provider": "opencode-go/longcat-2.5-preview-free",
+  "profiles": [
+    {
+      "id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "name": "로컬 Dot",
+      "preset": "custom",
+      "native_appearance_header": "ORBAST1",
+      "native_appearance_bytes": 75,
+      "has_snapshot": true
+    },
+    {
+      "id": "f60c6125-a8de-4aa9-bbb4-788eb81ce634",
+      "name": "보조 Dot",
+      "preset": "purple_heart",
+      "native_appearance_header": "",
+      "native_appearance_bytes": 0,
+      "has_snapshot": false
+    }
+  ],
+  "tasks": [
+    {
+      "id": "e7ebead8-e665-4123-93dd-c7964bb134ea",
+      "profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "status": "completed",
+      "tools": [],
+      "approvals": []
+    },
+    {
+      "id": "2a10aeb7-9856-4a75-bcba-52b6663a048d",
+      "profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "status": "completed",
+      "tools": [
+        {
+          "name": "write_file",
+          "status": "completed"
+        },
+        {
+          "name": "read_file",
+          "status": "completed"
+        }
+      ],
+      "approvals": [
+        {
+          "kind": "write",
+          "decision": "allow",
+          "status": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "95a35a62-bc9a-4a72-9ffe-b4bbcbf58e5d",
+      "profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "status": "cancelled",
+      "tools": [
+        {
+          "name": "computer_status",
+          "status": "completed"
+        },
+        {
+          "name": "computer_action",
+          "status": "error"
+        }
+      ],
+      "approvals": [
+        {
+          "kind": "computer",
+          "decision": "deny",
+          "status": "denied"
+        }
+      ]
+    },
+    {
+      "id": "852f4b04-e332-425b-a5cc-5a2aabeb1ef8",
+      "profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "status": "completed",
+      "tools": [
+        {
+          "name": "computer_status",
+          "status": "completed"
+        },
+        {
+          "name": "computer_action",
+          "status": "completed"
+        }
+      ],
+      "approvals": [
+        {
+          "kind": "computer",
+          "decision": "allow",
+          "status": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "b0b8a258-2f5c-42f9-a320-c61e19f57626",
+      "profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "status": "completed",
+      "tools": [
+        {
+          "name": "send_message",
+          "status": "completed"
+        }
+      ],
+      "approvals": [
+        {
+          "kind": "peer_message",
+          "decision": "allow",
+          "status": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "a48e418d-f748-49ca-b192-fb43e53b6778",
+      "profile_id": "f60c6125-a8de-4aa9-bbb4-788eb81ce634",
+      "status": "completed",
+      "tools": [],
+      "approvals": []
+    }
+  ],
+  "peer_messages": [
+    {
+      "origin_profile_id": "33248fdc-b8bd-4930-9dc4-fbd174ceefcb",
+      "room_id": "4cadc388-cc9b-46e6-9f64-228862522154",
+      "has_answer": true
+    }
+  ],
+  "computer": {
+    "connected": true,
+    "state": "ready",
+    "owner": "AGENT",
+    "width": 1280,
+    "height": 960,
+    "restart_verified": true
+  }
+}

@@ -1,0 +1,2 @@
+import{n as e}from"./rolldown-runtime-2d059c5e81f4.js";import{PBt as t}from"./app-shared-fc3316d48427.js";import{Cjr as n,Gpr as r,Kpr as i,xjr as a}from"./app-initial-dddef47d6ef6.js";function o(){let e=(0,s.c)(2),t=n(`620613358`),i;return e[0]===t?i=e[1]:(i=r()===`macOS`&&t,e[0]=t,e[1]=i),i}var s;function c(){return(c=e((()=>{s=t(),i(),a()})))()}export{o as n,c as t};
+//# sourceMappingURL=use-realtime-voice-native-overlay-transition-enabled-9f6d44ed7008.js.map

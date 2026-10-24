@@ -1,0 +1,9 @@
+{
+  "compression": "gzip",
+  "uncompressed_sha256": "44c63ce2a3e890384b184df6be68633a85261c1b709ec510e6614de65c8e511f",
+  "uncompressed_bytes": 655412489,
+  "compressed_bytes": 126338567,
+  "records": 4,
+  "tool": "REA export_evidence_bundle",
+  "artifact_sha256": "5ddc4e48259aa6f979e04529b1a5a4ae54b0f5c4ad6db5c6e004924c10916ddb"
+}

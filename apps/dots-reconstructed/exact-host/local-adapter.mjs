@@ -1,4 +1,5 @@
 import { approvalMessages, inspectApproval, respondApproval } from './local-approvals.mjs';
+import { readOnlyLocalPluginRpc, localPluginMcpServers } from './local-plugins.mjs';
 // Transport/data boundary for the unmodified shipped Dots components.
 // This is a local backend, never a ChatGPT account or a cloud session.
 export const LOCAL_ACCOUNT_ID = 'local';
@@ -28,6 +29,10 @@ const metadata = {
   get(id) { return this.read()[id] || {}; },
   set(id, patch) { const rows = this.read(); rows[id] = { ...rows[id], ...patch }; localStorage.setItem(metadataKey, JSON.stringify(rows)); },
 };
+
+export function localAccountIdentity() {
+  return { id: LOCAL_USER_ID, name: metadata.get('local-account').name || '로컬 사용자', email: null, picture: null };
+}
 
 export function originalProfile(profile) {
   const extra = metadata.get(profile.id);
@@ -351,6 +356,20 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
     if (diagnostics.requests.length > 100) diagnostics.requests.shift();
     if (!state) await refresh();
     let match;
+    if (method === 'GET' && path === '/me') return localAccountIdentity();
+    if (method === 'GET' && path === '/profiles/me') return {
+      user_id: LOCAL_USER_ID, profile_details: { display_name: localAccountIdentity().name, username: null },
+      viewer_access: { can_edit: false }, local_backend: true,
+    };
+    if (method === 'GET' && path === '/wham/profiles/me') return {
+      profile: { display_name: localAccountIdentity().name, username: null, profile_picture_url: null },
+      stats: {}, metadata: { stats_error: 'Cloud usage is unavailable in local mode' }, local_backend: true,
+    };
+    if (method === 'PATCH' && path === '/accounts/users/name') {
+      if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 100) throw missing('이름을 1~100자로 입력하세요.', 400);
+      metadata.set('local-account', { name: body.name.trim() });
+      return localAccountIdentity();
+    }
     // The standalone local installation has no connected cloud apps or hosted
     // plugins. These are truthful empty LOCAL inventories, not success replies
     // to an install, authentication, or external account operation.
@@ -539,10 +558,12 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
         return { status: 'ready' };
       },
       async sendRequest(name) {
-      if (name === 'plugin/installed') return { marketplaces: [] };
+      const pluginResult = readOnlyLocalPluginRpc(name, { model: state.settings?.model });
+      if (pluginResult !== undefined) return pluginResult;
       warn('rpc:' + name, { event: 'unsupported-native-rpc', method: name, status: 501 });
         throw missing('Native app-server operation is unavailable in the local backend: ' + name, 501);
       },
+      async listMcpServers() { return localPluginMcpServers(); },
       async discoverSubagentDescendantSnapshot() { return { descendantThreads: [] }; },
       onRpcBroken() { return () => {}; },
       onRpcError() { return () => {}; },

@@ -16,10 +16,15 @@ let exactLocalRoomLive = false; function ExactSetLocalRoomLive(scope, room, valu
 function ExactUseLocalAccountInputs() { mEt(); pEt = oc(J, "ready"); }
 function ExactSetLocalOutputs(scope, rows) { A9n(); scope.set(E9n, rows); }
 function ExactSetExecutionManager(factory) { gh = factory; }
+function ExactAuthNonceContext() { lzn(); return czn; }
+function ExactAdaptProfileFooter(adapt) { ROc(); const original = NOc; NOc = adapt(original); return () => { NOc = original; }; }
+export { f8 as ExactSettingsSection, PPl as ExactInitSettingsSection, ExactAuthNonceContext, ExactAdaptProfileFooter };
 export { qos as ExactApplyThemes, ExactSetMessagingSubscription, ExactAdaptMessagingClient, ExactInitPersistedAtoms, ExactSetLocalAccountQuery, ExactSetExecutionManager, ExactSetLocalOutputs, ExactUseLocalAccountInputs, ExactSetLocalRoomLive, bjs as ExactNavigationBridge, Ejs as ExactInitNavigationBridge, qfu as ExactLocationBridge, Xfu as ExactInitLocationBridge };
 `,
   'room-view-fe0c1087e5e0.js':'export { Lt as ExactRoom };',
   'webauthn-c37be3fbf886.js':'export function ExactAdaptComputerTransport(adapt) { A(); const Original = k; k = adapt(Original); return () => { k = Original; }; }',
+  'profile-dropdown-items-92ce6aadc70e.js': 'export { ha as ExactAccountMenuLayout, ea as ExactHelpMenuLayout, Sr as ExactAccountAvatar, ga as ExactPetMenuItem }; export function ExactAdaptProfileDropdownItems(adapt) { const Original = wa; wa = adapt(Original); return () => { wa = Original; }; }',
+  'use-visible-settings-sections-acca727feff5.js': 'export function ExactAdaptSettingsVisibility(adapt) { po(); const original = ro; ro = adapt(original); return () => { ro = original; }; }',
 };
 const port = Number(process.env.DOTS_EXACT_PORT || 3420);
 const apiPort = Number(process.env.DOTS_EXACT_API_PORT || 3410);

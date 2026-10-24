@@ -1,5 +1,7 @@
 # Exact renderer asset feasibility
 
+Settings/profile/Plugins follow-up: the current manifest contains 1,479 immutable files (82,727,116 bytes), 33 explicit UI roots and zero missing dependencies. New roots cover the original profile dropdown, Settings page and visible section modules, Plugins directory, keyboard shortcuts and usage page. All current manifest hashes pass `npm run original:verify`. The smaller counts below describe the earlier Dots room/character extraction stage.
+
 This pass inspected the installed `/Applications/ChatGPT.app/Contents/Resources/app.asar`, SHA-256 `5b5cf52887cfd4de19cb5862155a8ef6cf58830c0a2fc592b72060cfcc3be869`. It differs from the October 18 baseline (`5ddc4e…`). The client bundle, CSS and named character runtime are available as original bytes. The bundle has source-map comments, but the archive inventory contains no `.map` files.
 
 ## Preserved assets

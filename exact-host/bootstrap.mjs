@@ -81,6 +81,12 @@ try {
   });
   diagnostics.theme = initOriginalTheme(initial, shared, settings);
   const adapterModule = await import('./local-adapter.mjs');
+  const settingsModule = await import('./local-settings.mjs');
+  const settingsVisibility = await import(assetBase + 'use-visible-settings-sections-acca727feff5.js');
+  const accountMenu = await import('./local-account-menu.mjs');
+  const accountItems = await import(assetBase + 'profile-dropdown-items-92ce6aadc70e.js');
+  const pluginModule = await import('./local-plugins.mjs');
+  const PluginsPage = await pluginModule.loadOriginalPluginsPage();
   initial.tyr();
   initial.rmr();
   initial.Fw();
@@ -108,6 +114,8 @@ try {
     React.useLayoutEffect(() => {
       let cancelled = false;
       let adapter;
+      let themeConnection;
+      let restoreAccountMenu;
       diagnostics.scope = scope;
       diagnostics.queryClient = queryClient;
       diagnostics.phase = 'adapting';
@@ -117,10 +125,13 @@ try {
         if (cancelled) { value.dispose(); return; }
         diagnostics.adapter = value;
         if (value.settingsService) rpc.setAppServices({ ...rpc.appServices, settings: value.settingsService });
+        pluginModule.installLocalPluginQueries({ initial, scope, model: settings.model });
+        themeConnection = await settingsModule.connectOriginalSettingsTheme({ initial, shared, settingsService: value.settingsService, initOriginalTheme, initialValues: settings, currentTheme: diagnostics.theme, onTheme: theme => { diagnostics.theme = theme; }, onError: report });
+        restoreAccountMenu = accountMenu.installLocalAccountMenu({ React, shared, initial, itemsModule: accountItems, identity: { get displayName() { return adapterModule.localAccountIdentity().name; }, modeLabel: 'Local' }, navigate: path => diagnostics.router.navigate(path), onOpenProfile: () => diagnostics.router.navigate('/settings/account'), diagnostics, onError: report });
         await config.onScope?.(scope, initial, shared, value);
         if (!cancelled) { setReady(true); diagnostics.phase = 'mounted'; }
       }).catch(report);
-      return () => { cancelled = true; adapter?.dispose(); };
+      return () => { cancelled = true; restoreAccountMenu?.(); themeConnection?.dispose(); adapter?.dispose(); };
     }, [scope]);
     return ready ? jsx(React.Fragment, { children: [jsx(initial.ExactLocationBridge, {}, 'local-location'), jsx(initial.ExactNavigationBridge, {}, 'local-navigation'), React.cloneElement(children, { key: 'local-product' })] }) : null;
   }
@@ -199,13 +210,26 @@ try {
   } else if (view === 'room') {
     component = jsx(OriginalEntry, {});
   } else throw Error('Unknown original renderer view: ' + view);
-  const content = jsx(shared.aCt, { scope: initial.QOr, value: thread, children: jsx(shared.aCt, { scope: initial.MOr, value: route, children: component }) });
+  function GlobalRouteScope({ children }) {
+    const location = shared.VSt();
+    return jsx(shared.aCt, { scope: initial.QOr, value: thread, children: jsx(shared.aCt, { scope: initial.MOr, value: { ...route, pathname: location.pathname, search: location.search }, children }) });
+  }
+  const content = jsx(GlobalRouteScope, { children: jsx(shared.CSt, {}) });
   const localAuth = config.auth ?? adapterModule.localAuth;
-  const tree = jsx(Boundary, { children: jsx(shared.Ist, { client: queryClient, children: jsx(shared.sCt, { queryClient, children: jsx(shared.aCt, { scope: shared.Qst, value: config.appScopeValue ?? {}, children: jsx(initial._mr, { value: localAuth, children: jsx(shared.$Ot, { locale, defaultLocale: 'en-US', messages, children: jsx(CaptureScope, { children: content }) }) }) }) }) }) });
+  const tree = jsx(Boundary, { children: jsx(shared.Ist, { client: queryClient, children: jsx(shared.sCt, { queryClient, children: jsx(shared.aCt, { scope: shared.Qst, value: config.appScopeValue ?? {}, children: jsx(accountMenu.LocalAuthNonceProvider, { React, initial, onRefresh: () => diagnostics.adapter?.refresh(), onError: report, children: jsx(initial._mr, { value: localAuth, children: jsx(shared.$Ot, { locale, defaultLocale: 'en-US', messages, children: jsx(CaptureScope, { children: content }) }) }) }) }) }) }) });
   const root = document.getElementById('root');
   if (!root) throw Error('Missing original host root');
   diagnostics.root = ReactDOM.createRoot(root);
-  diagnostics.router = shared.kSt([{ path: '*', element: jsx(initial.Pw, { children: tree }) }], { initialEntries: ['/dots/home'] });
+  const settingsRoutes = settingsModule.createOriginalSettingsRoutes({ initial, React, jsx });
+  settingsModule.installLocalSettingsVisibility({ initial, visibilityModule: settingsVisibility });
+  const plugins = jsx(initial.FR, { children: jsx(initial.IR, { children: jsx(PluginsPage, {}) }) });
+  diagnostics.router = shared.kSt([{ element: jsx(initial.Pw, { children: tree }), children: [...settingsRoutes, { path: '/plugins', element: plugins }, { path: '/skills', element: plugins }, { path: '*', element: component }] }], { initialEntries: ['/dots/home'] });
+  addEventListener('keydown', event => {
+    if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key === ',') {
+      event.preventDefault();
+      diagnostics.router.navigate('/settings/general-settings');
+    }
+  });
   diagnostics.root.render(jsx(shared.ESt, { router: diagnostics.router }));
 } catch (error) {
   report(error);

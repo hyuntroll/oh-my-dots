@@ -1,0 +1,1 @@
+import"./app-shared-fc3316d48427.js";import{n as e,t}from"./plugins-settings-b85653a450be.js";e();export{t as PluginsSettings};

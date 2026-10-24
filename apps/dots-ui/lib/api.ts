@@ -1,0 +1,42 @@
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) { super(message); this.name = 'ApiError'; this.status = status; }
+}
+export async function api<T = unknown>(path: string, options: RequestInit = {}, timeoutMs = 10_000): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new DOMException('요청 시간이 초과되었습니다. 다시 시도해 주세요.', 'TimeoutError')), timeoutMs);
+  const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
+  try {
+    const response = await fetch('/api' + path, {
+      ...options,
+      signal,
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      credentials: 'same-origin', cache: 'no-store',
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new ApiError(typeof body.detail === 'string' ? body.detail : `요청 실패 (${response.status})`, response.status);
+    }
+    return await response.json();
+  } finally { clearTimeout(timer); }
+}
+export const post = (body: unknown = {}) => ({ method: 'POST', body: JSON.stringify(body) });
+export type Run = { id: string; status: string; wait_reason: string | null; error: string | null; task_id: string; started_at?: number | null; finished_at?: number | null };
+export type Message = { sequence: number; role: string; text: string; run_id: string | null };
+export type Conversation = { id: string; dot_id: string; title: string; messages?: Message[]; runs?: Run[]; execution?: Activity[] };
+export type Computer = { connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; handoff: boolean; width?: number; height?: number };
+export type Activity = { sequence: number; run_id: string | null; type: string; summary: string; created_at: number; payload: Record<string, unknown> };
+export type AIProvider = 'codex' | 'openai' | 'opencode';
+export type AuthSettings = { provider: AIProvider; opencode_installed: boolean; opencode_available: boolean; opencode_version: string; opencode_message: string; model: string; openai_configured: boolean; codex_installed: boolean; codex_connected: boolean; login: { state: string; url?: string; code?: string } };
+
+export type UsageSummary = { recorded_runs: number; providers: { provider: string; runs: number; input_tokens: number; output_tokens: number; cached_input_tokens: number }[] };
+
+export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: import("./dot-profile").DotAvatarId; characterState?: string; characterImage?: string; computer_id: string; profile_saved: boolean; status: import('./dot-lifecycle').DotStatus; pinned: boolean; position: number | null; created_at: number | null; last_active_at: number | null };
+
+export type DotActivityRow = { id: string; conversation_id: string; dot_id: string; dot_name: string; status: string; created_at: number; finished_at: number | null; error: string | null };
+
+export type DotMemory = { id: string; dot_id: string; text: string; created_at: number };
+
+export type Environment = { dot_id: string; dot_name: string; computer_id: string; dot_status: import('./dot-lifecycle').DotStatus; last_active_at: number | null; connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; width: number | null; height: number | null };
+
+export type PreferencesPayload = import('./preferences').Preferences;

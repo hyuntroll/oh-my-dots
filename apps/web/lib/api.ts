@@ -26,8 +26,17 @@ export type Message = { sequence: number; role: string; text: string; run_id: st
 export type Conversation = { id: string; dot_id: string; title: string; messages?: Message[]; runs?: Run[]; execution?: Activity[] };
 export type Computer = { connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; handoff: boolean; width?: number; height?: number };
 export type Activity = { sequence: number; run_id: string | null; type: string; summary: string; created_at: number; payload: Record<string, unknown> };
-export type AuthSettings = { provider: 'codex' | 'openai'; model: string; openai_configured: boolean; codex_installed: boolean; codex_connected: boolean; login: { state: string; url?: string; code?: string } };
+export type AIProvider = 'codex' | 'openai' | 'opencode';
+export type AuthSettings = { provider: AIProvider; opencode_installed: boolean; opencode_available: boolean; opencode_version: string; opencode_message: string; model: string; openai_configured: boolean; codex_installed: boolean; codex_connected: boolean; login: { state: string; url?: string; code?: string } };
 
 export type UsageSummary = { recorded_runs: number; providers: { provider: string; runs: number; input_tokens: number; output_tokens: number; cached_input_tokens: number }[] };
 
-export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: import("./dot-profile").DotAvatarId; computer_id: string; profile_saved: boolean };
+export type Dot = { id: string; name: string; color: import("./dot-profile").DotProfile["color"]; avatar: import("./dot-profile").DotAvatarId; characterState?: string; characterImage?: string; computer_id: string; profile_saved: boolean; status: import('./dot-lifecycle').DotStatus; pinned: boolean; position: number | null; created_at: number | null; last_active_at: number | null };
+
+export type DotActivityRow = { id: string; conversation_id: string; dot_id: string; dot_name: string; status: string; created_at: number; finished_at: number | null; error: string | null };
+
+export type DotMemory = { id: string; dot_id: string; text: string; created_at: number };
+
+export type Environment = { dot_id: string; dot_name: string; computer_id: string; dot_status: import('./dot-lifecycle').DotStatus; last_active_at: number | null; connected: boolean; owner: 'AGENT' | 'USER' | null; epoch: number | null; width: number | null; height: number | null };
+
+export type PreferencesPayload = import('./preferences').Preferences;

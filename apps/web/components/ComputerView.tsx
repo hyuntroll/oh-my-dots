@@ -3,10 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Globe, Terminal, Folder, Monitor, RotateCcw, Plus, Columns2, PanelsTopLeft, Maximize2, Minimize2, Keyboard, Clipboard, X } from 'lucide-react';
 import { api, post, Computer } from '../lib/api';
 import Presence from './Presence';
-import { RemoteInputQueue } from '../lib/remote-input';
+import { RemoteInputQueue, KEY_NAMES, keyName } from '../lib/remote-input';
 import { connectComputerStream } from '../lib/computer-stream';
 
-const special: Record<string, string> = { Enter: 'Return', Backspace: 'BackSpace', Tab: 'Tab', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', Delete: 'Delete', Home: 'Home', End: 'End', PageUp: 'Page_Up', PageDown: 'Page_Down', Control: 'Control_L', Meta: 'Control_L', Shift: 'Shift_L', Alt: 'Alt_L', ' ': 'space' };
 export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDots', accent, computer, onRefresh, onControlChanged, onError, onClose, onBack, onToggleExpanded, expanded }: { sessionId?: string; name?: string; accent: string; computer: Computer; onRefresh: () => Promise<void>; onControlChanged: (state: Computer) => void; onError: (message: string) => void; onClose: () => void; onBack: () => void; onToggleExpanded: () => void; expanded: boolean }) {
   const PREFIX = "/computer-sessions/" + sessionId;
   useEffect(() => {
@@ -86,7 +85,7 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
     const width = computer.width || 1280, height = computer.height || 960;
     return { x: Math.min(width - 1, Math.max(0, Math.floor((event.clientX - rect.left) / rect.width * width))), y: Math.min(height - 1, Math.max(0, Math.floor((event.clientY - rect.top) / rect.height * height))) };
   };
-  const keyName = (event: React.KeyboardEvent) => special[event.key] || (event.code.startsWith('Key') ? event.code.slice(3).toLowerCase() : event.key);
+  const keyNameOf = (event: React.KeyboardEvent) => keyName(event.key, event.code);
   const handoff = async () => {
     if (handoffActive.current) return;
     handoffActive.current = true;
@@ -121,11 +120,11 @@ export default function ComputerView({ sessionId = 'computer-1', name = 'OhMyDot
         onWheel={event => { const p = point(event); if (p) send({ action: 'scroll', delta: event.deltaY > 0 ? 2 : -2, ...p }); }}
         onKeyDown={event => {
           if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') return;
-          if (!special[event.key] && !event.ctrlKey && !event.metaKey && !event.altKey) return;
+          if (!KEY_NAMES[event.key] && !event.ctrlKey && !event.metaKey && !event.altKey) return;
           if (event.key === ' ' && !event.ctrlKey && !event.metaKey) return;
-          event.preventDefault(); const key = keyName(event); keys.current.add(key); send({ action: 'keydown', key });
+          event.preventDefault(); const key = keyNameOf(event); keys.current.add(key); send({ action: 'keydown', key });
         }}
-        onKeyUp={event => { const key = keyName(event); if (keys.current.delete(key)) { event.preventDefault(); send({ action: 'keyup', key }); } }}
+        onKeyUp={event => { const key = keyNameOf(event); if (keys.current.delete(key)) { event.preventDefault(); send({ action: 'keyup', key }); } }}
         onCompositionStart={() => { composition.current = true; }}
         onCompositionEnd={event => { composition.current = false; if (event.data) send({ action: 'type', text: event.data }); event.currentTarget.value = ''; }}
         onChange={event => { if (!composition.current && event.currentTarget.value) { send({ action: 'type', text: event.currentTarget.value }); event.currentTarget.value = ''; } }}

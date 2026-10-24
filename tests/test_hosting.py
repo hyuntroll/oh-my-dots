@@ -138,13 +138,16 @@ async def test_managed_dot_refreshes_published_ports_after_restart(tmp_path):
         db.add(ComputerSession(id='computer-dot-demo', dot_id='dot-demo'))
         db.add(Setting(key='dot-computer:dot-demo', value=json.dumps({'computer_url': 'http://stale:1'})))
         db.commit()
-    def inspect(*args):
-        assert args[0] == 'inspect' and args[1].startswith('personal-dots-dot-demo-')
+    def docker(*args, **kwargs):
+        if args[0] == 'ps':
+            assert 'label=ohmydots.dot=dot-demo' in args
+            return 'container-demo'
+        assert args[0] == 'inspect' and args[1] == 'container-demo'
         return json.dumps([{'Config': {'Labels': {'ohmydots.project': 'personal-dots', 'ohmydots.dot': 'dot-demo'}},
                             'NetworkSettings': {'Ports': {'8765/tcp': [{'HostPort': '51001'}],
                                                          '6080/tcp': [{'HostPort': '51002'}],
                                                          '8766/tcp': [{'HostPort': '51003'}]}}}])
-    pool.docker = AsyncMock(side_effect=inspect)
+    pool.docker = AsyncMock(side_effect=docker)
     monkey_runtime = AsyncMock()
     from unittest.mock import patch
     with patch('ohmydot.dots.Runtime', return_value=monkey_runtime):
@@ -153,6 +156,7 @@ async def test_managed_dot_refreshes_published_ports_after_restart(tmp_path):
     saved = json.loads(pool.store.get_setting('dot-computer:dot-demo', '{}'))
     assert saved == {'computer_url': 'http://127.0.0.1:51001', 'vnc_url': 'ws://127.0.0.1:51002',
                      'shell_url': 'http://127.0.0.1:51003'}
-    pool.docker = AsyncMock(return_value=json.dumps([{'Config': {'Labels': {}}, 'NetworkSettings': {}}]))
+    pool.docker = AsyncMock(side_effect=lambda *args, **kwargs: 'container-demo' if args[0] == 'ps'
+                            else json.dumps([{'Config': {'Labels': {}}, 'NetworkSettings': {}}]))
     with pytest.raises(ValueError, match='identity mismatch'):
         await pool.container_endpoints('dot-demo')

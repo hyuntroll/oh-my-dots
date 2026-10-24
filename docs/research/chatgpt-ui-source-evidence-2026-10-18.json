@@ -1,0 +1,4093 @@
+{
+  "build": "26.1013.40934 (20770)",
+  "artifact": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+  "artifact_sha256": "5ddc4e48259aa6f979e04529b1a5a4ae54b0f5c4ad6db5c6e004924c10916ddb",
+  "method": "Static ASAR header and source-byte reads; no target code executed. E identifiers are analyst source anchors, not REA Evidence IDs.",
+  "evidence": [
+    {
+      "id": "E01",
+      "path": "webview/assets/app-initial-90eb42395b7d.js",
+      "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+      "needle": "settings.nav.general-settings",
+      "byte_offset": 11560328,
+      "excerpt": "ity`)return h8.chatGptSecurity}return e===`cloud-environments`?h8.legacyCodexCloud:h8[e]}var Iwl,h8;function Lwl(){return(Lwl=t((()=>{Us(),on(),kwl(),jwl(),Pwl(),Kzt(),Iwl=qs({id:`settings.nav.general-settings`,defaultMessage:`General`,description:`Title for general settings section`}),h8=ge({family:Iwl,billing:{id:`settings.nav.billing`,defaultMessage:`Billing`,description:`Navigation title for personal ChatGPT subscription, payment methods, invoices, and wallet settings`},agreements:{id:`workspaceAgreements.title`,defaultMessage:`Agreements`,descripti"
+    },
+    {
+      "id": "E02",
+      "path": "webview/assets/settings-page-cd654a99d29b.js",
+      "sha256": "5f6b0b6a74f7d609f4312aa9bd45175833f7cd6f658eb02da2ff80db0d8aef33",
+      "needle": "Search settings",
+      "byte_offset": 35202,
+      "excerpt": "ar settings search`,description:`Button label to clear settings search input`}),t[1]=a,t[2]=c);let l;t[3]===a?l=t[4]:(l=a.formatMessage({id:`settings.search.label`,defaultMessage:`Search settings`,description:`Accessible label for the settings search input`}),t[3]=a,t[4]=l);let u;t[5]===a?u=t[6]:(u=a.formatMessage({id:`settings.search.placeholder`,defaultMessage:`Search`,description:`Placeholder text for the settings search input`}),t[5]=a,t[6]=u);let d;return t[7]!==n||t[8]!==i||t[9]!==r||t[10]!==c||t[11]!==l||t[12]!==u?(d=(0,Q.jsx)(Ft,{i"
+    },
+    {
+      "id": "E03",
+      "path": "webview/assets/use-visible-settings-sections-9bd5da3d2a1e.js",
+      "sha256": "b42d6249d589309e8fd65b4cecbf01a3f83b9f04283d292a1b0dc7cda0fff69e",
+      "needle": "statsig-disabled",
+      "byte_offset": 35323,
+      "excerpt": "ata,r[33]=ft,r[34]=H):H=r[34];let mt=H,ht;r[35]===o?ht=r[36]:(ht={hostId:o},r[35]=o,r[36]=ht);let gt=mr(ht),_t=An(),vt=a&&!x.isLoading&&!x.allowed,yt=a&&!y.isLoading&&(y.reason===`statsig-disabled`||y.reason===`config-requirement-disabled`||y.reason===`wsl-disabled`),xt=a&&(gt.available||x.available||vt),St=a&&(y.available||x.available||yt),U=ye===`loading`,Ct=function(e){switch(e.slug){case`family`:return{visible:!1,pending:!1};case`rosalind`:return{visible:h&&re!=null,pending:h&&re===void 0};case`appshots`:return{visible:Je,pending:F};cas"
+    },
+    {
+      "id": "E04",
+      "path": "webview/assets/chatgpt-conversation-page-b32f049e04ed.js",
+      "sha256": "79a64f13ece211dd5b0d6a4117599ebafc7153003a3d3e2f7e111b87f807d486",
+      "needle": "virtualized-turn-list",
+      "byte_offset": 13354,
+      "excerpt": "/thread-scroll-controller-context-value-1341bbb460de.js\";import{n as sf,t as cf}from\"./thread-bridge-2e11c232e079.js\";import{a as lf,i as uf,n as df,o as ff,r as pf,t as mf}from\"./virtualized-turn-list-641c30494f03.js\";import{n as hf,r as gf}from\"./timestamp-separator-30820c50acde.js\";import{n as _f,t as vf}from\"./conversation-navigation-state-c9c302722915.js\";import{i as yf,t as bf}from\"./conversation-plan-files-74d025eec6d0.js\";import{n as xf,t as Sf}from\"./controller-babc8e3fbeaa.js\";import{n as Cf,t as wf}from\"./context-940095827cdc.js\";impo"
+    },
+    {
+      "id": "E05",
+      "path": "webview/assets/chatgpt-conversation-page-b32f049e04ed.js",
+      "sha256": "79a64f13ece211dd5b0d6a4117599ebafc7153003a3d3e2f7e111b87f807d486",
+      "needle": "Convert to Work",
+      "byte_offset": 63731,
+      "excerpt": "n in Codex Desktop`}),t[1]=i,t[2]=c);let l=!r,u;t[3]===Symbol.for(`react.memo_cache_sentinel`)?(u=(0,gg.jsx)(C,{id:`chatgptConversations.workOnlyConversion.action`,defaultMessage:`Convert to Work`,description:`Button that converts a disabled historical Chat conversation to Work in Codex Desktop`}),t[3]=u):u=t[3];let d;t[4]!==a||t[5]!==o||t[6]!==l?(d=(0,gg.jsx)(n,{color:`primary`,disabled:l,loading:a,onClick:o,children:u}),t[4]=a,t[5]=o,t[6]=l,t[7]=d):d=t[7];let f;return t[8]!==c||t[9]!==d?(f=(0,gg.jsx)(`div`,{className:`mx-auto mb-3 w-full"
+    },
+    {
+      "id": "E06",
+      "path": "webview/assets/orbit-conversation-route-e54c64cb799f.js",
+      "sha256": "9401cf8c27a4d78986e1e64a181494ed21bf8a0c8d45834569b81cb6083bcba5",
+      "needle": "active_root_thread_id",
+      "byte_offset": 1548,
+      "excerpt": ":i}),t[5]=i,t[6]=d,t[7]=e):e=t[7],f=e}return f}function ae(e){let r=(0,Z.c)(32),{id:i,fallback:a}=e,o=t(A),{data:s,isPending:l,isFetching:u,error:d}=p(h,i),f;r[0]===s?f=r[1]:(f=s?.active_root_thread_id==null?null:n(s.active_root_thread_id),r[0]=s,r[1]=f);let m;r[2]===Symbol.for(`react.memo_cache_sentinel`)?(m={enabled:!1},r[2]=m):m=r[2];let{error:g}=p(I,f,m),_=p(te,w),v;r[3]!==d||r[4]!==g?(v=D(g)?g:d,r[3]=d,r[4]=g,r[5]=v):v=r[5];let y=v;if(y!=null&&(s==null||D(y))){let e;r[6]!==i||r[7]!==o?(e=()=>void X(o,i),r[6]=i,r[7]=o,r[8]=e):e=r[8];let t;re"
+    },
+    {
+      "id": "E07",
+      "path": "webview/assets/orbit-conversation-route-e54c64cb799f.js",
+      "sha256": "9401cf8c27a4d78986e1e64a181494ed21bf8a0c8d45834569b81cb6083bcba5",
+      "needle": "display_name",
+      "byte_offset": 2396,
+      "excerpt": "`deleting`){let e;return r[13]===a?e=r[14]:(e=a??(0,Q.jsx)(c,{to:O,replace:!0}),r[13]=a,r[14]=e),e}let x;r[15]===o.value?x=r[16]:(x=ne(o.value),r[15]=o.value,r[16]=x);let S=x,E=s?.display_name,k;r[17]===E?k=r[18]:(k=(0,Q.jsx)(z,{title:E}),r[17]=E,r[18]=k);let j=s?.display_name??null,M;r[19]===j?M=r[20]:(M=(0,Q.jsx)(q,{title:j}),r[19]=j,r[20]=M);let N,P;r[21]===Symbol.for(`react.memo_cache_sentinel`)?(P=(0,Q.jsx)(C.MainContentLayout,{layout:`full-bleed`}),N=(0,Q.jsx)(U,{}),r[21]=N,r[22]=P):(N=r[21],P=r[22]);let F;r[23]===S?F=r[24]:(F=S=="
+    },
+    {
+      "id": "E08",
+      "path": "webview/assets/conversation-view-b8157d99d576.js",
+      "sha256": "31550b44988702c95dacfe6dd1c9c6f4a8448e4d6e408780070d81f9314d6d90",
+      "needle": "toggles between its task and direct messages",
+      "byte_offset": 3822,
+      "excerpt": "label:p.formatMessage({id:`restricted.aeonMessaging.toggle`,defaultMessage:`Messages`,description:`Tooltip and accessible label for the chat-bubble button at the top of a dot that toggles between its task and direct messages; the button is selected while messages are visible`}),pressed:A,onClick:()=>u.set(be,A?`work`:`chat`),children:(0,V.jsx)(te,{})})}):null,n[40]=m,n[41]=x,n[42]=p,n[43]=k,n[44]=u,n[45]=A,n[46]=Z):Z=n[46];let Q;n[47]!==q||n[48]!==s||n[49]!==d||n[50]!==m||n[51]!==b||n[52]!==k||n[53]!==A?(Q=m&&b?(0,V.jsx)(o.div,{className:`h-full min-h-0`,hidden:!A,sty"
+    },
+    {
+      "id": "E09",
+      "path": "webview/assets/room-view-e3b69121b25f.js",
+      "sha256": "5ffc3ae73a07e7e2e2e6ba77c1e0c6db758bc4c5720139e00cf5679ffc332310",
+      "needle": "No message room is associated",
+      "byte_offset": 16695,
+      "excerpt": "scription:`Error shown when restoring a dot messaging room fails. Keep the singular term dot untranslated.`}):(0,$.jsx)(a,{id:`restricted.aeonMessaging.noRoom.dot`,defaultMessage:`No message room is associated with your dot`,description:`Shown when this dot has no available direct message room. Keep the lowercase term dot untranslated.`}),n[112]=z,n[113]=I,n[114]=r):r=n[114];let i;n[115]===Symbol.for(`react.memo_cache_sentinel`)?(i=(0,$.jsx)(a,{id:`orbit.messaging.room.retry`,defaultMessage:`Try again`,description:`Retry loading the message room associa"
+    },
+    {
+      "id": "E10",
+      "path": "webview/assets/aeon-appearance-picker-329fc29c1361.js",
+      "sha256": "c09494b175214107fff73f9d5eae74f59706d41a8cf9cd338bb189ae73e3fe24",
+      "needle": "maxLength:24",
+      "byte_offset": 5532,
+      "excerpt": " in the empty nickname field in the dot's appearance editor and character studio. A dot is the user's customizable assistant character. Keep the singular term dot untranslated.`}),maxLength:24,rows:V?1:void 0,readOnly:T,disabled:P,onChange:e=>{M({...j,name:e.target.value.replace(/[\\r\\n]/g,``)}),Te(!1)},onKeyDown:e=>{V&&e.key===`Enter`&&!e.nativeEvent.isComposing&&(e.preventDefault(),e.currentTarget.form?.requestSubmit())},onInvalid:e=>{e.preventDefault(),Te(!0),e.currentTarget.focus()}}),(0,Q.jsx)(`p`,{id:he,className:h(`text-sm text-da"
+    },
+    {
+      "id": "E11",
+      "path": "webview/assets/aeon-appearance-picker-329fc29c1361.js",
+      "sha256": "c09494b175214107fff73f9d5eae74f59706d41a8cf9cd338bb189ae73e3fe24",
+      "needle": "grid grid-cols-1 gap-6 sm:grid-cols-2",
+      "byte_offset": 11954,
+      "excerpt": "pet:H,onSelectPet:e=>M({...j,pet:e,appearance:e==null?null:{avatar:`pet`,color:Me.pet}}),title:bt,footer:St})}):(0,Q.jsx)(oe,{spacing:`large`,children:(0,Q.jsxs)(`div`,{className:`grid grid-cols-1 gap-6 sm:grid-cols-2`,children:[(0,Q.jsx)(`div`,{className:`sm:col-start-2 sm:row-start-1`,children:bt}),(0,Q.jsx)(`div`,{className:`flex items-center justify-center sm:col-start-2 sm:row-start-2`,children:G==null?(0,Q.jsx)(De,{className:`size-32 sm:size-48`,avatar:qe,identity:x,useSavedAvatar:!1}):(0,Q.jsx)(`div`,{className:`size-32 sm:size-48`,children:(0,Q.jsx)(Ye,"
+    },
+    {
+      "id": "E12",
+      "path": "webview/assets/aeon-appearance-colors-d5460b7c6053.js",
+      "sha256": "f0dc96403a799596996f9875e71d779cdc04251b7ece764e7a85d881eff4ca35",
+      "needle": "--compact-message-bubble-background",
+      "byte_offset": 251,
+      "excerpt": "wyt as n}from\"./app-initial-90eb42395b7d.js\";function r(e,t){let n=t?{background:`var(--color-background-user-message-compact)`,foreground:`var(--color-text)`}:l(e),r=i(e);return{\"--compact-message-bubble-background\":n.background,\"--compact-message-bubble-foreground\":n.foreground,\"--compact-user-message-bubble-background\":r.background,\"--compact-user-message-bubble-foreground\":r.foreground}}function i(e){return{background:`var(--color-chat-accent-${e})`,foreground:u[e].textClassName}}function a(e){return{background:`var(--color-chat-accent-${d[e]})`,foregroun"
+    },
+    {
+      "id": "E13",
+      "path": "webview/assets/Dot-7cb00c0b541f.js",
+      "sha256": "c520f8ad307fcd45afe844b900dade34353529c4760665b9871562638685cf2a",
+      "needle": "green:{color0:",
+      "byte_offset": 1256,
+      "excerpt": "ientY2:52.36,shadows:u},yellow:{color0:`#FFE742`,color1:`#FFE236`,color1Offset:`0.427885`,color2:`#FFCD0F`,color2Offset:`0.817308`,gradientY1:1.1296,gradientY2:54.2557,shadows:[]},green:{color0:`#A9E597`,color1:`#7DCC60`,gradientY1:2.625,gradientY2:51.7019,shadows:[]},blue:{color0:`#7CB6FF`,color1:`#3689EB`,gradientY1:2.625,gradientY2:53.375,shadows:[]},purple:{color0:`#B99EF8`,color1:`#A47AF5`,gradientY1:2.625,gradientY2:51.7018,shadows:[]},pink:{color0:`#F886B7`,color1:`#EE569F`,filterBounds:l,gradientY1:2.625,gradientY2:51.7018,shadows"
+    },
+    {
+      "id": "E14",
+      "path": "webview/assets/aeon-summary-panel-identity-9008df4e6a28.js",
+      "sha256": "c4f404ecb3294985dae5eeea507504e762fd9017caf54323821410d4ccef91c1",
+      "needle": "isPaused:",
+      "byte_offset": 20057,
+      "excerpt": "rn a===`content`?u:(0,$.jsx)(K.Section,{sectionKey:`aeon-identity`,mode:`headerless`,children:u})}function jt(e){let t=(0,Q.c)(8),{isActive:n,lastActiveAtMs:r,latestActivityAtMs:i,isPaused:a,pausedAtMs:o,pauseResumeAction:s}=e,c=i===void 0?null:i,l=a!==void 0&&a,u=o===void 0?null:o;if(l){let e;return t[0]!==s||t[1]!==u?(e=(0,$.jsx)(Ft,{pausedAtMs:u,pauseResumeAction:s}),t[0]=s,t[1]=u,t[2]=e):e=t[2],e}let d=c??r;if(n){let e;return t[3]===s?e=t[4]:(e=(0,$.jsx)(Mt,{pauseResumeAction:s}),t[3]=s,t[4]=e),e}let f;return t[5]!==d||t[6]!==s?("
+    },
+    {
+      "id": "E15",
+      "path": "webview/assets/composer-controls-db9f3c1ee1ee.js",
+      "sha256": "52bd45455a52ceb950bf6770617b426260359eec142841948465077167dc5597",
+      "needle": "Saved in the conversation, but delivery is unconfirmed",
+      "byte_offset": 109101,
+      "excerpt": ",zc=ut(),Bc=Qn(),Nc(),uc(),Vc=Z()})))()}var Uc;function Wc(){return(Wc=e((()=>{Fe(),Uc=o({retry:{id:`restricted.aeonMessaging.roomUi.savedDeliveryUnconfirmedRetry`,defaultMessage:`Saved in the conversation, but delivery is unconfirmed. Click to retry delivery`,description:`Tooltip for a message already saved in the conversation when delivery could not be confirmed; clicking retries delivery`},unconfirmed:{id:`restricted.aeonMessaging.roomUi.savedDeliveryUnconfirmed`,defaultMessage:`Saved in the conversation, but delivery is unconfirmed`,description:`Tooltip for a message alread"
+    },
+    {
+      "id": "E16",
+      "path": "webview/assets/native-room-ecbd2ba1aadf.js",
+      "sha256": "f83dc7a7d6ebeec2b341593f893d5d107da17b78b7a6911fdabb553c4bc1d240",
+      "needle": "Created task",
+      "byte_offset": 14337,
+      "excerpt": "h,g),y=G(Xa,v?r:null),b=_?.kind===`subagent`,S,C,w,T;t[5]!==u||t[6]!==b||t[7]!==_?.title?(C=_?.title??u.formatMessage({id:`restricted.aeon.attachedThread.fallback`,defaultMessage:`Created task`,description:`Fallback label for a task or subagent attached to a dot conversation when it has no title`}),S=b?void 0:Ya.exec(C)?.[0],T=S==null?C:C.slice(S.length).trimStart(),w=u.formatMessage({id:`restricted.aeon.attachedThread.open`,defaultMessage:`Open {name}`,description:`Hover hint for opening a task or subagent attached to a dot message`},{"
+    },
+    {
+      "id": "E17",
+      "path": "webview/assets/page-3f5e759fa37f.js",
+      "sha256": "6fd609d25892140170de18cf4b5ebb5be235d82acab7f3b9aca342d987dee9ca",
+      "needle": "Choose where your {dot} can work",
+      "byte_offset": 24803,
+      "excerpt": "te,ie]}),t[43]=te,t[44]=ie,t[45]=ae):ae=t[45];let oe;t[46]===Symbol.for(`react.memo_cache_sentinel`)?(oe=(0,Y.jsx)(b,{id:`restricted.orbitComputerOnboarding.title`,defaultMessage:`Choose where your {dot} can work`,description:`Heading on the computer access step. {dot} is the untranslated term for the user's agent.`,values:{dot:`dot`}}),t[46]=oe):oe=t[46];let se;t[47]===Symbol.for(`react.memo_cache_sentinel`)?(se=(0,Y.jsx)(`div`,{\"data-dot-copy\":!0,children:(0,Y.jsx)(ua,{wideDescription:!0,title:oe,children:(0,Y.jsx)(`span`,{className:`mx-auto block max-w-"
+    },
+    {
+      "id": "E18",
+      "path": "webview/assets/page-3f5e759fa37f.js",
+      "sha256": "6fd609d25892140170de18cf4b5ebb5be235d82acab7f3b9aca342d987dee9ca",
+      "needle": "Getting plugins ready",
+      "byte_offset": 75131,
+      "excerpt": "sage:`Preparing skills`,description:`Loading title about preparing skills during dot setup`},gettingPluginsReady:{id:`orbit.onboarding.creatingGettingPluginsReady`,defaultMessage:`Getting plugins ready`,description:`Loading title about preparing plugins during dot setup`},almostFinished:{id:`orbit.onboarding.creatingAlmostFinished`,defaultMessage:`Almost finished`,description:`Final loading title held until dot setup finishes`}}),Vo=Object.values(Bo)})))()}function Uo(e){let t=(0,Wo.c)(7),{onRetry:r}=e,i;t[0]===Symbol.for(`react.memo_cache_senti"
+    },
+    {
+      "id": "E19",
+      "path": "webview/assets/page-3f5e759fa37f.js",
+      "sha256": "6fd609d25892140170de18cf4b5ebb5be235d82acab7f3b9aca342d987dee9ca",
+      "needle": "Your current workspace doesn’t have access to dots",
+      "byte_offset": 33050,
+      "excerpt": "0],f=e}else if(o===`unavailable`){let e;t[11]===Symbol.for(`react.memo_cache_sentinel`)?(e=(0,X.jsx)(b,{id:`restricted.aeon.workspaceAccess.unavailableDescription`,defaultMessage:`Your current workspace doesn’t have access to dots. You can continue using ChatGPT in this workspace.`,description:`Unavailable guidance for Enterprise and other workspaces, without suggesting a personal subscription or promising future access. Dots are the user’s agents.`}),t[11]=e):e=t[11],f=e}let m;t[12]===Symbol.for(`react.memo_cache_sentinel`)?(m=(0,X.jsx)(pi,{}),t[12]=m):m=t[12];let h=!u&&`p"
+    },
+    {
+      "id": "E20",
+      "path": "webview/assets/dot-onboarding-ring-a369119a8892.js",
+      "sha256": "3c194b1256b0ee9f613cd35154ce7dcdc62d2e1d032ba342a10fce369bd0850d",
+      "needle": "flightDuration:650",
+      "byte_offset": 1282,
+      "excerpt": ",easeFade:`cubic-bezier(0.37, 0, 0.63, 1)`,easeSettle:`cubic-bezier(0.22, 1, 0.36, 1)`,growDuration:650,holeDuration:400,holeDelay:250,welcomeExitDuration:240,stepExitDuration:280,flightDuration:650,flightDelay:80,longFlightDuration:1050,birthFlightDelay:140,revealDuration:800,revealStagger:100,copyOffset:`translateY(calc(var(--spacing) * 1.5))`}})))()}var m,h;function g(){return(g=e((()=>{c(),m=s(),h=e=>(0,m.jsx)(`svg`,{width:1024,height:1024,viewBox:`102 102 820 820`,fill:`#BAC1D3`,xmlns:`http://www.w3.org/2000/svg`,...e,children:(0,m.jsx)("
+    },
+    {
+      "id": "E21",
+      "path": "webview/assets/avatar-mascot-button-1d7e7f02ecf5.js",
+      "sha256": "f0080d7642c2ae8b4415f09c63c31ac165aede0ea7d673765a94ee1a5359eac6",
+      "needle": "jumping",
+      "byte_offset": 1036,
+      "excerpt": "),{ariaLabel:n,className:r,lookFrame:ee,notificationBadge:i,onContextMenu:a,source:o,state:s,style:ne,transientState:re}=e,c=s===void 0?`idle`:s,[l,u]=(0,k.useState)(!1),f=re??(l?`jumping`:c),ie=f===`idle`||f===`running`||f===`waving`,p=i!=null,h;n!=null&&(h=p?`group`:`img`);let g;t[0]===r?g=t[1]:(g=te(`codex-avatar-button relative flex cursor-interaction items-center justify-center active:cursor-grabbing`,r),t[0]=r,t[1]=g);let _=n==null&&!p||void 0,v,y;t[2]===Symbol.for(`react.memo_cache_sentinel`)?(v=()=>{u(!0)},y=()=>{u(!1)},t[2"
+    },
+    {
+      "id": "E22",
+      "path": "webview/assets/local-conversation-summary-panel-artifacts-section-c1b079c8eacb.js",
+      "sha256": "23ee147903bf8a9b4d13739e0454b8865af5801d336ae8bd60d73eab6854b13b",
+      "needle": "No outputs yet",
+      "byte_offset": 5079,
+      "excerpt": "uts.loading`,defaultMessage:`Loading outputs…`,description:`Status while discovering outputs from the dot and its tasks`})}):(0,Rr.jsx)(p,{id:`orbit.outputs.empty`,defaultMessage:`No outputs yet`,description:`The dot and its tasks have no available outputs`})})}),t[11]=s,t[12]=a,t[13]=u):u=t[13],u}var Lr,Rr;function zr(){return(zr=e((()=>{Lr=q(),b(),H(),z(),Me(),dr(),mr(),$n(),Rr=ge()})))()}function Br(e){let t=(0,Vr.c)(22),{disabled:n,kind:r,onRemove:i}=e,a=h(o),s;t[0]===i?s=t[1]:(s=async()=>i(),t[0]=i,t[1]=s);let c;t[2]===a?c=t[3]:(c=()"
+    },
+    {
+      "id": "E23",
+      "path": "webview/assets/settings-95849fbd912d.js",
+      "sha256": "8863ff6663815b6a47ac1579441147f2e246963c23f1388732b1e2005ea5be64",
+      "needle": "Your dot's cookies",
+      "byte_offset": 1146,
+      "excerpt": "import{n as Be,t as Ve}from\"./delete-dialog-52d20e8c71be.js\";var He;function Ue(){return(Ue=e((()=>{I(),He=r({title:{id:`restricted.cloudComputer.orbitCookies.dot`,defaultMessage:`Your dot's cookies`,description:`Name of the cookie manager for the user's dot, separate from ChatGPT Work`},description:{id:`restricted.cloudComputer.orbitCookies.description.dot`,defaultMessage:`Manage cookies saved by your dot`,description:`Description of the settings row and page for the dot's saved website cookies`}})})))()}function We(e){let t=(0,Ge.c)(13),{si"
+    },
+    {
+      "id": "E24",
+      "path": "webview/assets/app-initial-90eb42395b7d.js",
+      "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+      "needle": "sidebar.dot.defaultName",
+      "byte_offset": 5393686,
+      "excerpt": "}),xWi=wc(U,(e,{get:t})=>e==null?`standard`:t(IB,e)||t(pC,e)!=null||t(sOn,e)!=null?`aeon`:`standard`,{owner:e=>e})})))()}var SWi;function CWi(){return(CWi=t((()=>{Us(),SWi=qs({id:`sidebar.dot.defaultName`,defaultMessage:`Your dot`,description:`Display name for the user's personal assistant before it has a nickname. Lowercase dot is the product name; keep it untranslated.`})})))()}function RB(e){return e==null||[``,`O`,`o`,`Orbit`,`orbit`,`dot`].includes(e.trim())}function zB(){return(zB=t((()=>{})))()}var wWi,TWi,EWi;function BB(){return(BB=t((()="
+    },
+    {
+      "id": "E25",
+      "path": "webview/assets/app-initial-90eb42395b7d.js",
+      "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+      "needle": "sidebarElectron.orbitsTitle.dot",
+      "byte_offset": 10405942,
+      "excerpt": "debar-footer-height) flex flex-col overflow-x-hidden pb-row-x`,p),t[3]=p,t[4]=m);let h;t[5]===Symbol.for(`react.memo_cache_sentinel`)?(h=(0,f4.jsx)(UXi,{children:(0,f4.jsx)(W,{id:`sidebarElectron.orbitsTitle.dot`,defaultMessage:`Your dot`,description:`Title of the dedicated dot navigation sidebar. Keep the singular term dot untranslated.`})}),t[5]=h):h=t[5];let g,_;t[6]===Symbol.for(`react.memo_cache_sentinel`)?(g=(0,f4.jsx)(gwc,{}),_=(0,f4.jsx)(aTc,{showLabel:!0}),t[6]=g,t[7]=_):(g=t[6],_=t[7]);let v;t[8]===a?v=t[9]:(v=a.formatMessage({id:`sidebarElectro"
+    }
+  ],
+  "ui_label_inventory": [
+    {
+      "path": "webview/assets/app-initial-90eb42395b7d.js",
+      "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+      "labels": [
+        {
+          "id": "sidebarElectron.threadHoverCardChatProject",
+          "text": "Chat"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmRunningTitle",
+          "text": "{count, plural, one {Stop and archive # chat?} other {Stop and archive # chats?}}"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmRunningScheduledSubtitle",
+          "text": "Archiving will stop ongoing work and remove scheduled tasks, preventing future runs. You can restore {count, plural, one {the chat} other {the chats}} later in settings."
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmRunningSubtitle",
+          "text": "Archiving will stop any ongoing work. You can restore {count, plural, one {the chat} other {the chats}} later in settings."
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.confirmScheduledTitle",
+          "text": "Archive chats and remove scheduled tasks?"
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.confirmScheduledSubtitle",
+          "text": "One or more selected chats have active scheduled tasks. Archiving those chats will also remove their scheduled tasks and stop future runs"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmTitle",
+          "text": "{count, plural, one {Archive # chat?} other {Archive # chats?}}"
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.confirmSubtitle",
+          "text": "This will archive the selected chats. You can find them later in your archived chats"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmSubtitle",
+          "text": "This will archive the chats in {projectLabel}. You can find them later in your archived chats"
+        },
+        {
+          "id": "sidebarElectron.archiveSuggestion.remainingTitle",
+          "text": "Archive remaining chats?"
+        },
+        {
+          "id": "sidebarElectron.archiveSuggestion.scopedDescription",
+          "text": "You've archived several chats in {groupName}. Archive all remaining {count, plural, one {# chat} other {# chats}} in this group? You can find them later in your archived chats"
+        },
+        {
+          "id": "sidebarElectron.archiveSuggestion.scopeWarning",
+          "text": "Archive all remaining {count, plural, one {# chat} other {# chats}} in {groupName}?"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.archiving",
+          "text": "Archiving…"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirmRunning",
+          "text": "Stop and archive"
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.confirmScheduled",
+          "text": "Archive and remove"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.confirm",
+          "text": "Archive all"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.cancel",
+          "text": "Cancel"
+        },
+        {
+          "id": "sidebarElectron.archiveCustomSectionChats.success",
+          "text": "Archived {count, plural, one {# chat} other {# chats}}"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.success",
+          "text": "Archived {count, plural, one {# chat} other {# chats}}"
+        },
+        {
+          "id": "sidebarElectron.archiveCustomSectionChats.partialError",
+          "text": "Archived {successCount, plural, one {# chat} other {# chats}} in {projectLabel}; {failedCount} failed"
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.partialError",
+          "text": "Archived {successCount, plural, one {# chat} other {# chats}}; {failedCount} failed"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.partialError",
+          "text": "Archived {successCount, plural, one {# chat} other {# chats}} in {projectLabel}; {failedCount} failed"
+        },
+        {
+          "id": "sidebarElectron.archiveSelectedThreads.error",
+          "text": "Failed to archive selected chats"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads.error",
+          "text": "Failed to archive active chats in {projectLabel}"
+        },
+        {
+          "id": "sidebarElectron.removeProject.dialog.title",
+          "text": "Remove {projectLabel}?"
+        },
+        {
+          "id": "sidebarElectron.removeProject.dialog.description.local",
+          "text": "This only removes the project from the app. Files on your computer and existing chats won't be deleted."
+        },
+        {
+          "id": "sidebarElectron.removeProject.dialog.description.remote",
+          "text": "This only removes the project from the app. Its files and existing chats won't be deleted."
+        },
+        {
+          "id": "sidebarElectron.removeProject.cancel",
+          "text": "Cancel"
+        },
+        {
+          "id": "sidebarElectron.removeProject.removing",
+          "text": "Removing…"
+        },
+        {
+          "id": "sidebarElectron.removeProject.dialog.confirm.local",
+          "text": "Remove project"
+        },
+        {
+          "id": "sidebarElectron.removeProject.dialog.confirm.remote",
+          "text": "Remove project"
+        },
+        {
+          "id": "sidebarElectron.removeProject.error",
+          "text": "Failed to remove {projectLabel}"
+        },
+        {
+          "id": "sidebarElectron.pinnedOrder.saveError",
+          "text": "Couldn’t save pinned order"
+        },
+        {
+          "id": "sidebarElectron.markReadError",
+          "text": "Failed to mark chat as read"
+        },
+        {
+          "id": "sidebarElectron.archiveThreadError",
+          "text": "Failed to archive chat"
+        },
+        {
+          "id": "sidebarElectron.interruptThreadError",
+          "text": "Failed to stop chat"
+        },
+        {
+          "id": "sidebarElectron.renameThreadError",
+          "text": "Failed to rename chat"
+        },
+        {
+          "id": "sidebarElectron.renameThread",
+          "text": "Rename chat"
+        },
+        {
+          "id": "sidebarElectron.archiveThread",
+          "text": "Archive chat"
+        },
+        {
+          "id": "sidebarElectron.addAutomation",
+          "text": "Add scheduled task…"
+        },
+        {
+          "id": "sidebarElectron.editAutomation",
+          "text": "Edit scheduled task…"
+        },
+        {
+          "id": "sidebarElectron.markThreadUnread",
+          "text": "Mark as unread"
+        },
+        {
+          "id": "sidebarElectron.markThreadRead",
+          "text": "Mark as read"
+        },
+        {
+          "id": "sidebarElectron.inboxRouteNavLink",
+          "text": "Scheduled"
+        },
+        {
+          "id": "sidebarElectron.lunaReserve.title",
+          "text": "Luna Reserve · {remaining}% remaining"
+        },
+        {
+          "id": "sidebarElectron.lunaReserve.progress.ariaLabel",
+          "text": "Luna Reserve remaining"
+        },
+        {
+          "id": "sidebarElectron.lunaReserve.resetAt",
+          "text": "Advanced models reset {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.notifyOwner.sent",
+          "text": "Workspace owner notified"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.notifyOwner.cooldownActive",
+          "text": "Workspace owner was already notified recently"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.notifyOwner.failed",
+          "text": "Could not notify your workspace owner. Please try again"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.toggleDetails",
+          "text": "Usage details"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.windowRemaining",
+          "text": "{remaining} remaining"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.windowResetDateTime",
+          "text": "Resets on {date} at {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.windowResetTime",
+          "text": "Resets at {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.dismiss",
+          "text": "Dismiss usage alert"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.dismiss",
+          "text": "Dismiss usage alert"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.windowRemaining",
+          "text": "{remaining} remaining"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.title",
+          "text": "{remaining}% usage remaining"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.dismiss",
+          "text": "Dismiss usage alert"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.progress.ariaLabel",
+          "text": "Usage consumed"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.notifyOwner.notified",
+          "text": "Requested"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.notifyOwner",
+          "text": "Notify admin"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.resetAt",
+          "text": "Resets {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.resetAtWithCadenceTime",
+          "text": "Resets {cadence} · Next reset is at {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.resetAtWithCadenceDateTime",
+          "text": "Resets {cadence} · Next reset is on {date} at {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.resetAtWithCadence",
+          "text": "Resets {cadence} · Next reset is {time}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.year",
+          "text": "{years, plural, one {every year} other {every {years} years}}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.month",
+          "text": "{months, plural, one {every month} other {every {months} months}}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.week",
+          "text": "{weeks, plural, one {every week} other {every {weeks} weeks}}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.day",
+          "text": "{days, plural, one {every day} other {every {days} days}}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.hour",
+          "text": "{hours, plural, one {every hour} other {every {hours} hours}}"
+        },
+        {
+          "id": "sidebarElectron.usageAlert.cadence.minute",
+          "text": "{minutes, plural, one {every minute} other {every {minutes} minutes}}"
+        },
+        {
+          "id": "sidebarElectron.spaceRouteNavLink",
+          "text": "Space"
+        },
+        {
+          "id": "sidebarElectron.codeReviewRouteNavLink",
+          "text": "Code Review"
+        },
+        {
+          "id": "sidebarElectron.orbitsTitle.brand.unemphasized.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.orbitNavLink.brand.unemphasized.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.personalFinanceRouteNavLink",
+          "text": "Finances"
+        },
+        {
+          "id": "sidebarElectron.imagesRouteNavLink",
+          "text": "Images"
+        },
+        {
+          "id": "sidebarElectron.gptsRouteNavLink",
+          "text": "GPTs"
+        },
+        {
+          "id": "sidebarElectron.libraryRouteNavLink",
+          "text": "Library"
+        },
+        {
+          "id": "sidebarElectron.sitesRouteNavLink",
+          "text": "Sites"
+        },
+        {
+          "id": "sidebarElectron.automationsMarkAllRead",
+          "text": "Mark all as read"
+        },
+        {
+          "id": "sidebarElectron.skillsAppsRouteNavLink",
+          "text": "Plugins"
+        },
+        {
+          "id": "sidebarElectron.skillsRouteNavLink",
+          "text": "Skills"
+        },
+        {
+          "id": "sidebarElectron.securityRouteNavLink",
+          "text": "Security"
+        },
+        {
+          "id": "sidebarElectron.workspaceAgentsRouteNavLink",
+          "text": "Agents"
+        },
+        {
+          "id": "sidebarElectron.archiveNavLink",
+          "text": "Archive"
+        },
+        {
+          "id": "sidebarElectron.debugNavLink",
+          "text": "Debug"
+        },
+        {
+          "id": "sidebarElectron.projectsNavLink",
+          "text": "Projects"
+        },
+        {
+          "id": "sidebarElectron.showLess",
+          "text": "Show less"
+        },
+        {
+          "id": "sidebarElectron.showMore",
+          "text": "Show more"
+        },
+        {
+          "id": "sidebarElectron.search",
+          "text": "Search"
+        },
+        {
+          "id": "sidebarElectron.addOrbit",
+          "text": "Add"
+        },
+        {
+          "id": "sidebarElectron.aeonRouteNavLink.productName.dot",
+          "text": "Create a {productName}"
+        },
+        {
+          "id": "sidebarElectron.orbitPreview.loading",
+          "text": "Loading preview"
+        },
+        {
+          "id": "sidebarElectron.orbitPreview.unavailable",
+          "text": "Preview unavailable"
+        },
+        {
+          "id": "sidebarElectron.orbitPreview.empty",
+          "text": "No recent replies"
+        },
+        {
+          "id": "sidebarElectron.customSections.defaultName",
+          "text": "New section"
+        },
+        {
+          "id": "sidebarElectron.customSections.createTitle",
+          "text": "New section"
+        },
+        {
+          "id": "sidebarElectron.customSections.editTitle",
+          "text": "Edit section"
+        },
+        {
+          "id": "sidebarElectron.customSections.dialogSubtitle",
+          "text": "Group chats and projects however you like"
+        },
+        {
+          "id": "sidebarElectron.customSections.namePlaceholder",
+          "text": "Section name"
+        },
+        {
+          "id": "sidebarElectron.customSections.nameAriaLabel",
+          "text": "Section name"
+        },
+        {
+          "id": "sidebarElectron.customSections.cancel",
+          "text": "Cancel"
+        },
+        {
+          "id": "sidebarElectron.customSections.create",
+          "text": "Create section"
+        },
+        {
+          "id": "sidebarElectron.customSections.save",
+          "text": "Save"
+        },
+        {
+          "id": "sidebarElectron.archiveThreadShort",
+          "text": "Archive"
+        },
+        {
+          "id": "sidebarElectron.pinThreadShort",
+          "text": "Pin"
+        },
+        {
+          "id": "sidebarElectron.renameThreadShort",
+          "text": "Rename"
+        },
+        {
+          "id": "sidebarElectron.unpinThreadShort",
+          "text": "Unpin"
+        },
+        {
+          "id": "sidebarElectron.removeFromSection",
+          "text": "Remove from section"
+        },
+        {
+          "id": "sidebarElectron.pinThread",
+          "text": "Pin chat"
+        },
+        {
+          "id": "sidebarElectron.unpinThread",
+          "text": "Unpin chat"
+        },
+        {
+          "id": "sidebarElectron.connectionStatus.reconnecting",
+          "text": "Reconnecting…"
+        },
+        {
+          "id": "sidebarElectron.connectionStatus.connectionFailed",
+          "text": "Connection failed"
+        },
+        {
+          "id": "sidebarElectron.threadHoverCardVoiceChat",
+          "text": "Voice chat"
+        },
+        {
+          "id": "sidebarElectron.threadHoverCardChatProject",
+          "text": "Chat"
+        },
+        {
+          "id": "sidebarElectron.deleteThread",
+          "text": "Permanently delete"
+        },
+        {
+          "id": "sidebarElectron.chooseThreadEmoji",
+          "text": "Choose emoji"
+        },
+        {
+          "id": "sidebarElectron.changeThreadEmoji",
+          "text": "Change emoji"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogCancel",
+          "text": "Cancel"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogSave",
+          "text": "Save"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogTitle",
+          "text": "Rename chat"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogSubtitle",
+          "text": "Keep it short and recognizable"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogPlaceholder",
+          "text": "Add a title…"
+        },
+        {
+          "id": "sidebarElectron.renameThreadDialogAriaLabel",
+          "text": "Chat title"
+        },
+        {
+          "id": "sidebarElectron.renameThreadSaveFailed",
+          "text": "Couldn't save your changes. Try again"
+        },
+        {
+          "id": "sidebarElectron.renameThreadEmojiSaveFailed",
+          "text": "Your title is saved, but the emoji couldn't be saved. Try again"
+        },
+        {
+          "id": "sidebarElectron.aeonSubtasks.toggleUnread",
+          "text": "{count, plural, one {# subtask} other {# subtasks}}, unread updates"
+        },
+        {
+          "id": "sidebarElectron.aeonSubtasks.toggle",
+          "text": "{count, plural, one {# subtask} other {# subtasks}}"
+        },
+        {
+          "id": "sidebarElectron.orbitThreads.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.orbitDraft",
+          "text": "Draft"
+        },
+        {
+          "id": "sidebarElectron.orbitThreads.empty.dots",
+          "text": "No dots"
+        },
+        {
+          "id": "sidebarElectron.orbitsTitle.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.newThread",
+          "text": "New chat"
+        },
+        {
+          "id": "sidebarElectron.unreads.title",
+          "text": "Unreads"
+        },
+        {
+          "id": "sidebarElectron.unreads.empty",
+          "text": "Nothing needs attention"
+        },
+        {
+          "id": "sidebarElectron.spaceNavigation",
+          "text": "Space"
+        },
+        {
+          "id": "sidebarElectron.rail.settings",
+          "text": "Settings"
+        },
+        {
+          "id": "sidebarElectron.rail.settings",
+          "text": "Settings"
+        },
+        {
+          "id": "sidebarElectron.appNavigation",
+          "text": "App navigation"
+        },
+        {
+          "id": "sidebarElectron.rail.reorder.released",
+          "text": "Navigation item released"
+        },
+        {
+          "id": "sidebarElectron.rail.reorder.cancelled",
+          "text": "Reordering cancelled"
+        },
+        {
+          "id": "sidebarElectron.rail.reorder.pickedUp",
+          "text": "Picked up navigation item at position {position} of {count}"
+        },
+        {
+          "id": "sidebarElectron.rail.reorder.moved",
+          "text": "Moving navigation item to position {position} of {count}"
+        },
+        {
+          "id": "sidebarElectron.rail.reorder.instructions",
+          "text": "Drag to reorder pinned navigation items"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.back",
+          "text": "Back to sidebar"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.title",
+          "text": "Archive"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.filterLabel",
+          "text": "Filter archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.resetFilters",
+          "text": "Reset filters"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.filters",
+          "text": "Filters"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.typeFilter",
+          "text": "Type"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.allTasks",
+          "text": "All chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.localTasks",
+          "text": "Local"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.cloudTasks",
+          "text": "Cloud"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.chatgptTasks",
+          "text": "ChatGPT chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.projectFilter",
+          "text": "Project"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.currentAllProjects",
+          "text": "All"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.allProjects",
+          "text": "All projects"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.projectWithLocation",
+          "text": "{project} ({host}: {path})"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.untitled",
+          "text": "Untitled chat"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.unarchiveLabel",
+          "text": "Unarchive {title}"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.unarchiveError",
+          "text": "Could not unarchive chat"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.searchLabel",
+          "text": "Search archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.searchPlaceholder",
+          "text": "Search archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.loading",
+          "text": "Loading archived chats…"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.error",
+          "text": "Could not load archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.noMatchesYet",
+          "text": "No matches yet. Show more to keep searching"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.noMatches",
+          "text": "No matching archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.empty",
+          "text": "No archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.error",
+          "text": "Could not load archived chats"
+        },
+        {
+          "id": "sidebarElectron.archivedTasks.title",
+          "text": "Archive"
+        },
+        {
+          "id": "sidebarElectron.addRemoteProjectCoachmark.badge",
+          "text": "Remote"
+        },
+        {
+          "id": "sidebarElectron.addRemoteProjectCoachmark.body",
+          "text": "Choose Remote to select the repo on your connected machine"
+        },
+        {
+          "id": "sidebarElectron.addRemoteProjectCoachmark.dismiss",
+          "text": "Dismiss"
+        },
+        {
+          "id": "sidebarElectron.addRemoteProjectCoachmark.title",
+          "text": "Add your remote project here"
+        },
+        {
+          "id": "sidebarElectron.groupByMenu.submenuTitle",
+          "text": "Organize sidebar"
+        },
+        {
+          "id": "sidebarElectron.chatsSortMenu.title",
+          "text": "Sort chats by"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.byProject",
+          "text": "By project"
+        },
+        {
+          "id": "sidebarElectron.groupByMenu.connection",
+          "text": "By connection"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.inOneList",
+          "text": "In one list"
+        },
+        {
+          "id": "sidebarElectron.sortMenu.updated",
+          "text": "Last updated"
+        },
+        {
+          "id": "sidebarElectron.sortMenu.created",
+          "text": "Created"
+        },
+        {
+          "id": "sidebarElectron.sortMenu.manual",
+          "text": "Manual order"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.projectOptionsLabel",
+          "text": "Project sidebar options"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.connectionOptionsLabel",
+          "text": "Connection sidebar options"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.chatOptionsLabel",
+          "text": "Chat sidebar options"
+        },
+        {
+          "id": "sidebarElectron.workNewChatNavLink",
+          "text": "New chat"
+        },
+        {
+          "id": "sidebarElectron.newThread",
+          "text": "New chat"
+        },
+        {
+          "id": "sidebarElectron.addGenericWorkspaceRoot",
+          "text": "Add new project"
+        },
+        {
+          "id": "sidebarElectron.projectsNavLink",
+          "text": "Projects"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.coachmark.description",
+          "text": "See chats that are unread, active, or awaiting a response"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.coachmark.dismiss",
+          "text": "Dismiss"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.restoreDefaults",
+          "text": "Restore defaults"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.refresh",
+          "text": "Clear read chats"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.options",
+          "text": "Activity view options"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showSection",
+          "text": "Show"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showPriority",
+          "text": "Priority section"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showWork",
+          "text": "Work"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showChat",
+          "text": "Chat"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showPinned",
+          "text": "Pinned"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.showScheduled",
+          "text": "Scheduled"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.markAllAsRead",
+          "text": "Mark all as read"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archivePriorityThreads",
+          "text": "Archive chats"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveSuccess",
+          "text": "Archived {count, plural, one {# priority chat} other {# priority chats}}"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveFailure",
+          "text": "Archived {successCount, plural, one {# priority chat} other {# priority chats}}; {failedCount} could not be archived"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveRunningConfirmationTitle",
+          "text": "{count, plural, one {Stop and archive # chat?} other {Stop and archive # chats?}}"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveConfirmationTitle",
+          "text": "{count, plural, one {Archive # priority chat?} other {Archive # priority chats?}}"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveRunningConfirmationDescription",
+          "text": "Archiving will stop any ongoing work. You can restore {count, plural, one {the chat} other {the chats}} later in settings."
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveConfirmationDescription",
+          "text": "Recent chats won’t be archived"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveCancel",
+          "text": "Cancel"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiving",
+          "text": "Archiving…"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveRunningConfirm",
+          "text": "Stop and archive"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.archiveConfirm",
+          "text": "Archive"
+        },
+        {
+          "id": "sidebarElectron.activity.loading",
+          "text": "Checking unread chats…"
+        },
+        {
+          "id": "sidebarElectron.activity.unavailable",
+          "text": "Some unread chats aren’t available yet"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.emptyState",
+          "text": "Nothing needs attention"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.separator",
+          "text": "·"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.chat",
+          "text": "Chat"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.cloud",
+          "text": "Cloud"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.codex",
+          "text": "Codex"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.separator",
+          "text": "·"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.workSeparator",
+          "text": "·"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.filterByPriority",
+          "text": "View activity"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.needsAttention",
+          "text": "View activity, needs attention"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads",
+          "text": "Priority"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.recent.today",
+          "text": "Today"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.turnOffPriorityFilter",
+          "text": "Turn off activity view"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.recent.yesterday",
+          "text": "Yesterday"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads.details.work",
+          "text": "Work"
+        },
+        {
+          "id": "sidebarElectron.orbitNavigation.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.orbitsTitle.dot",
+          "text": "Your dot"
+        },
+        {
+          "id": "sidebarElectron.rail.homeDestination",
+          "text": "Home"
+        },
+        {
+          "id": "sidebarElectron.rail.pluginsDestination",
+          "text": "Plugins"
+        },
+        {
+          "id": "sidebarElectron.productMode.home",
+          "text": "Home"
+        },
+        {
+          "id": "sidebarElectron.productMode.trigger",
+          "text": "Switch mode, current mode: {mode}"
+        },
+        {
+          "id": "sidebarElectron.productMode.work.description.recommended",
+          "text": "Create, learn, and explore"
+        },
+        {
+          "id": "sidebarElectron.productMode.codex.description.developer",
+          "text": "Build, debug, and ship"
+        },
+        {
+          "id": "sidebarElectron.productMode.chatGpt",
+          "text": "ChatGPT"
+        },
+        {
+          "id": "sidebarElectron.productMode.chatGptWork.unavailable",
+          "text": "ChatGPT Work"
+        },
+        {
+          "id": "sidebarElectron.productMode.codex",
+          "text": "Codex"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.openSource",
+          "text": "Open {source}"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.manageConnectionForHost",
+          "text": "Manage connection for {host}"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.renameError",
+          "text": "Failed to rename project"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.projectNameAriaLabel",
+          "text": "Project name"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.editProjectActionLabel",
+          "text": "Edit project"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.editProject",
+          "text": "Edit project"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.activeCount",
+          "text": "{count}\\xA0active"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.chatCount",
+          "text": "{count, plural, one {#\\xA0chat} other {#\\xA0chats}}"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.partialTaskCount",
+          "text": "At least {count, plural, one {#\\xA0chat} other {#\\xA0chats}}"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.pinProject",
+          "text": "Pin project"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.statusSeparator",
+          "text": "·"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.unpinProject",
+          "text": "Unpin project"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.unreadCount",
+          "text": "{count}\\xA0unread"
+        },
+        {
+          "id": "sidebarElectron.projectHoverCard.waitingCount",
+          "text": "{count}\\xA0waiting"
+        },
+        {
+          "id": "sidebarElectron.rowReorder.moved",
+          "text": "Moved to position {position} of {count}"
+        },
+        {
+          "id": "sidebarElectron.rowReorder.moved",
+          "text": "Moved to position {position} of {count}"
+        },
+        {
+          "id": "sidebarElectron.personalFinanceRouteNavLink",
+          "text": "Finances"
+        },
+        {
+          "id": "sidebarElectron.unreads.previewUnavailable",
+          "text": "Preview unavailable"
+        },
+        {
+          "id": "sidebarElectron.unreads.loadError",
+          "text": "Unread chats couldn't be loaded"
+        },
+        {
+          "id": "sidebarElectron.newThread",
+          "text": "New chat"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.filterButtonLabel",
+          "text": "Filter chats and work"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.filter.all",
+          "text": "All"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.filter.chats",
+          "text": "Chat"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.filter.tasks",
+          "text": "Work"
+        },
+        {
+          "id": "sidebarElectron.customSections.newChat",
+          "text": "New chat in {sectionName}"
+        },
+        {
+          "id": "sidebarElectron.customSections.optionsAriaLabel",
+          "text": "Options for {sectionName}"
+        },
+        {
+          "id": "sidebarElectron.customSections.edit",
+          "text": "Edit"
+        },
+        {
+          "id": "sidebarElectron.customSections.archiveAll",
+          "text": "Archive chats"
+        },
+        {
+          "id": "sidebarElectron.customSections.markRead",
+          "text": "Mark all as read"
+        },
+        {
+          "id": "sidebarElectron.customSections.markReadFailed",
+          "text": "Couldn’t mark {failedCount, plural, one {# chat} other {# chats}} as read"
+        },
+        {
+          "id": "sidebarElectron.customSections.projectChatsLoading",
+          "text": "Loading project chats… Reopen this menu to continue"
+        },
+        {
+          "id": "sidebarElectron.customSections.archiveUnavailable",
+          "text": "Project chats unavailable. Reopen this menu to try again"
+        },
+        {
+          "id": "sidebarElectron.customSections.remove",
+          "text": "Remove section"
+        },
+        {
+          "id": "sidebarElectron.tasksSection.emptyState",
+          "text": "No chats"
+        },
+        {
+          "id": "sidebarElectron.tasksSection.error",
+          "text": "Could not load chats"
+        },
+        {
+          "id": "sidebarElectron.tasksSection.label",
+          "text": "Chats"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.legacyCloud",
+          "text": "Cloud (Legacy)"
+        },
+        {
+          "id": "sidebarElectron.archiveProjectThreads",
+          "text": "Archive chats"
+        },
+        {
+          "id": "sidebarElectron.editProjectShort",
+          "text": "Edit"
+        },
+        {
+          "id": "sidebarElectron.markProjectThreadsRead",
+          "text": "Mark all as read"
+        },
+        {
+          "id": "sidebarElectron.pinProjectShort",
+          "text": "Pin"
+        },
+        {
+          "id": "sidebarElectron.removeProject.menuItem.local",
+          "text": "Remove project"
+        },
+        {
+          "id": "sidebarElectron.removeProject.menuItem.remote",
+          "text": "Remove project"
+        },
+        {
+          "id": "sidebarElectron.unpinProjectShort",
+          "text": "Unpin"
+        },
+        {
+          "id": "sidebarElectron.openWorkspaceRootInFinder",
+          "text": "Reveal in Finder"
+        },
+        {
+          "id": "sidebarElectron.openWorkspaceRootInExplorer",
+          "text": "Open in Explorer"
+        },
+        {
+          "id": "sidebarElectron.openWorkspaceRootInFileManager",
+          "text": "Open in File Manager"
+        },
+        {
+          "id": "sidebarElectron.connectionStatus.remoteLoading",
+          "text": "Loading remote connection"
+        },
+        {
+          "id": "sidebarElectron.worktreeGroupTooltip",
+          "text": "This is a git worktree"
+        },
+        {
+          "id": "sidebarElectron.newThreadInGroup",
+          "text": "Start new chat in {folder}"
+        },
+        {
+          "id": "sidebarElectron.missingWorkspaceRoot",
+          "text": "This project folder was deleted or moved"
+        },
+        {
+          "id": "sidebarElectron.cloudRepositoryGroup.startFromComposer",
+          "text": "Start cloud chats from the composer"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.remoteLoading",
+          "text": "Loading remote connection"
+        },
+        {
+          "id": "sidebarElectron.newThreadInConnection",
+          "text": "Start new chat in {connection}"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.disconnectedNewThread",
+          "text": "Reconnect this connection to start a chat"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.loadingRemoteProjectsForNewThread",
+          "text": "Wait for remote projects to finish loading"
+        },
+        {
+          "id": "sidebarElectron.tasksInConnection",
+          "text": "Chats in {connection}"
+        },
+        {
+          "id": "sidebarElectron.noTasks",
+          "text": "No chats"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.editConnection",
+          "text": "Edit connection…"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.actions",
+          "text": "Connection actions for {connection}"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.cloud",
+          "text": "Cloud"
+        },
+        {
+          "id": "sidebarElectron.connectionGroup.local",
+          "text": "Local"
+        },
+        {
+          "id": "sidebarElectron.noTasks",
+          "text": "No chats"
+        },
+        {
+          "id": "sidebarElectron.tasksInFolder",
+          "text": "Scheduled tasks in {folder}"
+        },
+        {
+          "id": "sidebarElectron.workspaceOptions",
+          "text": "Project actions for {folder}"
+        },
+        {
+          "id": "sidebarElectron.remoteProjectOptions",
+          "text": "Project actions for {folder}"
+        },
+        {
+          "id": "sidebarElectron.expandFolder",
+          "text": "Expand folder"
+        },
+        {
+          "id": "sidebarElectron.collapseFolder",
+          "text": "Collapse folder"
+        },
+        {
+          "id": "sidebarElectron.connectionsNavLink",
+          "text": "Connections"
+        },
+        {
+          "id": "sidebarElectron.projectsNavLink",
+          "text": "Projects"
+        },
+        {
+          "id": "sidebarElectron.connectionsNavLink",
+          "text": "Connections"
+        },
+        {
+          "id": "sidebarElectron.projectsNavLink",
+          "text": "Projects"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.noProjects",
+          "text": "No projects"
+        },
+        {
+          "id": "sidebarElectron.showMore",
+          "text": "Show more"
+        },
+        {
+          "id": "sidebarElectron.addGenericWorkspaceRoot",
+          "text": "Add new project"
+        },
+        {
+          "id": "sidebarElectron.newThread",
+          "text": "New chat"
+        },
+        {
+          "id": "sidebarElectron.pinnedThreads.optionsLabel",
+          "text": "Pinned options"
+        },
+        {
+          "id": "sidebarElectron.aeonThreads.v2",
+          "text": "Agents"
+        },
+        {
+          "id": "sidebarElectron.pinnedThreads",
+          "text": "Pinned"
+        },
+        {
+          "id": "sidebarElectron.chatGptWork.recents",
+          "text": "Recents"
+        },
+        {
+          "id": "sidebarElectron.projectsNavLink",
+          "text": "Projects"
+        },
+        {
+          "id": "sidebarElectron.flatProjectSidebar.noProjects",
+          "text": "No projects"
+        },
+        {
+          "id": "sidebarElectron.projectsError",
+          "text": "Projects couldn't be loaded"
+        },
+        {
+          "id": "sidebarElectron.projectsRetry",
+          "text": "Retry"
+        },
+        {
+          "id": "sidebarElectron.pinnedThreads",
+          "text": "Pinned"
+        },
+        {
+          "id": "sidebarElectron.pinnedThreads.v2",
+          "text": "Pinned"
+        },
+        {
+          "id": "sidebarElectron.priorityThreads",
+          "text": "Priority"
+        },
+        {
+          "id": "sidebarElectron.internalAlphaUpdateBanner.body",
+          "text": "Your build is {buildAgeDays, plural, one {# day} other {# days}} old. A newer version is ready to install."
+        },
+        {
+          "id": "sidebarElectron.internalAlphaUpdateBanner.title",
+          "text": "Time to update"
+        },
+        {
+          "id": "sidebarElectron.internalAlphaUpdateBanner.cta",
+          "text": "Restart to update"
+        },
+        {
+          "id": "sidebarElectron.activityTitle",
+          "text": "Activity"
+        },
+        {
+          "id": "sidebarElectron.chatHistoryNavigation",
+          "text": "Chat history"
+        },
+        {
+          "id": "sidebarElectron.homeNavigation",
+          "text": "Home"
+        },
+        {
+          "id": "sidebarElectron.taskNavigation",
+          "text": "Scheduled task folders"
+        },
+        {
+          "id": "sidebarElectron.codeReviewRouteNavLink",
+          "text": "Code Review"
+        },
+        {
+          "id": "sidebarElectron.customizationNavigation",
+          "text": "Customize sidebar"
+        },
+        {
+          "id": "sidebarElectron.activityNavigation",
+          "text": "Activity"
+        },
+        {
+          "id": "sidebarElectron.activityTitle",
+          "text": "Activity"
+        },
+        {
+          "id": "sidebarElectron.rail.home",
+          "text": "Chats"
+        },
+        {
+          "id": "settings.nav.rosalind",
+          "text": "GPT-Rosalind"
+        },
+        {
+          "id": "settings.nav.general-settings",
+          "text": "General"
+        },
+        {
+          "id": "settings.nav.billing",
+          "text": "Billing"
+        },
+        {
+          "id": "settings.nav.account",
+          "text": "Account"
+        },
+        {
+          "id": "settings.nav.parental-controls",
+          "text": "Parental controls"
+        },
+        {
+          "id": "settings.nav.safetyAndWellbeing",
+          "text": "Safety & wellbeing"
+        },
+        {
+          "id": "settings.nav.time-management",
+          "text": "Time management"
+        },
+        {
+          "id": "settings.nav.appearance",
+          "text": "Appearance"
+        },
+        {
+          "id": "settings.nav.voice",
+          "text": "Voice"
+        },
+        {
+          "id": "settings.nav.storage",
+          "text": "Storage"
+        },
+        {
+          "id": "settings.nav.miniAndPets",
+          "text": "Mini & Pets"
+        },
+        {
+          "id": "settings.nav.pets.v2",
+          "text": "Pets"
+        },
+        {
+          "id": "settings.nav.notifications",
+          "text": "Notifications"
+        },
+        {
+          "id": "settings.nav.import.v2",
+          "text": "Import"
+        },
+        {
+          "id": "settings.nav.profile",
+          "text": "Profile"
+        },
+        {
+          "id": "settings.nav.security",
+          "text": "Security"
+        },
+        {
+          "id": "settings.nav.keyboard-shortcuts",
+          "text": "Keyboard shortcuts"
+        },
+        {
+          "id": "settings.nav.codex-micro",
+          "text": "Codex Micro"
+        },
+        {
+          "id": "settings.nav.appshots",
+          "text": "Appshots"
+        },
+        {
+          "id": "settings.nav.agent",
+          "text": "Configuration"
+        },
+        {
+          "id": "settings.nav.workPreferences",
+          "text": "Work preferences"
+        },
+        {
+          "id": "settings.nav.git-settings",
+          "text": "Git"
+        },
+        {
+          "id": "settings.nav.ads-controls",
+          "text": "Ads controls"
+        },
+        {
+          "id": "settings.nav.archived-chats",
+          "text": "Archived chats"
+        },
+        {
+          "id": "settings.nav.chatGptDataControls",
+          "text": "Data controls"
+        },
+        {
+          "id": "settings.nav.chatGptSecurity",
+          "text": "Security and login"
+        },
+        {
+          "id": "settings.nav.chatGptKeyboard",
+          "text": "Keyboard"
+        },
+        {
+          "id": "settings.nav.chatGptCloudBrowser",
+          "text": "Cloud browser"
+        },
+        {
+          "id": "settings.nav.chatGptRemotes",
+          "text": "Remotes"
+        },
+        {
+          "id": "settings.nav.chatGptInternalSettings",
+          "text": "Employee Only"
+        },
+        {
+          "id": "settings.nav.codeReview",
+          "text": "Code Review"
+        },
+        {
+          "id": "settings.nav.codeReviewAnalytics",
+          "text": "Code review analytics"
+        },
+        {
+          "id": "settings.nav.cloudSettings",
+          "text": "Cloud preferences"
+        },
+        {
+          "id": "settings.nav.codexCloud",
+          "text": "Codex Cloud"
+        },
+        {
+          "id": "settings.nav.legacyCodexCloud",
+          "text": "Legacy Codex Cloud"
+        },
+        {
+          "id": "settings.nav.cloudEnvironments",
+          "text": "Cloud environments"
+        },
+        {
+          "id": "settings.nav.personalization",
+          "text": "Personalization"
+        },
+        {
+          "id": "settings.nav.chronicle",
+          "text": "Computer history"
+        },
+        {
+          "id": "settings.nav.usage",
+          "text": "Usage & billing"
+        },
+        {
+          "id": "settings.nav.enterpriseUsage",
+          "text": "Usage"
+        },
+        {
+          "id": "settings.nav.analytics",
+          "text": "Analytics"
+        },
+        {
+          "id": "settings.nav.consumerView",
+          "text": "Consumer analytics (internal)"
+        },
+        {
+          "id": "settings.nav.debug",
+          "text": "Debug"
+        },
+        {
+          "id": "settings.nav.computer-use",
+          "text": "Computer use"
+        },
+        {
+          "id": "settings.nav.browser-use",
+          "text": "Browser"
+        },
+        {
+          "id": "settings.nav.namedBrowserExtension",
+          "text": "{browserName} extension"
+        },
+        {
+          "id": "settings.nav.browser-extension",
+          "text": "Browser extension"
+        },
+        {
+          "id": "settings.nav.local-environments",
+          "text": "Environments"
+        },
+        {
+          "id": "settings.nav.worktrees.v2",
+          "text": "Worktrees"
+        },
+        {
+          "id": "settings.nav.environments",
+          "text": "Cloud Environments"
+        },
+        {
+          "id": "settings.nav.mcp-settings",
+          "text": "MCP servers"
+        },
+        {
+          "id": "settings.nav.hooks-settings",
+          "text": "Hooks"
+        },
+        {
+          "id": "settings.nav.connections",
+          "text": "Connections"
+        },
+        {
+          "id": "settings.nav.plugins-settings",
+          "text": "Plugins"
+        },
+        {
+          "id": "settings.nav.file-type-handlers",
+          "text": "File viewers"
+        },
+        {
+          "id": "settings.nav.skills-settings",
+          "text": "Skills"
+        },
+        {
+          "id": "settings.nav.ariaLabel",
+          "text": "Settings"
+        },
+        {
+          "id": "sidebarElectron.recentChats",
+          "text": "Chats"
+        },
+        {
+          "id": "sidebarElectron.newThread",
+          "text": "New chat"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/settings-page-cd654a99d29b.js",
+      "sha256": "5f6b0b6a74f7d609f4312aa9bd45175833f7cd6f658eb02da2ff80db0d8aef33",
+      "labels": [
+        {
+          "id": "settings.teams.nav.createLabel",
+          "text": "Create team"
+        },
+        {
+          "id": "settings.teams.nav.loadError",
+          "text": "Couldn’t load teams"
+        },
+        {
+          "id": "settings.teams.nav.empty",
+          "text": "Create your first team"
+        },
+        {
+          "id": "settings.nav.notImplemented",
+          "text": "[alpha] Not available in Alpha"
+        },
+        {
+          "id": "settings.nav.externalTooltip",
+          "text": "[alpha] Opens in browser"
+        },
+        {
+          "id": "settings.nav.ariaLabel",
+          "text": "Settings"
+        },
+        {
+          "id": "settings.nav.title",
+          "text": "Settings"
+        },
+        {
+          "id": "settings.nav.clearHostFilter",
+          "text": "Clear filter"
+        },
+        {
+          "id": "settings.nav.clearHostFilterDescription",
+          "text": "to view all settings"
+        },
+        {
+          "id": "settings.search.clear",
+          "text": "Clear settings search"
+        },
+        {
+          "id": "settings.search.label",
+          "text": "Search settings"
+        },
+        {
+          "id": "settings.search.placeholder",
+          "text": "Search"
+        },
+        {
+          "id": "settings.search.noResults",
+          "text": "No results found"
+        },
+        {
+          "id": "settings.search.result.ariaLabel",
+          "text": "{destination}, {panel}"
+        },
+        {
+          "id": "settings.nav.back",
+          "text": "Back to app"
+        },
+        {
+          "id": "settings.nav.collapseSidebar",
+          "text": "Collapse settings navigation"
+        },
+        {
+          "id": "settings.nav.expandSidebar",
+          "text": "Expand settings navigation"
+        },
+        {
+          "id": "settings.nav.manageAccount",
+          "text": "Manage account"
+        },
+        {
+          "id": "settings.nav.heading.integrations",
+          "text": "Integrations"
+        },
+        {
+          "id": "settings.nav.heading.personal",
+          "text": "Personal"
+        },
+        {
+          "id": "settings.nav.heading.coding",
+          "text": "Coding"
+        },
+        {
+          "id": "settings.hostDropdown.allSettings",
+          "text": "All settings"
+        },
+        {
+          "id": "settings.documentTitle",
+          "text": "Settings"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/use-visible-settings-sections-9bd5da3d2a1e.js",
+      "sha256": "b42d6249d589309e8fd65b4cecbf01a3f83b9f04283d292a1b0dc7cda0fff69e",
+      "labels": [
+        {
+          "id": "settings.nav.chatSettings",
+          "text": "Account"
+        },
+        {
+          "id": "settings.nav.securitySettings",
+          "text": "Security Settings"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/chatgpt-conversation-page-b32f049e04ed.js",
+      "sha256": "79a64f13ece211dd5b0d6a4117599ebafc7153003a3d3e2f7e111b87f807d486",
+      "labels": [
+        {
+          "id": "chatgpt.printAssets.error",
+          "text": "Some images could not be loaded. Close print and try again."
+        },
+        {
+          "id": "chatgpt.printAssets.loading",
+          "text": "Images are still loading. Close print and try again."
+        },
+        {
+          "id": "chatgptConversations.preview.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "chatgptConversations.loadError",
+          "text": "Could not load this ChatGPT conversation"
+        },
+        {
+          "id": "chatgptConversations.sharedConversation.privateMessagesDisclaimer",
+          "text": "Messages beyond this point are only visible to you"
+        },
+        {
+          "id": "chatgptConversations.responseComplete",
+          "text": "Response complete"
+        },
+        {
+          "id": "chatgptConversations.summaryPanel.toggle",
+          "text": "Toggle summary"
+        },
+        {
+          "id": "chatgptConversations.summaryPanel.togglePinned",
+          "text": "Toggle pinned summary"
+        },
+        {
+          "id": "chatgptConversations.summaryPanel.loading",
+          "text": "Loading summary…"
+        },
+        {
+          "id": "chatgptConversations.summaryPanel.loadError",
+          "text": "Summary could not load. Reload the app to try again"
+        },
+        {
+          "id": "chatgptConversations.workOnlyConversion.title",
+          "text": "Continue in Work"
+        },
+        {
+          "id": "chatgptConversations.workOnlyConversion.instantDescription",
+          "text": "Move this chat to Work to use agentic tools and take on more complex tasks. You can still use chat instant for quick questions"
+        },
+        {
+          "id": "chatgptConversations.workOnlyConversion.description",
+          "text": "Move this chat to Work to use agentic tools and take on more complex tasks"
+        },
+        {
+          "id": "chatgptConversations.workOnlyConversion.action",
+          "text": "Convert to Work"
+        },
+        {
+          "id": "chatgptConversations.sidePanel.toggle",
+          "text": "Toggle side panel"
+        },
+        {
+          "id": "chatgptConversations.sidePanel.openBrowserTab",
+          "text": "Open browser tab"
+        },
+        {
+          "id": "chatgptConversations.projectActions.projectName",
+          "text": "{projectName}"
+        },
+        {
+          "id": "GizmoInformation.audioSummary",
+          "text": "Audio summary"
+        },
+        {
+          "id": "chatgpt.audioSummary.openError",
+          "text": "Couldn’t open audio summary"
+        },
+        {
+          "id": "GizmoInformation.viewFiles",
+          "text": "View files in chat"
+        },
+        {
+          "id": "chatgptConversations.files.loadPanelError",
+          "text": "Couldn’t open files in chat"
+        },
+        {
+          "id": "chatgpt.conversation.header.control.more.label",
+          "text": "More"
+        },
+        {
+          "id": "chatgptConversations.header.projectBreadcrumb",
+          "text": "Breadcrumb"
+        },
+        {
+          "id": "chatgpt.pagination.retryMessage",
+          "text": "Retry loading this message"
+        },
+        {
+          "id": "chatgpt.selection.moreDetailsTitle",
+          "text": "More details"
+        },
+        {
+          "id": "chatgptConversations.sharedPost.promptNotice",
+          "text": "Content created using ChatGPT. <reportButton>Report if unsafe</reportButton>"
+        },
+        {
+          "id": "chatgptConversations.sharedConversation.copyDisclaimer",
+          "text": "This is a copy of a shared ChatGPT chat. It won't be added to memory."
+        },
+        {
+          "id": "chatgptConversations.sharedPost.reportButton",
+          "text": "Report conversation"
+        },
+        {
+          "id": "chatgptConversations.sharedPost.reportTitle",
+          "text": "Report a conversation"
+        },
+        {
+          "id": "chatgptConversations.sharedConversation.copyDisclaimer",
+          "text": "This is a copy of a shared ChatGPT chat. It won't be added to memory."
+        },
+        {
+          "id": "chatgptConversations.sharedConversation.reportButton",
+          "text": "Report conversation"
+        },
+        {
+          "id": "chatgptConversations.branchFailed",
+          "text": "Failed to create chat"
+        },
+        {
+          "id": "chatgptConversations.editMessageFailed",
+          "text": "Failed to edit message"
+        },
+        {
+          "id": "chatgptConversations.regenerate.failed",
+          "text": "Failed to regenerate response"
+        },
+        {
+          "id": "chatgptConversations.handoffFailed",
+          "text": "Failed to create chat"
+        },
+        {
+          "id": "chatgptConversations.loadingConversation",
+          "text": "Loading ChatGPT conversation"
+        },
+        {
+          "id": "chatgptConversations.header.cloudTaskTooltip",
+          "text": "This chat was started in the cloud, so ChatGPT won't be able to access files on your computer unless you add them to your conversation"
+        },
+        {
+          "id": "chatgptConversations.emptyConversation",
+          "text": "No renderable ChatGPT messages were found in this conversation"
+        },
+        {
+          "id": "chatgptConversations.sharedConversation.readOnlyPlaceholder",
+          "text": "This conversation is read-only."
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/orbit-conversation-route-e54c64cb799f.js",
+      "sha256": "9401cf8c27a4d78986e1e64a181494ed21bf8a0c8d45834569b81cb6083bcba5",
+      "labels": []
+    },
+    {
+      "path": "webview/assets/conversation-view-b8157d99d576.js",
+      "sha256": "31550b44988702c95dacfe6dd1c9c6f4a8448e4d6e408780070d81f9314d6d90",
+      "labels": [
+        {
+          "id": "restricted.aeonMessaging.toggle",
+          "text": "Messages"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/room-view-e3b69121b25f.js",
+      "sha256": "5ffc3ae73a07e7e2e2e6ba77c1e0c6db758bc4c5720139e00cf5679ffc332310",
+      "labels": [
+        {
+          "id": "localConversation.agentActivity.waitingForYourAnswer",
+          "text": "Waiting for your answer"
+        },
+        {
+          "id": "restricted.primaryOrbit.startRejected.title.dot",
+          "text": "Couldn’t start your dot"
+        },
+        {
+          "id": "localConversation.pendingProjectless.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "localConversation.pendingProjectless.back",
+          "text": "Go back"
+        },
+        {
+          "id": "restricted.primaryOrbit.startUnconfirmed.dot",
+          "text": "Your dot’s startup could not be confirmed. Check the sidebar before trying again"
+        },
+        {
+          "id": "restricted.aeonOnboarding.startUnconfirmed.dot",
+          "text": "Setup may already be running. Check your dot in the sidebar before starting again"
+        },
+        {
+          "id": "orbit.messaging.accessError",
+          "text": "We couldn’t check access to messages"
+        },
+        {
+          "id": "orbit.messaging.retryAccess",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeonMessaging.unavailable",
+          "text": "Messages aren’t available for this account"
+        },
+        {
+          "id": "restricted.aeonMessaging.dotUnavailable",
+          "text": "Couldn’t load your dot"
+        },
+        {
+          "id": "orbit.messaging.profile.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeonMessaging.repairingRoom",
+          "text": "Getting your dot ready"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomSetupError",
+          "text": "Couldn’t get your dot ready"
+        },
+        {
+          "id": "restricted.aeonMessaging.noRoom.dot",
+          "text": "No message room is associated with your dot"
+        },
+        {
+          "id": "orbit.messaging.room.retry",
+          "text": "Try again"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/aeon-appearance-picker-329fc29c1361.js",
+      "sha256": "c09494b175214107fff73f9d5eae74f59706d41a8cf9cd338bb189ae73e3fe24",
+      "labels": [
+        {
+          "id": "restricted.aeonAppearancePicker.createPetPrompt",
+          "text": "Make a pet avatar for yourself based on something you know about me"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.name",
+          "text": "Nickname"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.namePlaceholder",
+          "text": "Your dot"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.nameFormatError",
+          "text": "Use up to 24 characters without backslashes"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.saveFailed",
+          "text": "Couldn’t save your changes. Try again."
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.save",
+          "text": "Save"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.randomize",
+          "text": "Randomize"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.trigger.productName.dot",
+          "text": "Change your {productName}’s appearance"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.header.productName.dot",
+          "text": "Customize your {productName}"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatarGroup.productName.dot",
+          "text": "Your {productName}’s avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.legacyAvatar",
+          "text": "Use avatar {number}"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.sunglasses",
+          "text": "Use the sunglasses avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.bow-tie",
+          "text": "Use the bow tie avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.balancing-ball",
+          "text": "Use the blossom avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.cowboy",
+          "text": "Use the cowboy hat avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.beanie",
+          "text": "Use the beanie avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.mustache",
+          "text": "Use the red avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.pirate",
+          "text": "Use the pirate avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.feather",
+          "text": "Use the feather avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.monocle",
+          "text": "Use the monocle avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.party-hat",
+          "text": "Use the triangle avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.bowler",
+          "text": "Use the bowler hat avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.avatar.headphones",
+          "text": "Use the blob avatar"
+        },
+        {
+          "id": "restricted.aeonAppearancePicker.saveError.dot",
+          "text": "Unable to save your dot’s avatar"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/aeon-appearance-colors-d5460b7c6053.js",
+      "sha256": "f0dc96403a799596996f9875e71d779cdc04251b7ece764e7a85d881eff4ca35",
+      "labels": []
+    },
+    {
+      "path": "webview/assets/Dot-7cb00c0b541f.js",
+      "sha256": "c520f8ad307fcd45afe844b900dade34353529c4760665b9871562638685cf2a",
+      "labels": []
+    },
+    {
+      "path": "webview/assets/aeon-summary-panel-identity-9008df4e6a28.js",
+      "sha256": "c4f404ecb3294985dae5eeea507504e762fd9017caf54323821410d4ccef91c1",
+      "labels": [
+        {
+          "id": "restricted.aeon.doctor.setup.pending",
+          "text": "Setting up recurring doctor…"
+        },
+        {
+          "id": "restricted.aeon.doctor.setup.label",
+          "text": "Set up recurring doctor"
+        },
+        {
+          "id": "restricted.aeon.doctor.requesting",
+          "text": "Requesting check-in…"
+        },
+        {
+          "id": "restricted.aeon.doctor.checkInNow.label",
+          "text": "Check in now"
+        },
+        {
+          "id": "restricted.aeon.doctor.setup.success",
+          "text": "Recurring doctor is set up"
+        },
+        {
+          "id": "restricted.aeon.doctor.checkInNow.requested",
+          "text": "Check-in requested"
+        },
+        {
+          "id": "restricted.aeon.doctor.request.error",
+          "text": "Doctor unavailable · Try again"
+        },
+        {
+          "id": "restricted.aeon.doctor.schedule.link",
+          "text": "View doctor schedule"
+        },
+        {
+          "id": "restricted.aeon.email.settings.cloudRequired.dot",
+          "text": "Email setup is available for active cloud dot assistants"
+        },
+        {
+          "id": "restricted.aeon.email.settings.workspaceDisabled",
+          "text": "Email is disabled by your workspace admin"
+        },
+        {
+          "id": "restricted.aeon.email.disconnecting",
+          "text": "Disconnecting Email…"
+        },
+        {
+          "id": "restricted.aeon.email.disconnected",
+          "text": "Email disconnected"
+        },
+        {
+          "id": "restricted.aeon.email.removeFailed",
+          "text": "Couldn’t disconnect Email. Please try again"
+        },
+        {
+          "id": "restricted.aeon.email.actions.copy",
+          "text": "Copy email address"
+        },
+        {
+          "id": "restricted.aeon.email.actions.open",
+          "text": "Open Email"
+        },
+        {
+          "id": "restricted.aeon.email.actions.remove",
+          "text": "Remove"
+        },
+        {
+          "id": "restricted.aeon.email.actions.debug",
+          "text": "Debug"
+        },
+        {
+          "id": "restricted.aeon.email.shortcut.addressLabel",
+          "text": "Email: {emailAddress}"
+        },
+        {
+          "id": "restricted.aeonMessaging.emailShortcut",
+          "text": "Email"
+        },
+        {
+          "id": "restricted.aeon.email.summary.add",
+          "text": "Add email"
+        },
+        {
+          "id": "restricted.aeon.email.dialog.loadingTitle",
+          "text": "Email"
+        },
+        {
+          "id": "restricted.aeon.email.settings.loading",
+          "text": "Loading email settings…"
+        },
+        {
+          "id": "restricted.aeon.email.summary.loading",
+          "text": "Loading email…"
+        },
+        {
+          "id": "restricted.aeon.email.summary.unavailable",
+          "text": "Email unavailable"
+        },
+        {
+          "id": "restricted.aeon.summary.identity.productName.dot",
+          "text": "Your private {productName}"
+        },
+        {
+          "id": "restricted.aeon.summary.identity.legacy",
+          "text": "Legacy Aeon"
+        },
+        {
+          "id": "restricted.aeon.summary.active",
+          "text": "Active"
+        },
+        {
+          "id": "restricted.aeon.summary.activeRelativeTimeNatural",
+          "text": "Active {time}"
+        },
+        {
+          "id": "restricted.aeon.summary.paused",
+          "text": "Paused"
+        },
+        {
+          "id": "restricted.aeon.summary.pausedJustNow",
+          "text": "Paused just now"
+        },
+        {
+          "id": "restricted.aeon.summary.pausedRelativeTime",
+          "text": "Paused {time}"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/composer-controls-db9f3c1ee1ee.js",
+      "sha256": "52bd45455a52ceb950bf6770617b426260359eec142841948465077167dc5597",
+      "labels": [
+        {
+          "id": "restricted.aeonMessaging.roomUi.uploadFileFailed",
+          "text": "Couldn’t upload this file"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sendMessageFailed",
+          "text": "Couldn’t send this message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.trySendingAgain",
+          "text": "Try sending your message again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.deliveryUnknown",
+          "text": "Message delivery is unknown; check the conversation before sending again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.prepareMessageFailed",
+          "text": "Couldn’t prepare this message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.trySendingAgain",
+          "text": "Try sending your message again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachmentLimit",
+          "text": "You can attach up to eight files"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openConversationFailed",
+          "text": "Couldn’t open this conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openConversationFailed",
+          "text": "Couldn’t open this conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadOlderMessagesFailed",
+          "text": "Couldn’t load older messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.search.loadNewerFailed",
+          "text": "Couldn’t load newer messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.markConversationReadFailed",
+          "text": "Couldn’t mark this conversation read"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.updateReactionFailed",
+          "text": "Couldn’t update this reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachmentNoLongerAvailable",
+          "text": "Attachment is no longer available"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.playVideoFailed",
+          "text": "Couldn’t play this video"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.downloadDocumentFailed",
+          "text": "Couldn’t download this document"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.conversationNoLongerAvailable",
+          "text": "This conversation is no longer available"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.requestFailed",
+          "text": "Request failed"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.todayAtTime",
+          "text": "Today {time}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.yesterdayAtTime",
+          "text": "Yesterday {time}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.dateAtTime",
+          "text": "{date} {time}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.fileSizeBytes",
+          "text": "{size} B"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.fileSizeKilobytes",
+          "text": "{size} KB"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.fileSizeMegabytes",
+          "text": "{size} MB"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInIMessage",
+          "text": "Sent in iMessage"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInSms",
+          "text": "Sent in SMS"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInRcs",
+          "text": "Sent in RCS"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInTextMessage",
+          "text": "Sent in Text message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInChatgpt",
+          "text": "Sent in ChatGPT"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentInChannel",
+          "text": "Sent in {channel}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.removeUpload",
+          "text": "Remove {fileName}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.uploadQueued",
+          "text": "Queued"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.uploadingProgress",
+          "text": "Uploading {progress}%"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.retryUpload",
+          "text": "Retry upload"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.retry",
+          "text": "Retry"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chatgptDisclaimer",
+          "text": "ChatGPT can make mistakes — check important info"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.replyingTo",
+          "text": "Replying to {author}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.replyingToMessage",
+          "text": "Replying to message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.cancelReply",
+          "text": "Cancel reply"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.cancelReply",
+          "text": "Cancel reply"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.messageInput",
+          "text": "Message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sendMessagePlaceholder",
+          "text": "Send a message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.addPhotosAndFiles",
+          "text": "Add photos and files"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.addPhotosAndFiles",
+          "text": "Add photos and files"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.send",
+          "text": "Send"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sendMessageEnter",
+          "text": "Send message (Enter)"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.finishDictationAndSend",
+          "text": "Finish dictation and send"
+        },
+        {
+          "id": "orbit.messaging.viewPage",
+          "text": "View page"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openSharedConversation",
+          "text": "Open shared conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openHostname",
+          "text": "Open {hostname}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openAttachment",
+          "text": "Open {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.downloadAttachment",
+          "text": "Download {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.downloadAttachment",
+          "text": "Download {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.downloadAttachment",
+          "text": "Download {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openAttachmentLink",
+          "text": "Open attachment link"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.expandImageLabel",
+          "text": "Expand {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.expandImage",
+          "text": "Expand image"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadingImageAttachment",
+          "text": "Loading image attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sentChatgptImage",
+          "text": "Sent a ChatGPT image"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chatgpt",
+          "text": "ChatGPT"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openLinkHost",
+          "text": "Open {hostname}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chatgpt",
+          "text": "ChatGPT"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.messageTitle",
+          "text": "Message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chatgpt",
+          "text": "ChatGPT"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openSharedPost",
+          "text": "Open shared post in ChatGPT"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.hideSharedMessages",
+          "text": "Hide shared messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.showSharedMessages",
+          "text": "Show shared messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.hideAttachmentDetails",
+          "text": "{label}: Hide details"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.viewAttachmentDetails",
+          "text": "{label}: View details"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.hideDetails",
+          "text": "Hide details"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.showDetails",
+          "text": "Show details"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.playAttachment",
+          "text": "Play {label}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.playVideo",
+          "text": "Play video"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedConversation",
+          "text": "Shared conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.note",
+          "text": "Note"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.report",
+          "text": "Report"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedConversation",
+          "text": "Shared conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedImage",
+          "text": "Shared image"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedPost",
+          "text": "Shared post"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedLink",
+          "text": "Shared link"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.sharedMedia",
+          "text": "Shared media"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.image",
+          "text": "Image"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachedFile",
+          "text": "Attached file"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.savedDeliveryUnconfirmedRetry",
+          "text": "Saved in the conversation, but delivery is unconfirmed. Click to retry delivery"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.savedDeliveryUnconfirmed",
+          "text": "Saved in the conversation, but delivery is unconfirmed"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.savedDeliveryUnconfirmedStatus",
+          "text": "Message saved; delivery unconfirmed"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.closeReactions",
+          "text": "Close reactions"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chooseReaction",
+          "text": "Choose a reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.react",
+          "text": "React"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.reply",
+          "text": "Reply"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.replyToMessage",
+          "text": "Reply to message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.messageActions",
+          "text": "Message actions"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.removeReaction",
+          "text": "Remove {emoji} reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.reactWithEmoji",
+          "text": "React with {emoji}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.chooseReaction",
+          "text": "Choose a reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.you",
+          "text": "You"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.participant",
+          "text": "Participant"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.messageDeleted",
+          "text": "Message deleted"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.reactions",
+          "text": "Reactions"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.member",
+          "text": "Member"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.removeReaction",
+          "text": "Remove {emoji} reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.addReaction",
+          "text": "Add {emoji} reaction"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.goToOriginalMessage",
+          "text": "Go to original message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadingMessage",
+          "text": "Loading message"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.failedToSendRetry",
+          "text": "Failed to send. Click to retry"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.deliveryUnconfirmedHint",
+          "text": "We couldn’t confirm delivery — check the conversation before sending again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.failedToSend",
+          "text": "Failed to send"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.deliveryUnconfirmedStatus",
+          "text": "Message delivery unconfirmed"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.messageFailedStatus",
+          "text": "Message failed"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.newMessages",
+          "text": "New messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.you",
+          "text": "You"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.participant",
+          "text": "Participant"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.attachment",
+          "text": "Attachment"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.you",
+          "text": "You"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.participant",
+          "text": "Participant"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.namedParticipantTyping",
+          "text": "{name} is typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.participantTyping",
+          "text": "Someone is typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.twoNamedParticipantsTyping",
+          "text": "{firstName} and {secondName} are typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.namedAndUnnamedParticipantsTyping",
+          "text": "{name} and someone are typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.unnamedAndNamedParticipantsTyping",
+          "text": "Someone and {name} are typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.twoUnnamedParticipantsTyping",
+          "text": "Two people are typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.namedAndOtherParticipantsTyping",
+          "text": "{name} and {count, plural, one {# other is} other {# others are}} typing…"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.multipleParticipantsTyping",
+          "text": "{count, plural, one {# person is} other {# people are}} typing…"
+        },
+        {
+          "id": "orbit.messaging.replyThread.roomTyping",
+          "text": "Your {dot} is typing in this chat…"
+        },
+        {
+          "id": "orbit.messaging.replyThread.roomParticipantsTyping",
+          "text": "{count, plural, one {Someone is typing in this chat…} other {People are typing in this chat…}}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.replies",
+          "text": "Replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.closeReplies",
+          "text": "Close replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.closeReplies",
+          "text": "Close replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadingOlderReplies",
+          "text": "Loading older replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadEarlierMessages",
+          "text": "Load earlier messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadEarlierMessages",
+          "text": "Load earlier messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.scrollToNewReplies",
+          "text": "Scroll to new replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.newReplies",
+          "text": "New replies"
+        },
+        {
+          "id": "orbit.messaging.replyAnnouncement",
+          "text": "New reply from {dot}"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadingMessages",
+          "text": "Loading messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.dropFileToUpload",
+          "text": "Drop a file to upload"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.loadingEarlierMessages",
+          "text": "Loading earlier messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.search.newer.hint",
+          "text": "Load messages after this search result"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.search.newer.label",
+          "text": "Load newer messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.search.latest.hint",
+          "text": "Return to the latest messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.search.latest.label",
+          "text": "Back to latest"
+        },
+        {
+          "id": "orbit.messaging.reconnecting",
+          "text": "Reconnecting…"
+        },
+        {
+          "id": "orbit.messaging.refreshFailed",
+          "text": "Couldn’t refresh messages"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.tryAgain",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.openConversationErrorTitle",
+          "text": "Couldn’t open this conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.retryLoadingConversation",
+          "text": "Retry loading conversation"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.tryAgain",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.noMessagesTitle",
+          "text": "No messages yet"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.noMessagesDetail",
+          "text": "Messages in this conversation will appear here"
+        },
+        {
+          "id": "localConversation.scrollToBottomButton",
+          "text": "Scroll to bottom"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.onboardingDotTyping.brandName",
+          "text": "Your {productName} is typing…"
+        },
+        {
+          "id": "orbit.availability.planIneligible",
+          "text": "Your plan doesn't include your {dot}"
+        },
+        {
+          "id": "orbit.availability.upgradePlan",
+          "text": "Upgrade to an eligible plan to continue. Your conversations and past activity are still here."
+        },
+        {
+          "id": "orbit.availability.upgradeAction",
+          "text": "Upgrade"
+        },
+        {
+          "id": "orbit.availability.refresh",
+          "text": "Check again"
+        },
+        {
+          "id": "orbit.safety.delete.productName",
+          "text": "Delete your {dot}"
+        },
+        {
+          "id": "orbit.browserAnnotations.restoreUnavailable",
+          "text": "Couldn't restore all queued annotations. Reopen this chat to try again"
+        },
+        {
+          "id": "orbit.browserAnnotations.sendFailed",
+          "text": "Couldn't send these annotations. Your comments are still available"
+        },
+        {
+          "id": "orbit.browserAnnotations.attachmentCountExceeded",
+          "text": "Attachments {count, number}/{limit, number} · Remove {excess, plural, one {# attachment} other {# attachments}}"
+        },
+        {
+          "id": "orbit.browserAnnotations.attachmentCount",
+          "text": "Attachments {count, number}/{limit, number}"
+        },
+        {
+          "id": "orbit.feedback.openError",
+          "text": "Couldn’t open feedback. Please try again"
+        },
+        {
+          "id": "composer.submitButtonTooltip.send",
+          "text": "Send"
+        },
+        {
+          "id": "orbit.composer.finishDictationAndSend",
+          "text": "Finish dictation and send"
+        },
+        {
+          "id": "composer.fileAttachment.pastedTextLabel",
+          "text": "Pasted text.txt"
+        },
+        {
+          "id": "composer.fileAttachment.pastedMarkdownLabel",
+          "text": "Pasted text.md"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/native-room-ecbd2ba1aadf.js",
+      "sha256": "f83dc7a7d6ebeec2b341593f893d5d107da17b78b7a6911fdabb553c4bc1d240",
+      "labels": [
+        {
+          "id": "restricted.orbit.voiceCall.history.outcome",
+          "text": "{outcome, select, failed {Call failed} interrupted {Call interrupted} not_connected {Call didn’t connect} other {Call ended}}"
+        },
+        {
+          "id": "restricted.orbit.voiceCall.history.durationAndOutcome",
+          "text": "{duration} · {outcome, select, failed {Call failed} interrupted {Call interrupted} not_connected {Call didn’t connect} other {Call ended}}"
+        },
+        {
+          "id": "orbit.voiceCall.history.summarizing",
+          "text": "Summarizing"
+        },
+        {
+          "id": "restricted.aeon.messaging.retryAppshot",
+          "text": "Retry loading Appshot"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.fallback",
+          "text": "Created task"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.open",
+          "text": "Open {name}"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.loading",
+          "text": "Loading attached task"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.loadingTitle",
+          "text": "Loading"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.activity",
+          "text": "{status, select, loading {Loading} other {Working}}"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.unread",
+          "text": "Unread updates"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.localEnvironment",
+          "text": "Environment: This computer"
+        },
+        {
+          "id": "restricted.aeon.attachedThread.environment",
+          "text": "Environment: {environment}"
+        },
+        {
+          "id": "chatgptConversations.composer.uploadingAttachment",
+          "text": "Uploading"
+        },
+        {
+          "id": "chatgptConversations.composer.attachmentUploadFailed",
+          "text": "Upload failed"
+        },
+        {
+          "id": "composer.fileAttachment.retryHint",
+          "text": "Retry upload"
+        },
+        {
+          "id": "composer.fileAttachment.retry",
+          "text": "Retry"
+        },
+        {
+          "id": "orbit.fileAttachment.action",
+          "text": "{action, select, download {Download {filename}} other {Open {filename}}}"
+        },
+        {
+          "id": "restricted.aeon.messaging.delivered",
+          "text": "Delivered"
+        },
+        {
+          "id": "restricted.aeon.messaging.readAt",
+          "text": "Read {time}"
+        },
+        {
+          "id": "restricted.aeon.messaging.read",
+          "text": "Read"
+        },
+        {
+          "id": "restricted.aeon.messaging.openLink",
+          "text": "Open link"
+        },
+        {
+          "id": "restricted.aeonMessaging.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeon.messaging.viewReplies",
+          "text": "View replies"
+        },
+        {
+          "id": "restricted.aeon.messaging.replyCount",
+          "text": "{count, plural, one {# reply} other {# replies}}"
+        },
+        {
+          "id": "restricted.aeon.messaging.olderRepliesError",
+          "text": "Could not load earlier replies"
+        },
+        {
+          "id": "restricted.aeonMessaging.roomUi.deliveryUnknown",
+          "text": "Message delivery is unknown; check the conversation before sending again"
+        },
+        {
+          "id": "restricted.aeon.messaging.sentInPage",
+          "text": "Sent in page"
+        },
+        {
+          "id": "chatgptConversations.hostedWidget.status",
+          "text": "{failed, select, true {Could not open this app} other {Opening app…}}"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/page-3f5e759fa37f.js",
+      "sha256": "6fd609d25892140170de18cf4b5ebb5be235d82acab7f3b9aca342d987dee9ca",
+      "labels": [
+        {
+          "id": "orbit.onboarding.colorLoadFailed",
+          "text": "Couldn’t load color customization"
+        },
+        {
+          "id": "orbit.onboarding.retryColorLoad",
+          "text": "Try again"
+        },
+        {
+          "id": "orbit.onboarding.colorSaveFailed",
+          "text": "Couldn’t save your color. Select Continue to try again."
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.localAccessDescriptionMultiple",
+          "text": "Access files and work on this computer wherever you message your {dot}"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.localAccessDescription",
+          "text": "Access files and work on this computer wherever you message your {dot}. This disconnects any other connected desktop"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.localDescription",
+          "text": "Work with your local files and ChatGPT conversations"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.localComputer",
+          "text": "Your local computer"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.preview",
+          "text": "{dot}’s computer"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.title",
+          "text": "Choose where your {dot} can work"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.description",
+          "text": "Your {dot} has its own computer, but you can also let it use yours. You can change this anytime."
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.continue",
+          "text": "Continue"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.cloudComputer",
+          "text": "Your {dot}’s computer"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.cloudDescriptionWithYourDot",
+          "text": "A powerful cloud computer where your {dot} works"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.alwaysAvailable",
+          "text": "Always available"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.openApp",
+          "text": "Open app"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.getApp",
+          "text": "Get app"
+        },
+        {
+          "id": "restricted.orbitComputerOnboarding.disabled",
+          "text": "Disabled"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.premiumTitleWithBreak",
+          "text": "Dots currently require a{br}Business Premium seat"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.emailUnavailable",
+          "text": "Email setup isn’t available in this workspace"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.error",
+          "text": "We couldn’t check your workspace access"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.unavailable",
+          "text": "Dots aren’t available in your workspace yet"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.owner",
+          "text": "You are on a Standard seat. Upgrade to Business Premium to access dots. Access may vary by region."
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.member",
+          "text": "You are on a Standard seat. Ask your workspace owner about a Business Premium seat. Access may still be limited."
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.emailUnavailableDescription",
+          "text": "You can continue using ChatGPT in this workspace"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.unavailableDescription",
+          "text": "Your current workspace doesn’t have access to dots. You can continue using ChatGPT in this workspace."
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.manageSeats",
+          "text": "Manage seats"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "restricted.aeon.workspaceAccess.back",
+          "text": "Back to ChatGPT"
+        },
+        {
+          "id": "orbit.page.catalogError.productName",
+          "text": "Couldn't load your {dot}"
+        },
+        {
+          "id": "orbit.page.catalogError.deviceCheck",
+          "text": "Couldn't load your {dot} [DeviceCheck {failureReason, select, token_generation_failed {token generation failed} registration_http_failed {registration failed{hasHttpStatus, select, true { ({httpStatus})} other {}}} registration_network_failed {registration request failed} missing_cookie {registration returned no cookie} other {token generation is unavailable}}]"
+        },
+        {
+          "id": "orbit.page.catalogRetry",
+          "text": "Try again"
+        },
+        {
+          "id": "orbit.onboarding.retryColorLoadLabel",
+          "text": "Retry loading colors"
+        },
+        {
+          "id": "restricted.orbitIntroduction.animateDot.dotPlaceholder",
+          "text": "Animate your {dot}"
+        },
+        {
+          "id": "orbit.onboarding.connectors.disabledByAdmin",
+          "text": "Disabled by your workspace"
+        },
+        {
+          "id": "orbit.onboarding.connectors.connected",
+          "text": "Connected"
+        },
+        {
+          "id": "orbit.onboarding.connectors.loadError",
+          "text": "We couldn’t load your tools"
+        },
+        {
+          "id": "orbit.onboarding.connectors.retry",
+          "text": "Retry"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithoutContext.productName",
+          "text": "Continue without giving your {dot} this context"
+        },
+        {
+          "id": "orbit.onboarding.connectors.checkingProvider",
+          "text": "Checking your tools"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithoutContext.productName",
+          "text": "Continue without giving your {dot} this context"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continue",
+          "text": "Continue"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithGoogle",
+          "text": "Continue with Google"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithMicrosoft",
+          "text": "Continue with Microsoft"
+        },
+        {
+          "id": "orbit.onboarding.connectors.title.brandName",
+          "text": "Make your {productName} more helpful"
+        },
+        {
+          "id": "orbit.onboarding.connectors.suggestionsDescription.dot",
+          "text": "Your {dot} has access to your plugins on ChatGPT. Here are a few more that could make it even more useful."
+        },
+        {
+          "id": "orbit.onboarding.connectors.workspaceDisabledPlugins",
+          "text": "Your workspace has disabled some of these plugins"
+        },
+        {
+          "id": "orbit.onboarding.connectors.connectionFailed",
+          "text": "Connection didn’t finish. Try again, or continue without connecting"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithoutAdditionalPlugins",
+          "text": "Continue without connecting additional plugins"
+        },
+        {
+          "id": "orbit.onboarding.connectors.continueWithoutContext.productName",
+          "text": "Continue without giving your {dot} this context"
+        },
+        {
+          "id": "orbit.onboarding.connectors.email",
+          "text": "Email"
+        },
+        {
+          "id": "orbit.onboarding.connectors.emailDescription.v2",
+          "text": "Stay on top of important emails."
+        },
+        {
+          "id": "orbit.onboarding.connectors.calendar",
+          "text": "Calendar"
+        },
+        {
+          "id": "orbit.onboarding.connectors.calendarDescription.v2",
+          "text": "Be prepared for every meeting."
+        },
+        {
+          "id": "orbit.onboarding.connectors.contacts",
+          "text": "Contacts"
+        },
+        {
+          "id": "orbit.onboarding.connectors.contactsDescription.brandName",
+          "text": "Let your {productName} know who matters."
+        },
+        {
+          "id": "orbit.onboarding.connectors.drive",
+          "text": "Drive"
+        },
+        {
+          "id": "orbit.onboarding.connectors.driveDescription.v2",
+          "text": "Work with your docs, sheets and slides."
+        },
+        {
+          "id": "orbit.onboarding.connectors.sharepoint",
+          "text": "SharePoint"
+        },
+        {
+          "id": "orbit.onboarding.connectors.sharepointDescription.productName",
+          "text": "Help your {dot} find and use your files"
+        },
+        {
+          "id": "orbit.onboarding.connectors.teams",
+          "text": "Teams"
+        },
+        {
+          "id": "orbit.onboarding.connectors.teamsDescription.productName",
+          "text": "Give your {dot} context from your conversations"
+        },
+        {
+          "id": "orbit.onboarding.creatingNext",
+          "text": "This may take a few moments"
+        },
+        {
+          "id": "orbit.onboarding.creating.brandName",
+          "text": "Setting up your {productName}"
+        },
+        {
+          "id": "orbit.onboarding.creatingProgress.brandName",
+          "text": "Creating your {productName}"
+        },
+        {
+          "id": "orbit.onboarding.creatingPreparingSkills",
+          "text": "Preparing skills"
+        },
+        {
+          "id": "orbit.onboarding.creatingGettingPluginsReady",
+          "text": "Getting plugins ready"
+        },
+        {
+          "id": "orbit.onboarding.creatingAlmostFinished",
+          "text": "Almost finished"
+        },
+        {
+          "id": "orbit.onboarding.failed.brandName",
+          "text": "Couldn’t create your {productName}"
+        },
+        {
+          "id": "orbit.onboarding.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "orbit.onboarding.failedDescription",
+          "text": "Something went wrong during setup"
+        },
+        {
+          "id": "orbit.onboarding.notifications.continue",
+          "text": "Continue"
+        },
+        {
+          "id": "orbit.onboarding.notifications.enable",
+          "text": "Enable notifications"
+        },
+        {
+          "id": "orbit.onboarding.notifications.skip",
+          "text": "Not now"
+        },
+        {
+          "id": "orbit.onboarding.notifications.title",
+          "text": "Stay in the loop with your {dot}"
+        },
+        {
+          "id": "orbit.onboarding.notifications.description",
+          "text": "Get notified when your {dot} has an update or needs your input"
+        },
+        {
+          "id": "orbit.onboarding.notifications.error",
+          "text": "Couldn’t enable notifications. Try again or continue for now."
+        },
+        {
+          "id": "restricted.orbitIntroduction.continue",
+          "text": "Continue"
+        },
+        {
+          "id": "restricted.orbitIntroduction.title.brandName",
+          "text": "Create your {productName}"
+        },
+        {
+          "id": "restricted.orbitIntroduction.subtitleWithLearnMore.capableDot",
+          "text": "{dots} are remarkably capable always-on agents. <learnMore>Learn more</learnMore>"
+        },
+        {
+          "id": "restricted.orbitIntroduction.subtitle.capableDot",
+          "text": "{dots} are remarkably capable always-on agents"
+        },
+        {
+          "id": "restricted.orbitIntroduction.complexWork.title",
+          "text": "Built to take on complex work"
+        },
+        {
+          "id": "restricted.orbitIntroduction.firstDetailBody.brandName",
+          "text": "Powered by GPT-6 Astra, your {productName} can work through projects and ongoing responsibilities on your behalf."
+        },
+        {
+          "id": "restricted.orbitIntroduction.proactiveHelp.title",
+          "text": "Proactively helpful"
+        },
+        {
+          "id": "restricted.orbitIntroduction.proactiveHelp.body",
+          "text": "Your {productName} will suggest how it can be helpful based on information in your <connectedApps>connected apps</connectedApps>."
+        },
+        {
+          "id": "restricted.orbitIntroduction.dataControls.title",
+          "text": "Respects your choices"
+        },
+        {
+          "id": "restricted.orbitIntroduction.dataControls.body",
+          "text": "Depending on your settings, we may use conversations with your {productName} to improve our models. <dataControls>Manage data controls</dataControls>"
+        },
+        {
+          "id": "orbit.onboarding.unknown",
+          "text": "Setup may still be running"
+        },
+        {
+          "id": "orbit.onboarding.unknownDescription",
+          "text": "Check the sidebar before trying again"
+        },
+        {
+          "id": "orbit.phoneLanding.existingTitle",
+          "text": "Continue chatting with your dot in the ChatGPT app"
+        },
+        {
+          "id": "orbit.phoneLanding.setupTitle",
+          "text": "Set up your dot on a computer"
+        },
+        {
+          "id": "orbit.phoneLanding.existingDescription",
+          "text": "Get the app to keep chatting on your phone"
+        },
+        {
+          "id": "orbit.phoneLanding.setupDescription",
+          "text": "Use ChatGPT in your browser or desktop app to get started. After that, you can use your dot on your phone, too."
+        },
+        {
+          "id": "orbit.phoneLanding.getApp",
+          "text": "Get the ChatGPT app"
+        },
+        {
+          "id": "orbit.phoneLanding.backToChatGPT",
+          "text": "Back to ChatGPT"
+        },
+        {
+          "id": "orbit.primary.choose.productName",
+          "text": "Choose your primary {dot}"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/dot-onboarding-ring-a369119a8892.js",
+      "sha256": "3c194b1256b0ee9f613cd35154ce7dcdc62d2e1d032ba342a10fce369bd0850d",
+      "labels": []
+    },
+    {
+      "path": "webview/assets/avatar-mascot-button-1d7e7f02ecf5.js",
+      "sha256": "f0080d7642c2ae8b4415f09c63c31ac165aede0ea7d673765a94ee1a5359eac6",
+      "labels": []
+    },
+    {
+      "path": "webview/assets/local-conversation-summary-panel-artifacts-section-c1b079c8eacb.js",
+      "sha256": "23ee147903bf8a9b4d13739e0454b8865af5801d336ae8bd60d73eab6854b13b",
+      "labels": [
+        {
+          "id": "orbit.outputs.loadError",
+          "text": "Couldn’t load all outputs"
+        },
+        {
+          "id": "orbit.outputs.retry",
+          "text": "Try again"
+        },
+        {
+          "id": "orbit.outputs.loading",
+          "text": "Loading outputs…"
+        },
+        {
+          "id": "orbit.outputs.empty",
+          "text": "No outputs yet"
+        },
+        {
+          "id": "taskAttachment.removeFailed",
+          "text": "Could not remove chat attachment"
+        },
+        {
+          "id": "taskAttachment.removePullRequest",
+          "text": "Remove PR from chat"
+        },
+        {
+          "id": "taskAttachment.removeWorktree",
+          "text": "Archive worktree"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.loadingPrActions",
+          "text": "Loading actions…"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.unavailablePrActions",
+          "text": "No available actions"
+        },
+        {
+          "id": "pullRequestsPage.detail.actions.merge.trigger",
+          "text": "Merge"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repair",
+          "text": "Repair"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repair",
+          "text": "Repair"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repairComments",
+          "text": "Comments"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repairChecks",
+          "text": "Failing checks"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repairMergeConflicts",
+          "text": "Merge conflicts"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.repairEverything",
+          "text": "Everything"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestComposerUnavailable",
+          "text": "Open an editable chat to add this pull request"
+        },
+        {
+          "id": "gitlabMergeRequest.open",
+          "text": "Open merge request on GitLab"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.prSummary",
+          "text": "View PR"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.prCodeChanges",
+          "text": "Code changes"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.prStatus",
+          "text": "Status"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.prStatus",
+          "text": "Status"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.addPullRequestToChat",
+          "text": "Add to chat"
+        },
+        {
+          "id": "gitlabMergeRequest.rowLabel",
+          "text": "MR !{number}"
+        },
+        {
+          "id": "gitlabMergeRequest.view",
+          "text": "View merge request"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.addPullRequestToChat",
+          "text": "Add to chat"
+        },
+        {
+          "id": "gitlabMergeRequest.open",
+          "text": "Open merge request on GitLab"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestFallbackNumber",
+          "text": "-"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestWithState",
+          "text": "PR {number}"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestMergedRelativeTime",
+          "text": "{unit, select, minute {Merged {value}m ago} hour {Merged {value}h ago} day {Merged {value}d ago} week {Merged {value}w ago} month {Merged {value}mo ago} year {Merged {value}y ago} other {Merged}}"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestActions",
+          "text": "Actions for {title}"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.pullRequestActionsTooltip",
+          "text": "PR actions"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.mergeRequestActionsTooltip",
+          "text": "MR actions"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.openPullRequestOnGitHub",
+          "text": "Open in GitHub"
+        },
+        {
+          "id": "codex.localConversation.gitSummary.copyPullRequestLink",
+          "text": "Copy link"
+        },
+        {
+          "id": "codex.localConversation.outputs.pullRequestFallbackTitle",
+          "text": "PR #{number}"
+        },
+        {
+          "id": "codex.localConversation.outputs.openPullRequestInBrowser",
+          "text": "Open pull request in browser"
+        },
+        {
+          "id": "codex.localConversation.artifacts.generatedImage",
+          "text": "Generated image {imageNumber}"
+        },
+        {
+          "id": "codex.localConversation.generatedImageTabTitle",
+          "text": "{conversationTitle} - Generated image {imageNumber}"
+        },
+        {
+          "id": "codex.localConversation.artifacts.localPreview",
+          "text": "Local preview"
+        },
+        {
+          "id": "codex.localConversation.artifacts.website",
+          "text": "Web preview"
+        },
+        {
+          "id": "codex.localConversation.artifacts.generatedImageGeneric",
+          "text": "Generated image"
+        },
+        {
+          "id": "codex.localConversation.artifacts.empty",
+          "text": "No artifacts yet"
+        },
+        {
+          "id": "codex.localConversation.artifacts.fileType",
+          "text": "{extension} file"
+        },
+        {
+          "id": "codex.localConversation.artifacts.outputType",
+          "text": "{kind, select, document {Document} spreadsheet {Spreadsheet} presentation {Presentation} drive {Google Drive file} file {File} image {Image} website {Website} other {Link}}"
+        },
+        {
+          "id": "codex.localConversation.outputs.noMatches",
+          "text": "No outputs found"
+        },
+        {
+          "id": "codex.localConversation.outputs.title.v2",
+          "text": "Outputs"
+        },
+        {
+          "id": "codex.localConversation.outputs.recentFiles",
+          "text": "Recent files"
+        },
+        {
+          "id": "codex.localConversation.outputs.noMatches",
+          "text": "No outputs found"
+        },
+        {
+          "id": "codex.localConversation.artifacts.generatedImageGeneric",
+          "text": "Generated image"
+        },
+        {
+          "id": "codex.localConversation.artifacts.localPreview",
+          "text": "Local preview"
+        }
+      ]
+    },
+    {
+      "path": "webview/assets/settings-95849fbd912d.js",
+      "sha256": "8863ff6663815b6a47ac1579441147f2e246963c23f1388732b1e2005ea5be64",
+      "labels": [
+        {
+          "id": "restricted.cloudComputer.orbitCookies.dot",
+          "text": "Your dot's cookies"
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.description.dot",
+          "text": "Manage cookies saved by your dot"
+        },
+        {
+          "id": "restricted.cloudComputer.description",
+          "text": "Manage cloud browsing settings and saved website cookies"
+        },
+        {
+          "id": "restricted.cloudComputer.general.title",
+          "text": "General"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.updateError",
+          "text": "Cloud browser settings couldn't be updated"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.permissionUnavailable",
+          "text": "Unavailable"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.permissionLoading",
+          "text": "Loading…"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.loadError",
+          "text": "Cloud browser settings couldn't be loaded"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.retry",
+          "text": "Retry"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookiesDeleteError",
+          "text": "Could not delete browser data"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.loadError",
+          "text": "Saved cookies couldn't be loaded"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.retry",
+          "text": "Retry"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.back",
+          "text": "Back"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.clearTitle",
+          "text": "Clear all cookies?"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.deleteTitle",
+          "text": "Delete cookies for {hostname}?"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.deleteDescription",
+          "text": "Cookies saved by the cloud browser will be permanently deleted. Cookies in the browser on your device won't be affected."
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.deleteSiteDescription",
+          "text": "Site data will be permanently deleted. You will be immediately logged out of all sessions, including those used by active conversations."
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.deleteError",
+          "text": "Failed to delete passkey"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.loadError",
+          "text": "Passkeys couldn't be loaded"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.deleteTitle",
+          "text": "Delete passkey?"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.deleteDescription",
+          "text": "Delete the passkey for {account} on {website}? You may lose access to this account."
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.empty",
+          "text": "No cookies saved"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies",
+          "text": "Cookies"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies",
+          "text": "Cookies"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.clearDescription",
+          "text": "Remove cookies saved by the cloud browser"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.clearAll",
+          "text": "Clear all"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.sites",
+          "text": "Sites"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.deleteSite",
+          "text": "Delete cookies for {site}"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.deleteHost",
+          "text": "Delete cookies for {hostname} only"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookiesCount",
+          "text": "{count, plural, one {# cookie} other {# cookies}}"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cookies.toggleHosts",
+          "text": "Hosts for {site}"
+        },
+        {
+          "id": "settings.cloudComputer.orbitCookies.unavailable",
+          "text": "No dot found"
+        },
+        {
+          "id": "settings.cloudComputer.orbitCookies.unavailableDescription",
+          "text": "Your dot's cookies will appear here when a dot is available"
+        },
+        {
+          "id": "settings.cloudComputer.orbitCookies.refresh",
+          "text": "Refresh"
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.loadError.dot",
+          "text": "Your dot's cookies couldn't be loaded"
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.clearDescription.dot",
+          "text": "Remove cookies saved by your dot"
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.deleteWarning.dot",
+          "text": "Cookies saved by your dot will be permanently deleted. Your dot may need to sign in to affected websites again."
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.deleteError.dot",
+          "text": "Your dot's cookies couldn't be deleted. Try again."
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.clearTitle.dot",
+          "text": "Clear all of your dot's cookies?"
+        },
+        {
+          "id": "restricted.cloudComputer.orbitCookies.deleteTitle.dot",
+          "text": "Delete your dot's cookies for {hostname}?"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.site.allow",
+          "text": "Always allow"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.site.block",
+          "text": "Always block"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.site.block",
+          "text": "Always block"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.site.allowWarning",
+          "text": "Elevated risk for your data"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.site.allow",
+          "text": "Always allow"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.title",
+          "text": "Add website"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.site",
+          "text": "Site or pattern"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.placeholder",
+          "text": "https://example.com"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.invalid",
+          "text": "Enter a valid website address"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.permission",
+          "text": "Browsing"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.failed",
+          "text": "Cloud browser settings couldn't be updated"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.cancelAddSite",
+          "text": "Cancel"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addDialog.save",
+          "text": "Add website"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.empty",
+          "text": "No passkeys saved"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.deleteLabel",
+          "text": "Delete passkey for {account} on {website}"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.delete",
+          "text": "Delete passkey"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.passkeys.title",
+          "text": "Passkeys"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.sitePermissions",
+          "text": "Website permissions"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.sitePermissions.description",
+          "text": "Add sites to override the default permission"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.addSite",
+          "text": "Add website"
+        },
+        {
+          "id": "settings.chatGpt.cloudComputer.site.remove.label",
+          "text": "Remove permission for {site}"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.alwaysAsk",
+          "text": "Always ask"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.always_ask.description",
+          "text": "Ask before ChatGPT opens a website"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.autoApprove",
+          "text": "Auto approve"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.auto_approve.description",
+          "text": "Automatically approve or deny actions based on their risk"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.alwaysAllow",
+          "text": "Always allow"
+        },
+        {
+          "id": "settings.chatGpt.cloudBrowser.always_allow.description",
+          "text": "Let ChatGPT open websites without asking"
+        }
+      ]
+    }
+  ]
+}

@@ -2,9 +2,10 @@ const { app, BrowserWindow, WebContentsView, ipcMain, Menu, shell } = require('e
 const path = require('node:path');
 const URL_HOME = 'http://localhost:3080/';
 let win, view;
+const TITLEBAR_HEIGHT = 40;
 app.setName('OhMyDots');
 function external(url) { if (/^https?:\/\//i.test(url)) shell.openExternal(url); }
-function bounds() { if (win && view) { const [width, height] = win.getContentSize(); view.setBounds({ x: 0, y: 48, width, height: Math.max(0, height - 48) }); } }
+function bounds() { if (win && view) { const [width, height] = win.getContentSize(); view.setBounds({ x: 0, y: TITLEBAR_HEIGHT, width, height: Math.max(0, height - TITLEBAR_HEIGHT) }); } }
 async function reload() {
   if (!win || !view) return;
   const target = view;
@@ -18,8 +19,8 @@ async function reload() {
   } catch { if (win) win.webContents.send('status', 'offline'); }
 }
 function create() {
-  win = new BrowserWindow({ width: 1320, height: 860, minWidth: 860, minHeight: 560, backgroundColor: '#171717', title: 'OhMyDots', titleBarStyle: 'hidden', trafficLightPosition: { x: 16, y: 17 }, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false } });
-  view = new WebContentsView({ webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, partition: 'persist:ohmydots-preview' } });
+  win = new BrowserWindow({ width: 1320, height: 860, minWidth: 860, minHeight: 560, backgroundColor: '#171717', title: 'OhMyDots', titleBarStyle: 'hidden', trafficLightPosition: { x: 16, y: 13 }, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false } });
+  view = new WebContentsView({ webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, partition: 'persist:ohmydots-preview', preload: path.join(__dirname, 'view-preload.cjs') } });
   view.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
   view.webContents.on('will-navigate', (event, url) => { if (new URL(url).origin !== new URL(URL_HOME).origin) { event.preventDefault(); external(url); } });
   view.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
@@ -30,6 +31,11 @@ function create() {
   win.loadFile(path.join(__dirname, 'shell.html'));
 }
 function menu() { return Menu.buildFromTemplate([{ label: '새로고침', accelerator: 'CmdOrCtrl+R', click: reload }, { label: '브라우저에서 열기', click: () => external(URL_HOME) }, { type: 'separator' }, { role: 'togglefullscreen', label: '전체 화면' }, { role: 'zoom', label: '확대/축소' }]); }
+ipcMain.on('view-theme', (event, theme) => {
+  if (!win || event.sender !== view?.webContents || event.senderFrame !== view.webContents.mainFrame || !['light', 'dark'].includes(theme)) return;
+  win.webContents.send('theme', theme);
+  win.setBackgroundColor(theme === 'light' ? '#f9f9f9' : '#181818');
+});
 ipcMain.on('action', (event, action) => {
   if (!win || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame) return;
   if (action === 'reload') reload();

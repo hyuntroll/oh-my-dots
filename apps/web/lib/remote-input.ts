@@ -1,5 +1,12 @@
 import type { Computer } from './api';
 
+// Browser key names mapped to the X11 names the desktop expects.
+export const KEY_NAMES: Record<string, string> = { Enter: 'Return', Backspace: 'BackSpace', Tab: 'Tab', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', Delete: 'Delete', Home: 'Home', End: 'End', PageUp: 'Page_Up', PageDown: 'Page_Down', Control: 'Control_L', Meta: 'Control_L', Shift: 'Shift_L', Alt: 'Alt_L', ' ': 'space' };
+
+export function keyName(key: string, code: string): string {
+  return KEY_NAMES[key] || (code.startsWith('Key') ? code.slice(3).toLowerCase() : key);
+}
+
 type Body = Record<string, unknown>;
 type Entry = { body: Body; epoch: number | null; release: boolean };
 

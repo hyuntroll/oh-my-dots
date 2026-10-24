@@ -12,13 +12,14 @@ import httpx
 import websockets
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from .config import Config
-from .dots import AVATARS, COLORS, DotComputers
+from .dots import AVATARS, COLORS, DotComputers, LastDotError
 from .model_catalog import model_catalog
+from .opencode_provider import opencode_status
 from .providers import analyze_screen, api_key
 from .runtime import Runtime
 from .skills import list_skills, read_skill
@@ -48,6 +49,8 @@ class DotAppearance(BaseModel):
     name: str = Field(min_length=1, max_length=32)
     color: str = "silver"
     avatar: str = "pet"
+    characterState: str | None = Field(default=None, max_length=87384, pattern=r"^[A-Za-z0-9+/]*={0,2}$")
+    characterImage: str | None = Field(default=None, max_length=1400000, pattern=r"^data:image/png;base64,[A-Za-z0-9+/]*={0,2}$")
 
 
 class NewConversation(BaseModel):
@@ -63,6 +66,32 @@ class Settings(BaseModel):
     provider: str
     model: str = Field("", max_length=120)
     api_key: SecretStr | None = None
+
+
+class RenameDot(BaseModel):
+    name: str = Field(min_length=1, max_length=32)
+
+
+class PinDot(BaseModel):
+    pinned: bool
+
+
+class Remember(BaseModel):
+    text: str = Field(min_length=1, max_length=500)
+
+
+class Preferences(BaseModel):
+    """Account-wide surface preferences, kept on the server so any browser agrees.
+
+    The visual theme is intentionally absent: it stays in the per-browser dot
+    profile so exactly one place owns it.
+    """
+
+    reduceMotion: bool = False
+    sendWith: str = Field("enter", pattern="^(enter|modifier-enter)$")
+    showComputer: bool = True
+    runNotifications: bool = False
+    notificationSound: bool = True
 
 
 def create_app(config=None):
@@ -121,6 +150,19 @@ def create_app(config=None):
             dot_id = row.dot_id
         return await check_dot(dot_id)
 
+    def session_dot(session_id):
+        with store.session() as db:
+            row = db.get(ComputerSession, session_id)
+            if not row:
+                raise HTTPException(404, "Computer session not found")
+            return row.dot_id
+
+    def require_writable(dot_id):
+        try:
+            return dots.require_writable(dot_id)
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc))
+
     def save_control(state, session_id="computer-1"):
         with store.session() as db:
             row = db.get(ComputerSession, session_id)
@@ -176,6 +218,103 @@ def create_app(config=None):
             pass  # Saved appearance is reapplied when the computer reconnects.
         return dots.profile(dot)
 
+    @app.get("/api/dots/{dot_id}", dependencies=[Depends(auth)])
+    async def dot_detail(dot_id: str):
+        try:
+            return dots.get_profile(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.patch("/api/dots/{dot_id}", dependencies=[Depends(auth)])
+    async def rename_dot(dot_id: str, body: RenameDot):
+        name = body.name.strip()
+        if not name:
+            raise HTTPException(422, "Invalid dot name")
+        try:
+            profile = dots.rename(dot_id, name)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+        store.event("dot.renamed", name + " 닷으로 이름을 바꿨습니다", None, {"dot_id": dot_id, "name": name})
+        runtime = dots.runtimes.get(dot_id)
+        if runtime is not None:
+            await dots.apply_appearance(runtime, profile)
+        return profile
+
+    @app.post("/api/dots/{dot_id}/pin", dependencies=[Depends(auth)])
+    async def pin_dot(dot_id: str, body: PinDot):
+        try:
+            return dots.set_pinned(dot_id, body.pinned)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.post("/api/dots/{dot_id}/pause", dependencies=[Depends(auth)])
+    async def pause_dot(dot_id: str):
+        try:
+            return await dots.pause(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.post("/api/dots/{dot_id}/resume", dependencies=[Depends(auth)])
+    async def resume_dot(dot_id: str):
+        try:
+            return await dots.resume(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.post("/api/dots/{dot_id}/reboot", dependencies=[Depends(auth)])
+    async def reboot_dot(dot_id: str):
+        try:
+            dots.get_profile(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+        try:
+            return await dots.reboot(dot_id)
+        except ValueError as exc:
+            raise HTTPException(503, str(exc))
+
+    @app.delete("/api/dots/{dot_id}", dependencies=[Depends(auth)])
+    async def delete_dot(dot_id: str):
+        try:
+            return await dots.remove(dot_id)
+        except LastDotError as exc:
+            raise HTTPException(409, str(exc))
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.get("/api/dots/{dot_id}/memories", dependencies=[Depends(auth)])
+    async def dot_memories(dot_id: str):
+        try:
+            dots.get_profile(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+        return {"memories": dots.memories(dot_id)}
+
+    @app.post("/api/dots/{dot_id}/memories", dependencies=[Depends(auth)])
+    async def remember_dot(dot_id: str, body: Remember):
+        text = body.text.strip()
+        if not text:
+            raise HTTPException(422, "Memory must not be blank")
+        try:
+            dots.get_profile(dot_id)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+        return {"memories": dots.remember(dot_id, text)}
+
+    @app.delete("/api/dots/{dot_id}/memories/{memory_id}", dependencies=[Depends(auth)])
+    async def forget_dot(dot_id: str, memory_id: str):
+        try:
+            return {"memories": dots.forget(dot_id, memory_id)}
+        except ValueError as exc:
+            raise HTTPException(404, str(exc))
+
+    @app.get("/api/activity", dependencies=[Depends(auth)])
+    async def activity(dot_id: str | None = None, limit: int = 40):
+        return {"activity": dots.activity(limit=min(max(limit, 1), 100), dot_id=dot_id)}
+
+    @app.get("/api/environments", dependencies=[Depends(auth)])
+    async def environments():
+        return {"environments": await dots.environments()}
+
     @app.get("/api/skills", dependencies=[Depends(auth)])
     async def skill_catalog():
         return {"skills": list_skills()}
@@ -214,13 +353,13 @@ def create_app(config=None):
         return response
 
     @app.get("/api/conversations", dependencies=[Depends(auth)])
-    async def conversations(dot_id: str = "dot-1"):
+    async def conversations(dot_id: str = "dot-1", archived: bool = False):
         await check_dot(dot_id)
         with store.session() as db:
-            return [
-                serialize(c)
-                for c in db.scalars(select(Conversation).where(Conversation.dot_id == dot_id).order_by(Conversation.created_at.desc()))
-            ]
+            query = select(Conversation).where(Conversation.dot_id == dot_id)
+            query = query.where(Conversation.archived_at.is_not(None) if archived
+                                else Conversation.archived_at.is_(None))
+            return [serialize(c) for c in db.scalars(query.order_by(Conversation.created_at.desc()))]
 
     @app.post("/api/conversations", dependencies=[Depends(auth)])
     async def create_conversation(body: NewConversation = NewConversation()):
@@ -263,6 +402,10 @@ def create_app(config=None):
                 conversation = db.get(Conversation, conversation_id)
                 if not conversation:
                     raise HTTPException(404, "Conversation not found")
+                try:
+                    dots.require_writable(conversation.dot_id)
+                except PermissionError as exc:
+                    raise HTTPException(409, str(exc))
                 existing = db.scalar(
                     select(Run).where(
                         Run.conversation_id == conversation_id, Run.idempotency_key == body.idempotency_key
@@ -296,6 +439,7 @@ def create_app(config=None):
                     raise HTTPException(409, "Duplicate submission")
                 result = serialize(run)
             store.event("run.queued", "작업 대기 중", run.id, {"dot_name": body.dot_name.strip() or "OhMyDots"})
+            dots.touch(conversation.dot_id)
             await (await dots.for_run(run.id)).queue.put(run.id)
             return result
 
@@ -406,6 +550,7 @@ def create_app(config=None):
 
     @app.post("/api/computer-sessions/{session_id}/input", dependencies=[Depends(auth)])
     async def input(session_id: str, request: Request):
+        require_writable(session_dot(session_id))
         runtime = await check_session(session_id)
         body = await request.json()
         if not isinstance(body, dict):
@@ -471,11 +616,13 @@ def create_app(config=None):
     @app.get("/api/computer-sessions/{session_id}/screen", dependencies=[Depends(auth)])
     async def screen(session_id: str):
         runtime = await check_session(session_id)
-        return Response(
-            await runtime.desktop.get("/screen", raw=True),
-            media_type="image/png",
-            headers={"Cache-Control": "no-store"},
-        )
+        try:
+            content = await runtime.desktop.get("/screen", raw=True)
+        except httpx.HTTPError:
+            # The preview is polled by the dot panel, so an offline computer must read
+            # as unavailable rather than as a server fault.
+            raise HTTPException(503, "컴퓨터 연결을 기다리고 있습니다.")
+        return Response(content, media_type="image/png", headers={"Cache-Control": "no-store"})
 
     @app.websocket("/api/computer-sessions/{session_id}/stream")
     async def stream(ws: WebSocket, session_id: str):
@@ -527,10 +674,10 @@ def create_app(config=None):
 
     @app.get("/api/settings/models", dependencies=[Depends(auth)])
     async def models(provider: str):
-        if provider not in {"codex", "openai"}:
+        if provider not in {"codex", "openai", "opencode"}:
             raise HTTPException(422, "Unknown provider")
         current = store.get_setting(provider + "_model", config.model if provider == "openai" else "")
-        return await model_catalog(provider, current, api_key(config) if provider == "openai" else "")
+        return await model_catalog(provider, current, api_key(config) if provider == "openai" else "", opencode_bin=config.opencode_bin)
 
     @app.get("/api/integrations", dependencies=[Depends(auth)])
     async def integration_catalog():
@@ -611,6 +758,7 @@ def create_app(config=None):
             except TimeoutError:
                 proc.kill()
                 await proc.wait()
+        opencode = await opencode_status(config.opencode_bin)
         provider = store.get_setting("provider", config.provider)
         return {
             "provider": provider,
@@ -618,12 +766,16 @@ def create_app(config=None):
             "openai_configured": bool(api_key(config)),
             "codex_installed": bool(shutil.which(config.codex_bin)),
             "codex_connected": connected,
+            "opencode_installed": opencode["installed"],
+            "opencode_available": opencode["available"],
+            "opencode_version": opencode["version"],
+            "opencode_message": opencode["message"],
             "login": login_state,
         }
 
     @app.put("/api/settings", dependencies=[Depends(auth)])
     async def change_settings(body: Settings):
-        if body.provider not in ("openai", "codex"):
+        if body.provider not in ("openai", "codex", "opencode"):
             raise HTTPException(422, "Invalid provider")
         if any(rt.active_id for rt in dots.runtimes.values()):
             raise HTTPException(409, "실행 중인 작업을 마치거나 취소한 뒤 설정을 변경하세요.")
@@ -648,6 +800,28 @@ def create_app(config=None):
                     db.add(Setting(key=key, value=value))
             db.commit()
         return {"saved": True}
+
+    @app.get("/api/settings/preferences", dependencies=[Depends(auth)])
+    async def read_preferences():
+        stored = json.loads(store.get_setting("preferences", "{}"))
+        try:
+            return Preferences.model_validate(
+                {key: value for key, value in stored.items() if key in Preferences.model_fields}
+            ).model_dump()
+        except ValidationError:
+            return Preferences().model_dump()
+
+    @app.put("/api/settings/preferences", dependencies=[Depends(auth)])
+    async def write_preferences(body: Preferences):
+        value = json.dumps(body.model_dump())
+        with store.session() as db:
+            row = db.get(Setting, "preferences")
+            if row:
+                row.value = value
+            else:
+                db.add(Setting(key="preferences", value=value))
+            db.commit()
+        return body.model_dump()
 
     @app.post("/api/settings/codex/login", dependencies=[Depends(auth)])
     async def codex_login():

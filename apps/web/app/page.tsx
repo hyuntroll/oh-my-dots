@@ -3,6 +3,9 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp, Plus, Settings2, MessageSquare, Circle, Folder, X, Loader2, Monitor, SquarePen, PanelRightOpen, ChevronRight } from 'lucide-react';
 import Markdown from 'react-markdown';
 import ComputerView from '../components/ComputerView';
+import FloatingComputer from '../components/FloatingComputer';
+import DotMenu from '../components/DotMenu';
+import { ConfirmDialog, RenameDialog } from '../components/DotDialogs';
 import Settings from '../components/Settings';
 import RunActivity from '../components/RunActivity';
 import RunUsage from '../components/RunUsage';
@@ -14,9 +17,11 @@ import CustomizeDot, { DotAvatar } from '../components/DotIdentity';
 import DotContext from '../components/DotContext';
 import SpacesWorkspace, { type FilePreview } from '../components/SpacesWorkspace';
 import { DEFAULT_PROFILE, DOT_COLORS, PROFILE_KEY, parseDotProfile, type DotProfile } from '../lib/dot-profile';
-import { readPreferences, shouldSend } from '../lib/preferences';
+import { readPreferences, savePreferences, shouldSend, shouldNotify, mergeServerPreferences } from '../lib/preferences';
 import { usePreferences } from '../lib/usePreferences';
-import { api, ApiError, post, Activity, Computer, Conversation, Run, AuthSettings, Dot } from '../lib/api';
+import { DELETE_DIALOG, PAUSE_DIALOG, REBOOT_DIALOG, RESUME_DIALOG, type DotMenuAction } from '../lib/dot-lifecycle';
+import { api, ApiError, post, Activity, Computer, Conversation, DotActivityRow, Run, AuthSettings, Dot, PreferencesPayload } from '../lib/api';
+import { dotActivity } from '../lib/dot-motion';
 import { mergeExecution, type ExecutionState } from '../lib/execution';
 const labels: Record<string, string> = { PENDING: '대기 중', RUNNING: '진행 중', WAITING_USER: '응답 대기', COMPLETED: '완료', FAILED: '실패', CANCELLED: '취소됨' };
 const emptyComputer: Computer = { connected: false, owner: null, epoch: null, handoff: false };
@@ -31,6 +36,7 @@ export default function Home() {
   const sessionId = dots.find(dot => dot.id === activeDotId)?.computer_id || 'computer-1';
   const dotQuery = '?dot_id=' + encodeURIComponent(activeDotId);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [replayOnboarding, setReplayOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [contextOpen, setContextOpen] = useState(true);
   const [contextSection, setContextSection] = useState<'profile' | 'activity' | 'outputs'>('profile');
@@ -41,12 +47,12 @@ export default function Home() {
   const updateProfile = (value: DotProfile) => {
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(value)); setProfile(value);
       const id = activeDot.current;
-      void api<Dot>('/dots/' + id, { method: 'PUT', body: JSON.stringify({name: value.name, color: value.color, avatar: value.avatar}) }).then(dot => setDots(previous => previous.map(item => item.id === dot.id ? dot : item))).catch(e => setError(e.message)); }
+      void api<Dot>('/dots/' + id, { method: 'PUT', body: JSON.stringify({name: value.name, color: value.color, avatar: value.avatar, characterState: value.characterState, characterImage: value.characterImage}) }).then(dot => setDots(previous => previous.map(item => item.id === dot.id ? dot : item))).catch(e => setError(e.message)); }
     catch { setError('설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.'); }
   };
-  const finishSetup = (value: DotProfile) => { updateProfile({ ...value, setupCompleted: true }); setSidebarOpen(false); setComputerOpen(false); setProfileOpen(false); setSidebarOpen(window.innerWidth > 900); };
+  const finishSetup = (value: DotProfile) => { setReplayOnboarding(false); updateProfile({ ...value, setupCompleted: true }); setSidebarOpen(false); setComputerOpen(false); setProfileOpen(false); setSidebarOpen(window.innerWidth > 900); };
   const showContext = (section: 'profile' | 'activity' | 'outputs') => { setContextSection(section); setContextOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview(null); setSpacesOpen(false); ++fileRequest.current; };
-  const onboarding = profileLoaded && !profile.setupCompleted;
+  const onboarding = profileLoaded && (!profile.setupCompleted || replayOnboarding);
   useEffect(() => { setComputerOpen(readPreferences().showComputer); }, []);
   useEffect(() => { document.documentElement.dataset.reduceMotion = String(preferences.reduceMotion); }, [preferences.reduceMotion]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -55,6 +61,13 @@ export default function Home() {
   const [execution, setExecution] = useState<ExecutionState>({});
   const followOutput = useRef(true);
   const [text, setText] = useState('');
+  const composerInput = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const input = composerInput.current;
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+  }, [text, onboarding]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [auth, setAuth] = useState<AuthSettings | null>(null);
   const [error, setError] = useState('');
@@ -70,6 +83,15 @@ export default function Home() {
   const [mobileTab, setMobileTab] = useState('chat');
   const [filesOpen, setFilesOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [pipOpen, setPipOpen] = useState(false);
+  const [dotMenu, setDotMenu] = useState<{ dot: Dot; x: number; y: number } | null>(null);
+  const [lifecycleDot, setLifecycleDot] = useState<Dot | null>(null);
+  const [dotDialog, setDotDialog] = useState<null | 'rename' | 'pause' | 'resume' | 'reboot' | 'delete'>(null);
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
+  const [lifecycleError, setLifecycleError] = useState('');
+  const [activity, setActivity] = useState<DotActivityRow[]>([]);
+  const activeDotRow = dots.find(dot => dot.id === activeDotId);
+  const dotSummary = activeDotRow ? { name: activeDotRow.name, status: activeDotRow.status, pinned: activeDotRow.pinned, last_active_at: activeDotRow.last_active_at } : null;
   useEffect(() => {
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setSidebarOpen(false); setPreview(null); setSpacesOpen(false); ++fileRequest.current; } };
     document.addEventListener('keydown', close);
@@ -83,6 +105,23 @@ export default function Home() {
   const controlVersion = useRef(0);
   const fileRequest = useRef(0);
   const controlChanged = useCallback((state: Computer) => { controlVersion.current++; setComputer(state); }, []);
+  // Mirrors for the event-stream callback, which must not re-subscribe on every render.
+  const conversationRef = useRef<Conversation | null>(null);
+  conversationRef.current = conversation;
+  const preferenceRef = useRef(preferences);
+  preferenceRef.current = preferences;
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
+  // Preference writes are mirrored to the server so every browser agrees.
+  const suppressPreferencePush = useRef(false);
+  useEffect(() => {
+    const push = () => {
+      if (suppressPreferencePush.current) return;
+      void api('/settings/preferences', { method: 'PUT', body: JSON.stringify(readPreferences()) }).catch(() => {});
+    };
+    window.addEventListener('ohmydots-preferences', push);
+    return () => window.removeEventListener('ohmydots-preferences', push);
+  }, []);
   const refresh = useCallback(() => {
     if (refreshing.current) return refreshing.current;
     const id = currentId.current;
@@ -90,14 +129,16 @@ export default function Home() {
     const computerId = dotId === "dot-1" ? "computer-1" : "computer-" + dotId;
     const version = controlVersion.current;
     const task = (async () => {
-      const [list, state, files, row] = await Promise.allSettled([
+      const [list, state, files, row, feed] = await Promise.allSettled([
         api<Conversation[]>('/conversations?dot_id=' + encodeURIComponent(dotId)),
         api<Computer>('/computer-sessions/' + computerId),
         api<{ path: string; size: number }[]>('/artifacts?dot_id=' + encodeURIComponent(dotId)),
         id ? api<Conversation>('/conversations/' + id) : Promise.resolve(null),
+        api<{ activity: DotActivityRow[] }>('/activity?dot_id=' + encodeURIComponent(dotId)),
       ]);
       if (activeDot.current !== dotId) return;
       if (list.status === 'fulfilled') setConversations(list.value);
+      if (feed.status === 'fulfilled') setActivity(feed.value.activity);
       if (version === controlVersion.current) {
         if (state.status === 'fulfilled') setComputer(state.value);
         else setComputer(previous => ({ ...previous, connected: false }));
@@ -110,6 +151,21 @@ export default function Home() {
     return task;
   }, []);
   const refreshAuth = useCallback(() => { api<AuthSettings>('/settings').then(setAuth).catch(() => {}); }, []);
+  // A finished run notifies only when the user asked for it and the tab is in the background.
+  const notifyRunFinished = useCallback((event: Activity) => {
+    const status = (event.payload as { status?: string } | null)?.status;
+    const run = conversationRef.current?.runs?.find(row => row.id === event.run_id);
+    if (!shouldNotify(run?.status, status, preferenceRef.current.runNotifications, !document.hidden)) return;
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    const prompt = conversationRef.current?.messages?.find(message => message.run_id === event.run_id && message.role === 'user')?.text || '';
+    try {
+      new Notification(profileRef.current.name + ' · ' + (labels[status || ''] || status || ''), {
+        body: prompt.slice(0, 120) || '작업 상태가 바뀌었습니다.',
+        tag: 'ohmydots-' + event.run_id,
+        silent: !preferenceRef.current.notificationSound,
+      });
+    } catch { /* A blocked notification must never break the event stream. */ }
+  }, []);
   const selectConversation = async (id: string) => { currentId.current = id; localStorage.setItem('dot-conversation:' + activeDot.current, id); const row = await api<Conversation>('/conversations/' + id); if (currentId.current === id) { setConversation(row); setExecution(previous => mergeExecution(previous, row.execution || [])); followOutput.current = true; } };
   const newConversation = async () => { try { const row = await api<Conversation>('/conversations', post({dot_id: activeDot.current})); await selectConversation(row.id); await refresh(); } catch (e) { setError((e as Error).message); } };
   useEffect(() => {
@@ -127,12 +183,21 @@ export default function Home() {
         if (event.type === 'heartbeat' || event.sequence <= sequence.current) return;
         sequence.current = event.sequence;
         setExecution(previous => mergeExecution(previous, [event]));
+        if (event.type === 'run.changed') notifyRunFinished(event);
         if (event.type === 'run.changed' || event.type === 'run.question' || event.type === 'control.changed') void refresh().catch(() => {});
       };
       socket.onclose = () => { if (!cancelled) { setEventOnline(false); reconnect = setTimeout(connectEvents, 2000); } };
     };
     const boot = async () => {
       await api('/session');
+      try {
+        const stored = await api<PreferencesPayload>('/settings/preferences');
+        const merged = mergeServerPreferences(readPreferences(), stored);
+        suppressPreferencePush.current = true;
+        savePreferences(merged);
+        setComputerOpen(merged.showComputer);
+      } catch { /* Local preferences stay authoritative when the server cannot answer. */ }
+      finally { suppressPreferencePush.current = false; }
       let registered = await api<Dot[]>('/dots');
       const legacy = parseDotProfile(localStorage.getItem(PROFILE_KEY));
       if (!registered.find(dot => dot.id === 'dot-1')?.profile_saved) {
@@ -142,7 +207,7 @@ export default function Home() {
       const selected = registered.find(dot => dot.id === localStorage.getItem('active-dot')) || registered[0];
       if (cancelled) return;
       activeDot.current = selected.id; setActiveDotId(selected.id); setDots(registered);
-      setProfile({...legacy, name: selected.name, color: selected.color, avatar: selected.avatar});
+      setProfile({...legacy, name: selected.name, color: selected.color, avatar: selected.avatar, characterState: selected.characterState, characterImage: selected.characterImage});
       const list = await api<Conversation[]>('/conversations?dot_id=' + encodeURIComponent(selected.id));
       const remembered = localStorage.getItem('dot-conversation:' + selected.id) || (selected.id === 'dot-1' ? localStorage.getItem('dot-conversation') : null);
       const chosen = list.find(c => c.id === remembered) || list[0] || await api<Conversation>('/conversations', post({dot_id: activeDot.current}));
@@ -186,7 +251,7 @@ export default function Home() {
     } catch (e) { setError((e as Error).message); } finally { setSubmitting(false); }
   };
   const cancel = async (run: Run) => { try { await api('/runs/' + run.id + '/cancel', post()); await refresh(); } catch (e) { setError((e as Error).message); } };
-  const ready = auth && (auth.provider === 'codex' ? auth.codex_connected : auth.openai_configured);
+  const ready = auth && (auth.provider === 'codex' ? auth.codex_connected : auth.provider === 'opencode' ? auth.opencode_available : auth.openai_configured);
   const openFile = async (path: string) => {
     const request = ++fileRequest.current;
     setSpacesOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setSidebarOpen(false); setPreview({ path, loading: true });
@@ -200,7 +265,7 @@ export default function Home() {
     }
   };
   const openSpaces = () => { ++fileRequest.current; setSpacesOpen(true); setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); setPreview(null); setSidebarOpen(false); };
-  const openComputer = () => { ++fileRequest.current; setSpacesOpen(false); setComputerOpen(true); setMobileTab('computer'); setPreview(null); setSidebarOpen(false); };
+  const openComputer = () => { ++fileRequest.current; setSpacesOpen(false); setPipOpen(false); setComputerOpen(true); setMobileTab('computer'); setPreview(null); setSidebarOpen(false); };
   const selectDot = async (id: string, registered = dots) => {
     const selected = registered.find(dot => dot.id === id);
     if (!selected || submitting) return;
@@ -209,7 +274,7 @@ export default function Home() {
     setConversation(null); setConversations([]); setArtifacts([]); setComputer(emptyComputer);
     setPreview(null); setExecution({}); setText(''); submission.current = null;
     setSpacesOpen(false); setContextSection('profile'); setContextOpen(true); setComputerOpen(false);
-    setProfile(previous => ({...previous, name: selected.name, color: selected.color, avatar: selected.avatar, setupCompleted: true}));
+    setProfile(previous => ({...previous, name: selected.name, color: selected.color, avatar: selected.avatar, characterState: selected.characterState, characterImage: selected.characterImage, setupCompleted: true}));
     try {
       const list = await api<Conversation[]>('/conversations?dot_id=' + encodeURIComponent(id));
       const remembered = localStorage.getItem('dot-conversation:' + id);
@@ -224,21 +289,65 @@ export default function Home() {
     if (creatingDot) return;
     setCreatingDot(true); setError('');
     try {
-      const dot = await api<Dot>('/dots', post({name: value.name, color: value.color, avatar: value.avatar}), 120_000);
+      const dot = await api<Dot>('/dots', post({name: value.name, color: value.color, avatar: value.avatar, characterState: value.characterState, characterImage: value.characterImage}), 120_000);
       const registered = [...dots, dot]; setDots(registered); setAddingDot(false);
       await selectDot(dot.id, registered);
     } catch (e) { setError((e as Error).message); }
     finally { setCreatingDot(false); }
   };
+  const applyDotRow = (dot: Dot) => setDots(previous => previous.map(item => item.id === dot.id ? { ...item, ...dot } : item));
+  const runDotAction = (action: DotMenuAction) => {
+    const row = dotMenu?.dot;
+    setDotMenu(null);
+    if (!row) return;
+    if (action === 'move') { if (row.id !== activeDot.current) void selectDot(row.id); openComputer(); return; }
+    if (action === 'pin') {
+      void api<Dot>('/dots/' + row.id + '/pin', post({ pinned: !row.pinned })).then(applyDotRow).catch(error => setError((error as Error).message));
+      return;
+    }
+    setLifecycleDot(row); setLifecycleError('');
+    setDotDialog(action === 'rename' || action === 'pause' || action === 'resume' || action === 'reboot' || action === 'delete' ? action : null);
+  };
+  const confirmDotAction = async (name?: string) => {
+    const row = lifecycleDot;
+    if (!row) return;
+    setLifecycleBusy(true); setLifecycleError('');
+    try {
+      if (dotDialog === 'rename') applyDotRow(await api<Dot>('/dots/' + row.id, { method: 'PATCH', body: JSON.stringify({ name }) }));
+      else if (dotDialog === 'pause') { applyDotRow(await api<Dot>('/dots/' + row.id + '/pause', post())); if (row.id === activeDot.current) { setContextSection('profile'); await refresh(); } }
+      else if (dotDialog === 'resume') applyDotRow(await api<Dot>('/dots/' + row.id + '/resume', post()));
+      else if (dotDialog === 'reboot') { await api('/dots/' + row.id + '/reboot', post(), 150_000); if (row.id === activeDot.current) await refresh(); }
+      else if (dotDialog === 'delete') {
+        const removed = await api<{ id: string }>('/dots/' + row.id, { method: 'DELETE' });
+        const remaining = dots.filter(dot => dot.id !== removed.id);
+        setDots(remaining); setDotDialog(null); setLifecycleDot(null);
+        if (row.id === activeDot.current && remaining.length) await selectDot(remaining[0].id, remaining);
+        return;
+      }
+      setDotDialog(null); setLifecycleDot(null);
+    } catch (error) { setLifecycleError((error as Error).message); }
+    finally { setLifecycleBusy(false); }
+  };
+  const handleSettingsDotAction = (dot: Dot, action: DotMenuAction) => {
+    if (action === 'move') { if (dot.id !== activeDot.current) void selectDot(dot.id); openComputer(); return; }
+    if (action === 'pin') { void api<Dot>('/dots/' + dot.id + '/pin', post({ pinned: !dot.pinned })).then(applyDotRow).catch(error => setError((error as Error).message)); return; }
+    setLifecycleDot(dot); setLifecycleError('');
+    setDotDialog(action === 'rename' || action === 'pause' || action === 'resume' || action === 'reboot' || action === 'delete' ? action : null);
+  };
+  const openPip = () => { ++fileRequest.current; setPipOpen(true); setComputerOpen(false); setComputerExpanded(false); setSpacesOpen(false); setPreview(null); setMobileTab('chat'); };
+  const openActivity = async (row: DotActivityRow) => {
+    if (row.conversation_id !== currentId.current) await selectConversation(row.conversation_id);
+    showContext('activity');
+  };
   const composeDraft = (prompt: string) => { ++fileRequest.current; setSettingsOpen(false); setSpacesOpen(false); setPreview(null); setSidebarOpen(false); setMobileTab('chat'); setText(prompt); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.composer textarea')?.focus()); };
   return <div className={'dots-shell ' + (spacesOpen && !computerOpen ? 'spaces-open ' : '') + (sidebarOpen && !spacesOpen ? 'with-sidebar ' : '') + (onboarding ? 'is-onboarding' : '')}>
     <DotRail sidebarOpen={sidebarOpen} onSidebar={() => { if (spacesOpen) { ++fileRequest.current; setSpacesOpen(false); setPreview(null); } setSidebarOpen(!sidebarOpen); }} onHome={() => showContext('profile')} onFiles={openSpaces} onActivity={() => showContext('activity')} onSettings={() => setSettingsOpen(true)} />
-    {sidebarOpen && !spacesOpen && <DotSidebar profile={profile} conversations={conversations} currentId={conversation?.id} onSelect={id => { void selectConversation(id).catch(e => setError(e.message)); if (window.innerWidth < 900) setSidebarOpen(false); }} onNew={() => { void newConversation(); if (window.innerWidth < 900) setSidebarOpen(false); }} onHome={() => { showContext('profile'); setSidebarOpen(false); }} onClose={() => setSidebarOpen(false)} dots={dots} activeDotId={activeDotId} onDot={id => { void selectDot(id); }} onAddDot={() => setAddingDot(true)} />}
-    {!profileLoaded ? <section className="dot-loading" aria-label="설정 불러오는 중"><DotAvatar profile={profile} size={96} /><p>내 dot을 준비하고 있어요</p></section> : onboarding ? <><Onboarding profile={profile} auth={auth} computer={computer} onChange={updateProfile} onFinish={finishSetup} onSettings={() => setSettingsOpen(true)} />{error && <div className="setup-error" role="alert">{error}</div>}</> : <main className={'app-shell ' + (computerOpen ? '' : 'computer-hidden ') + (computerExpanded ? 'computer-expanded ' : '') + (spacesOpen ? 'has-artifact ' : '') + (!computerOpen && !spacesOpen && contextOpen ? 'has-context ' : '') + 'tab-' + mobileTab}>
+    {sidebarOpen && !spacesOpen && <DotSidebar profile={profile} conversations={conversations} currentId={conversation?.id} onSelect={id => { void selectConversation(id).catch(e => setError(e.message)); if (window.innerWidth < 900) setSidebarOpen(false); }} onNew={() => { void newConversation(); if (window.innerWidth < 900) setSidebarOpen(false); }} onHome={() => { showContext('profile'); setSidebarOpen(false); }} onClose={() => setSidebarOpen(false)} dots={dots} activeDotId={activeDotId} onDot={id => { void selectDot(id); }} onDotMenu={(dot, x, y) => setDotMenu({ dot, x, y })} onAddDot={() => setAddingDot(true)} onFiles={openSpaces} onActivity={() => showContext('activity')} onSettings={() => setSettingsOpen(true)} />}
+    {!profileLoaded ? <section className="dot-loading" aria-label="설정 불러오는 중"><DotAvatar profile={profile} size={96} /><p>내 dot을 준비하고 있어요</p></section> : onboarding ? <><Onboarding profile={profile} computer={computer} onChange={value => { setProfile(value); localStorage.setItem(PROFILE_KEY, JSON.stringify(value)); }} onFinish={finishSetup} onExit={profile.setupCompleted ? () => setReplayOnboarding(false) : undefined} />{error && <div className="setup-error" role="alert">{error}</div>}</> : <main className={'app-shell ' + (computerOpen ? '' : 'computer-hidden ') + (computerExpanded ? 'computer-expanded ' : '') + (spacesOpen ? 'has-artifact ' : '') + (!computerOpen && !spacesOpen && contextOpen ? 'has-context ' : '') + 'tab-' + mobileTab}>
     <section className="chat-panel" aria-label="OhMyDots 대화">
       <header className="chat-heading">
         <button className="icon-button new-chat-heading" aria-label="새 대화" title="새 대화" onClick={newConversation}><SquarePen size={20} /></button>
-        <button className="profile-trigger" aria-label="Dot 프로필" onClick={() => { showContext('profile'); setContextOpen(!contextOpen || computerOpen); }}><DotAvatar profile={profile} size={37} /><span>{profile.name}</span></button>
+        <button className="profile-trigger" aria-label="Dot 프로필" onClick={() => { showContext('profile'); setContextOpen(!contextOpen || computerOpen); }}><DotAvatar profile={profile} size={37} activity={dotActivity(active || undefined, active ? execution[active.id] : undefined)} animated={!contextOpen} turnId={active?.id} /><span>{profile.name}<small>{active ? waitingAnswer ? '응답 대기' : '작업 중' : '내 dot'}</small></span></button>
         <div className="chat-heading-actions"><button className="icon-button" aria-label="컴퓨터 열기" title="컴퓨터 열기" onClick={openComputer}><Monitor size={20} /></button><button className="icon-button" aria-label="Dot 정보 보기" title="Dot 정보" onClick={() => { showContext('profile'); setContextOpen(!contextOpen || computerOpen); }}><PanelRightOpen size={20} /></button><button className="icon-button" aria-label="Dot 꾸미기" title="Dot 꾸미기" onClick={() => setProfileOpen(true)}><Settings2 size={19} /></button></div>
       </header>
       {error && <div className="error-banner" role="alert">{error}<button className="icon-button" aria-label="알림 닫기" onClick={() => setError('')}><X size={15} /></button></div>}
@@ -251,13 +360,22 @@ export default function Home() {
         {conversation?.runs?.length ? (() => { const latest = [...conversation.runs].reverse().find(r => execution[r.id]?.usage); const usage = latest ? execution[latest.id].usage!.payload : null; return usage ? <RunUsage usage={usage} /> : null; })() : null}
         <Presence show={filesOpen}><section className="chat-files" aria-label="결과 파일 목록"><header><Folder size={14} /><strong>결과 파일</strong><button className="icon-button" aria-label="파일 목록 닫기" onClick={() => setFilesOpen(false)}><X size={14} /></button></header>{artifacts.length ? artifacts.map(file => <button className="file-link" key={file.path} onClick={() => openFile(file.path)}><Folder size={14} /><span>{file.path}</span><small>{file.size} B</small></button>) : <p>아직 생성한 파일이 없습니다.</p>}</section></Presence>
       </div>
-      <div className="composer-area">{question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionCard key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}{question && questionKey === dismissedQuestion && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (shouldSend(e.key, e.shiftKey, e.metaKey || e.ctrlKey, e.nativeEvent.isComposing, preferences.sendWith)) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div></div>
+      <div className="composer-area">{question && active && questionKey !== dismissedQuestion && questionKey !== answeredQuestion && <QuestionCard key={questionKey} runId={active.id} question={question} onDismiss={() => setDismissedQuestion(questionKey)} onAnswered={() => { setAnsweredQuestion(questionKey); void refresh().catch(e => setError(e.message)); }} />}{question && questionKey === dismissedQuestion && questionKey !== answeredQuestion && <button className="question-reopen" onClick={() => setDismissedQuestion(null)}><MessageSquare size={14} />질문에 답하기<span>선택지 보기</span></button>}{!ready && <button className="configure-hint" onClick={() => setSettingsOpen(true)}>AI 연결 설정 <Settings2 size={12} /></button>}<div className="composer"><button className="composer-plus" aria-label="결과 파일 보기" aria-expanded={filesOpen} onClick={() => setFilesOpen(!filesOpen)}><Plus size={16} /></button><textarea ref={composerInput} aria-label={waitingAnswer ? 'OhMyDots 질문에 답하기' : 'OhMyDots에게 메시지 보내기'} placeholder={waitingAnswer ? 'OhMyDots의 질문에 답해 주세요' : active ? '추가 메시지 보내기' : '메시지 보내기'} value={text} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (shouldSend(e.key, e.shiftKey, e.metaKey || e.ctrlKey, e.nativeEvent.isComposing, preferences.sendWith)) { e.preventDefault(); void submit(); } }} /><button className="send-button" aria-label="메시지 보내기" disabled={!text.trim() || submitting || !conversation || !ready || (waitingAnswer && (!question || questionKey === answeredQuestion))} onClick={submit}>{submitting ? <Loader2 size={14} className="spin" /> : <ArrowUp size={15} />}</button></div><p className="composer-caption">{profile.name}와 함께 생각하고, 만들고, 실행하세요.</p></div>
     </section>
     {computerOpen && <ComputerView key={sessionId} sessionId={sessionId} name={profile.name} accent={accent} computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onClose={() => { setComputerOpen(false); setComputerExpanded(false); setMobileTab('chat'); }} onBack={() => { setComputerExpanded(false); setMobileTab('chat'); }} onToggleExpanded={() => setComputerExpanded(!computerExpanded)} expanded={computerExpanded} />}
-    {!computerOpen && (spacesOpen ? <SpacesWorkspace key={activeDotId} dotId={activeDotId} preview={preview} files={artifacts} onFile={openFile} onCompose={composeDraft} onBack={() => { ++fileRequest.current; setPreview(null); }} onClose={() => { ++fileRequest.current; setPreview(null); setSpacesOpen(false); }} /> : contextOpen && <DotContext key={activeDotId} sessionId={sessionId} profile={profile} computer={computer} conversation={conversation} execution={execution} artifacts={artifacts} online={eventOnline} section={contextSection} onCustomize={() => setProfileOpen(true)} onComputer={openComputer} onFile={openFile} onSettings={() => setSettingsOpen(true)} onClose={() => setContextOpen(false)} />)}
+    {!computerOpen && (spacesOpen ? <SpacesWorkspace key={activeDotId} dotId={activeDotId} preview={preview} files={artifacts} onFile={openFile} onCompose={composeDraft} onBack={() => { ++fileRequest.current; setPreview(null); }} onClose={() => { ++fileRequest.current; setPreview(null); setSpacesOpen(false); }} /> : <Presence show={contextOpen} duration={300}><DotContext key={activeDotId} sessionId={sessionId} profile={profile} computer={computer} conversation={conversation} execution={execution} artifacts={artifacts} online={eventOnline} dot={dotSummary} activity={activity} section={contextSection} onSection={setContextSection} onCustomize={() => setProfileOpen(true)} onComputer={openComputer} onPip={openPip} onMenu={(x, y) => { const row = dots.find(item => item.id === activeDot.current); if (row) setDotMenu({ dot: row, x, y }); }} onActivity={row => { void openActivity(row).catch(error => setError(error.message)); }} onFile={openFile} onSettings={() => setSettingsOpen(true)} onClose={() => setContextOpen(false)} /></Presence>)}
+    {pipOpen && <FloatingComputer key={sessionId} sessionId={sessionId} name={profile.name} computer={computer} onRefresh={refresh} onControlChanged={controlChanged} onError={setError} onRestore={() => { setPipOpen(false); openComputer(); }} onSendToDot={() => { setPipOpen(false); setComputerOpen(false); showContext('profile'); }} onHideForChat={() => { localStorage.setItem('ohmydots-pip-hidden:' + activeDotId + ':' + (conversation?.id || ''), '1'); setPipOpen(false); }} onHideForAll={() => { localStorage.setItem('ohmydots-pip-hidden', '1'); setPipOpen(false); }} onClose={() => setPipOpen(false)} />}
   </main>}
-    <Presence show={settingsOpen}><Settings key={activeDotId} sessionId={sessionId} dotId={activeDotId} onHome={() => { setSettingsOpen(false); showContext('profile'); }} onActivity={() => { setSettingsOpen(false); showContext('activity'); }} profile={profile} onProfile={updateProfile} onFiles={() => { setSettingsOpen(false); openSpaces(); }} onCompose={composeDraft} onClose={() => { setSettingsOpen(false); refreshAuth(); }} onSaved={refreshAuth} onOpenComputer={state => { setSettingsOpen(false); controlChanged(state); openComputer(); }} /></Presence>
-    {addingDot && <CustomizeDot title="새 Dot 추가" busy={creatingDot} profile={{...profile, name: 'Dot ' + (dots.length + 1), color: DOT_COLORS[dots.length % DOT_COLORS.length].id, avatar: 'pet', setupCompleted: true}} onSave={value => { void createDot(value); }} onClose={() => { if (!creatingDot) setAddingDot(false); }} />}
+    <Presence show={settingsOpen}><Settings onOnboarding={() => { setSettingsOpen(false); setReplayOnboarding(true); }} key={activeDotId} dotId={activeDotId} onHome={() => { setSettingsOpen(false); showContext('profile'); }} onActivity={() => { setSettingsOpen(false); showContext('activity'); }} profile={profile} onProfile={updateProfile} dots={dots} onDotAction={handleSettingsDotAction} onFiles={() => { setSettingsOpen(false); openSpaces(); }} onCompose={composeDraft} onClose={() => { setSettingsOpen(false); refreshAuth(); }} onSaved={refreshAuth} onOpenComputer={state => { setSettingsOpen(false); controlChanged(state); openComputer(); }} /></Presence>
+    {addingDot && <CustomizeDot title="새 Dot 추가" busy={creatingDot} profile={{...profile, name: 'Dot ' + (dots.length + 1), color: DOT_COLORS[dots.length % DOT_COLORS.length].id, avatar: 'ring', setupCompleted: true}} onSave={value => { void createDot(value); }} onClose={() => { if (!creatingDot) setAddingDot(false); }} />}
     {profileOpen && <CustomizeDot profile={profile} onSave={value => { updateProfile(value); setProfileOpen(false); }} onClose={() => setProfileOpen(false)} />}
+    {dotMenu && <DotMenu dot={dotMenu.dot} x={dotMenu.x} y={dotMenu.y} onAction={runDotAction} onClose={() => setDotMenu(null)} />}
+    {dotDialog === 'rename' && lifecycleDot && <RenameDialog name={lifecycleDot.name} busy={lifecycleBusy} error={lifecycleError} onSave={name => { void confirmDotAction(name); }} onClose={() => { if (!lifecycleBusy) { setDotDialog(null); setLifecycleDot(null); } }} />}
+    {dotDialog && dotDialog !== 'rename' && lifecycleDot && <ConfirmDialog
+      title={dotDialog === 'pause' ? PAUSE_DIALOG.title(lifecycleDot.name) : dotDialog === 'resume' ? RESUME_DIALOG.title(lifecycleDot.name) : dotDialog === 'reboot' ? REBOOT_DIALOG.title(lifecycleDot.name) : DELETE_DIALOG.title(lifecycleDot.name)}
+      body={dotDialog === 'pause' ? PAUSE_DIALOG.body : dotDialog === 'resume' ? RESUME_DIALOG.body : dotDialog === 'reboot' ? REBOOT_DIALOG.body : DELETE_DIALOG.body}
+      confirm={dotDialog === 'pause' ? PAUSE_DIALOG.confirm : dotDialog === 'resume' ? RESUME_DIALOG.confirm : dotDialog === 'reboot' ? REBOOT_DIALOG.confirm : DELETE_DIALOG.confirm}
+      danger={dotDialog === 'delete'} busy={lifecycleBusy} error={lifecycleError}
+      onConfirm={() => { void confirmDotAction(); }} onClose={() => { if (!lifecycleBusy) { setDotDialog(null); setLifecycleDot(null); } }} />}
   </div>;
 }

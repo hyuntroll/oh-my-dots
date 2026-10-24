@@ -301,3 +301,39 @@ async def test_question_options_survive_reload_and_stale_answers_cannot_resume_n
         await eventually(lambda: status(app, run_id) == "COMPLETED")
         assert received == ["다른 의견", "회의 메모"]
         assert run_id not in app.state.runtime.question_ids
+
+
+async def test_opencode_settings_dispatch_and_model_persistence(app, monkeypatch):
+    seen = []
+    async def provider(runtime, run, messages, tools):
+        seen.append((run.provider, run.model, messages[-1]['content']))
+        return 'OpenCode response'
+    async def available(_):
+        return {'installed': True, 'available': True, 'version': 'opencode v2.0.32', 'message': ''}
+    monkeypatch.setattr('ohmydot.runtime.run_opencode', provider)
+    monkeypatch.setattr('ohmydot.main.opencode_status', available)
+    async with client(app) as c:
+        response = await c.put('/api/settings', json={'provider': 'opencode', 'model': 'vendor/model'})
+        assert response.status_code == 200
+        settings = (await c.get('/api/settings')).json()
+        assert settings['provider'] == 'opencode'
+        assert settings['model'] == 'vendor/model'
+        assert settings['opencode_available']
+        cid = (await c.post('/api/conversations')).json()['id']
+        rid = await submit(c, cid, 'provider smoke', 'opencode-smoke')
+        await eventually(lambda: status(app, rid) == 'COMPLETED')
+        assert seen == [('opencode', 'vendor/model', 'provider smoke')]
+
+@pytest.mark.asyncio
+async def test_dot_character_roundtrip_and_validation(app):
+    async with client(app) as c:
+        appearance = {"name": "Alfred", "avatar": "ring", "color": "yellow",
+                      "characterState": "T1JCQQ==", "characterImage": "data:image/png;base64,aGVsbG8="}
+        saved = await c.put('/api/dots/dot-1', json=appearance)
+        assert saved.status_code == 200
+        rows = (await c.get('/api/dots')).json()
+        restored = next(row for row in rows if row['id'] == 'dot-1')
+        assert restored['characterState'] == appearance['characterState']
+        assert restored['characterImage'] == appearance['characterImage']
+        assert (await c.put('/api/dots/dot-1', json={**appearance, 'characterImage': 'https://example.com/avatar.png'})).status_code == 422
+        assert (await c.put('/api/dots/dot-1', json={**appearance, 'characterState': 'A' * 87385})).status_code == 422

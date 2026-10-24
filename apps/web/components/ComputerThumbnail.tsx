@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Monitor } from 'lucide-react';
 
 export default function ComputerThumbnail({ sessionId, name }: { sessionId: string; name: string }) {
   const [image, setImage] = useState<string>();
@@ -30,5 +29,5 @@ export default function ComputerThumbnail({ sessionId, name }: { sessionId: stri
     document.addEventListener('visibilitychange', visible);
     return () => { disposed = true; controller.abort(); clearInterval(timer); document.removeEventListener('visibilitychange', visible); if (current) URL.revokeObjectURL(current); };
   }, [sessionId]);
-  return <span className="computer-thumbnail" title="컴퓨터 화면 · 5분마다 업데이트"><Monitor size={64} strokeWidth={1.5} aria-hidden="true" />{image && <img src={image} alt={`${name} 컴퓨터 미리보기`} />}</span>;
+  return <span className="computer-thumbnail" title="컴퓨터 화면 · 5분마다 업데이트">{image ? <img src={image} alt={`${name} 컴퓨터 미리보기`} /> : <span className="computer-preview-empty">컴퓨터 미리보기</span>}</span>;
 }

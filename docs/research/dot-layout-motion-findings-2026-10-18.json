@@ -1,0 +1,553 @@
+{
+  "generated_at": "2026-10-18",
+  "scope": "Dot profile/conversation/appearance layout and motion; static read-only investigation",
+  "runtime_observed": false,
+  "rea_evidence_ids": "Parent agent owns focused graph evidence; these packaged-source anchors complement it.",
+  "limitations": [
+    "Original ChatGPT UI runtime access was previously denied; no runtime inspection, bundle execution, account API request, or denial bypass was performed.",
+    "Prettified line numbers are scratch conveniences; hashes and UTF16 ranges bind original archive bytes.",
+    "Profile and legacy/new editor variants coexist. Actual enabled session path is unknown.",
+    "Computer full-screen viewer transition was not fully traced; findings only establish profile-row/open action and profile panel movement."
+  ],
+  "findings": [
+    {
+      "id": "profile-structure",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/side-panel-ca01b35697cf.js",
+        "sha256": "3f51bc9d7f762114be465ec11fa348ebf1e6970090527f3ba8c7a58300bd4272",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/side-panel-ca01b35697cf.js",
+        "anchors": [
+          {
+            "anchor": "data-orbit-profile",
+            "range_utf16": {
+              "start": 90925,
+              "end": 90943
+            },
+            "context": "5]=A,t[26]=j):j=t[26];let M;t[27]!==D||t[28]!==O||t[29]!==j?(M=(0,Ws.jsx)(`div`,{ref:s,className:D,\"data-orbit-profile-identity\":O,children:j}),t[27]=D,t[28]=O,t[29]=j,t[30]=M):M=t[30];let N;t[31]!==T||t[32]!==M||t[33]!==y?(N=(0,Ws.jsxs)(Ce.div,{className:`pointer-events-none sticky top-0 z-30 shr"
+          },
+          {
+            "anchor": "Your dot’s profile",
+            "range_utf16": {
+              "start": 94610,
+              "end": 94628
+            },
+            "context": "Name:`sr-only`,children:(0,$.jsx)(w,{id:`restricted.aeonMessaging.profileTitle.dot`,defaultMessage:`Your dot’s profile`,description:`Accessible title for the floating dot profile panel. Keep the singular term dot untranslated.`})}),t[31]=ce):ce=t[31];let W;t[32]!==n||t[33]!==h?(W=h?(0,$.jsx)(Fn,{c"
+          },
+          {
+            "anchor": "variant:`dynamic-isle`",
+            "range_utf16": {
+              "start": 91326,
+              "end": 91348
+            },
+            "context": "5]!==r||t[36]!==o||t[37]!==N||t[38]!==g||t[39]!==_?(P=(0,Ws.jsxs)(K.Content,{className:g,isHidden:o,variant:`dynamic-isle`,onScroll:_,children:[N,r]}),t[35]=r,t[36]=o,t[37]=N,t[38]=g,t[39]=_,t[40]=P):P=t[40],P}var Hs,Us,Ws;function Gs(){return(Gs=e((()=>{Hs=Ot(),xe(),Be(),L(),Us=zt(),Pr(),le(),z(),Zr("
+          },
+          {
+            "anchor": "sectionKey:`orbit-profile`",
+            "range_utf16": {
+              "start": 95994,
+              "end": 96020
+            },
+            "context": "s({preventScroll:!0})})}),t[45]=fe):fe=t[45];let pe;t[46]!==le||t[47]!==ue?(pe=(0,$.jsx)(K.Section,{sectionKey:`orbit-profile`,mode:`headerless`,divider:!1,children:(0,$.jsxs)(`div`,{className:`flex flex-col gap-4`,children:[le,ue,fe]})}),t[46]=le,t[47]=ue,t[48]=pe):pe=t[48];let me;t[49]!==n||t[50]!==u?(m"
+          }
+        ]
+      },
+      "observation": "The Dot profile surface is a nonmodal inline-positioned dialog in a floating island. It contains hero identity, contact/email shortcuts, notification prompt, computers accordion, activity, and profile outputs. Activity selection replaces visible profile content with nested transcript; Back restores profile and focus.",
+      "current_implementation_gap": "DotContext permanently displays row identity48px, overview/activity/outputs navigation tabs and inline run detail. This does not recreate source profile navigation or floating surface.",
+      "unknown": "Actual account enabled variant/runtime dimensions not observed; route presence establishes supported source path only. No dedicated slide animation for nested transcript was established in inspected qs/ao path."
+    },
+    {
+      "id": "profile-scroll-collapse",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/side-panel-ca01b35697cf.js",
+        "sha256": "3f51bc9d7f762114be465ec11fa348ebf1e6970090527f3ba8c7a58300bd4272",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/side-panel-ca01b35697cf.js",
+        "anchors": [
+          {
+            "anchor": "u&&t<=1",
+            "range_utf16": {
+              "start": 89686,
+              "end": 89693
+            },
+            "context": "t[2];let m=p,h=G(Nn,m),g=o?`hidden`:void 0,_;t[3]===u?_=t[4]:(_=e=>{let t=e.currentTarget.scrollTop;u&&t<=1?l(null):!u&&t>1&&s.current!=null&&l(s.current.offsetHeight)},t[3]=u,t[4]=_);let v=c??void 0,y;t[5]===v?y=t[6]:(y={height:v},t[5]=v,t[6]=y);let b=+!!u,x;t[7]===b?x=t[8]:(x={opacity"
+          },
+          {
+            "anchor": "150/1e3",
+            "range_utf16": {
+              "start": 25871,
+              "end": 25878
+            },
+            "context": "activeElement===e&&(b?y.current:v.current)?.focus({preventScroll:!0});let t=qe(T,+!!b,{duration:p?0:150/1e3,ease:je});return()=>t.stop()},I=[b,T,p],t[18]=b,t[19]=T,t[20]=p,t[21]=F,t[22]=I):(F=t[21],I=t[22]),(0,Ga.useLayoutEffect)(F,I);let ee;t[23]===c?ee=t[24]:(ee=c.formatMessage({id:`r"
+          },
+          {
+            "anchor": "flex h-12 flex-col justify-center",
+            "range_utf16": {
+              "start": 90282,
+              "end": 90315
+            },
+            "context": "hidden\":!0,initial:!1,animate:x,transition:C,children:w}),t[12]=x,t[13]=C,t[14]=T):T=t[14];let E=u?`flex h-12 flex-col justify-center`:`pt-4 pb-2`,D;t[15]===E?D=t[16]:(D=Re(`pointer-events-auto relative z-20 px-4`,E),t[15]=E,t[16]=D);let O=!o||void 0,k=u?`compact`:`hero`,A;t[17]!==n||t[18]!==h||t[19]!==u||t[20]!"
+          },
+          {
+            "anchor": "u?`compact`:`hero`",
+            "range_utf16": {
+              "start": 90435,
+              "end": 90453
+            },
+            "context": "]===E?D=t[16]:(D=Re(`pointer-events-auto relative z-20 px-4`,E),t[15]=E,t[16]=D);let O=!o||void 0,k=u?`compact`:`hero`,A;t[17]!==n||t[18]!==h||t[19]!==u||t[20]!==o||t[21]!==m?(A=h===`active`&&!u&&!o?(0,Ws.jsx)(`p`,{className:`leading-5 text-tertiary`,children:(0,Ws.jsx)(ir,{locator:m})}):n,t[17]=n"
+          }
+        ]
+      },
+      "observation": "ScrollTop above1px captures identity height and changes hero to compact; sticky identity header is48px high. Header backdrop opacity animates150ms with shared enter-snappy curve; identity geometry moves through Motion layout. Reduced-motion uses0ms.",
+      "current_implementation_gap": "Current profile is fixed48px identity without scroll-triggered64→20 avatar, sticky48px header or shared layout movement.",
+      "unknown": null
+    },
+    {
+      "id": "identity-layout-motion",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/aeon-summary-panel-identity-9008df4e6a28.js",
+        "sha256": "c4f404ecb3294985dae5eeea507504e762fd9017caf54323821410d4ccef91c1",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/aeon-summary-panel-identity-9008df4e6a28.js",
+        "anchors": [
+          {
+            "anchor": "150/1e3,ease:D",
+            "range_utf16": {
+              "start": 18782,
+              "end": 18796
+            },
+            "context": "orbit-draft`,mode:a=`section`,layout:o=`row`}){let c=U(i===`legacy-draft`&&Re,i),l={duration:v(t)?0:150/1e3,ease:D},u=(0,$.jsxs)(`div`,{className:`flex min-w-0 items-center gap-token-button-composer-gap select-none`,children:[(0,$.jsx)(K.ItemLeading,{variant:o===`compact`?`custom`:`intrinsic`,"
+          },
+          {
+            "anchor": "layout:o!==`row`",
+            "range_utf16": {
+              "start": 19023,
+              "end": 19039
+            },
+            "context": "mLeading,{variant:o===`compact`?`custom`:`intrinsic`,children:(0,$.jsx)(C.div,{className:`shrink-0`,layout:o!==`row`,layoutDependency:o,transition:l,children:e(o===`row`?`profile`:o)})}),(0,$.jsxs)(C.div,{className:`flex min-w-0 flex-1 flex-col text-base`,layout:o!==`row`&&`position`,layoutDepen"
+          },
+          {
+            "anchor": "layoutDependency:o",
+            "range_utf16": {
+              "start": 19040,
+              "end": 19058
+            },
+            "context": ":o===`compact`?`custom`:`intrinsic`,children:(0,$.jsx)(C.div,{className:`shrink-0`,layout:o!==`row`,layoutDependency:o,transition:l,children:e(o===`row`?`profile`:o)})}),(0,$.jsxs)(C.div,{className:`flex min-w-0 flex-1 flex-col text-base`,layout:o!==`row`&&`position`,layoutDependency:o,transition:"
+          }
+        ]
+      },
+      "observation": "Identity artwork layout and name-position layout animate150ms, easing imported dj=[.23,1,.32,1]. Row is static layout; hero and compact participate. Reduced-motion0ms.",
+      "current_implementation_gap": "Current identity has no Motion layout.",
+      "unknown": null
+    },
+    {
+      "id": "profile-enter-exit",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/thread-summary-panel-components-ec39d6b5d7bc.js",
+        "sha256": "80b6e5ea100774806a51109d8efa514c9017be7b1a440cf613fa40943f3aae21",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/thread-summary-panel-components-ec39d6b5d7bc.js",
+        "anchors": [
+          {
+            "anchor": "visible:{opacity:1,transform:`translateX(0%)`}",
+            "range_utf16": {
+              "start": 11385,
+              "end": 11431
+            },
+            "context": "},Xe=pe(e=>`${Ke}${e}`,qe),X=A(he,e=>`pending`)})))()}var Qe,$e;function et(){return(et=e((()=>{Qe={visible:{opacity:1,transform:`translateX(0%)`},hidden:{opacity:0,transform:`translateX(100%)`}},$e={type:`spring`,duration:.3,bounce:.01}})))()}var tt,nt;function rt(){return(rt=e((()=>{U(),tt=V(),nt=e=>(0,tt.jsx)(`svg`,{width"
+          },
+          {
+            "anchor": "hidden:{opacity:0,transform:`translateX(100%)`}",
+            "range_utf16": {
+              "start": 11432,
+              "end": 11479
+            },
+            "context": "})))()}var Qe,$e;function et(){return(et=e((()=>{Qe={visible:{opacity:1,transform:`translateX(0%)`},hidden:{opacity:0,transform:`translateX(100%)`}},$e={type:`spring`,duration:.3,bounce:.01}})))()}var tt,nt;function rt(){return(rt=e((()=>{U(),tt=V(),nt=e=>(0,tt.jsx)(`svg`,{width:20,height:20,viewBox:`0 0 20 20`,fill:`none`,xm"
+          },
+          {
+            "anchor": "type:`spring`,duration:.3,bounce:.01",
+            "range_utf16": {
+              "start": 11485,
+              "end": 11521
+            },
+            "context": "visible:{opacity:1,transform:`translateX(0%)`},hidden:{opacity:0,transform:`translateX(100%)`}},$e={type:`spring`,duration:.3,bounce:.01}})))()}var tt,nt;function rt(){return(rt=e((()=>{U(),tt=V(),nt=e=>(0,tt.jsx)(`svg`,{width:20,height:20,viewBox:`0 0 20 20`,fill:`none`,xmlns:`http://www.w3.org/2000/svg`,...e,chil"
+          }
+        ]
+      },
+      "observation": "Floating panel transitions from opacity0/translateX100% to opacity1/translateX0 using spring duration300ms,bounce0.01. Floating default width300px. Reduced-motion switches transition duration0. Docked mode is separate and uses opacity only for its inner surface.",
+      "current_implementation_gap": "Current context mounts into grid with static borders and no matching enter/exit.",
+      "unknown": null
+    },
+    {
+      "id": "responsive-panel",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/thread-summary-panel-layout-488b931a4b80.js",
+        "sha256": "fdf94e722871a901fb9761df2aadc4af118464f77911c879f4137883dc339f39",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/thread-summary-panel-layout-488b931a4b80.js",
+        "anchors": [
+          {
+            "anchor": "(e-736)/2",
+            "range_utf16": {
+              "start": 81,
+              "end": 90
+            },
+            "context": "import{n as e}from\"./rolldown-runtime-2d059c5e81f4.js\";function t(e,t=300){let n=(e-736)/2,r=t-300;return n<180+r/2?`overlay`:n<400+r?`shift`:`gutter`}function n({displayMode:e,isPinned:t,isPopoverOpen:n}){let r=t&&e!==`overlay`,i=null;return r?i=`inline`:e===`overlay`&"
+          },
+          {
+            "anchor": "180+r/2",
+            "range_utf16": {
+              "start": 108,
+              "end": 115
+            },
+            "context": " as e}from\"./rolldown-runtime-2d059c5e81f4.js\";function t(e,t=300){let n=(e-736)/2,r=t-300;return n<180+r/2?`overlay`:n<400+r?`shift`:`gutter`}function n({displayMode:e,isPinned:t,isPopoverOpen:n}){let r=t&&e!==`overlay`,i=null;return r?i=`inline`:e===`overlay`&&n&&(i=`popover`),{displa"
+          },
+          {
+            "anchor": "400+r",
+            "range_utf16": {
+              "start": 128,
+              "end": 133
+            },
+            "context": "n-runtime-2d059c5e81f4.js\";function t(e,t=300){let n=(e-736)/2,r=t-300;return n<180+r/2?`overlay`:n<400+r?`shift`:`gutter`}function n({displayMode:e,isPinned:t,isPopoverOpen:n}){let r=t&&e!==`overlay`,i=null;return r?i=`inline`:e===`overlay`&&n&&(i=`popover`),{displayMode:e,shouldHide"
+          },
+          {
+            "anchor": "-(308+n-300)/2",
+            "range_utf16": {
+              "start": 457,
+              "end": 471
+            },
+            "context": "w:r,visibleSurface:i}}function r({displayMode:e,isPinned:t,panelWidth:n=300}){return t&&e===`shift`?-(308+n-300)/2:0}function i(){return(i=e((()=>{})))()}export{i,r as n,t as r,n as t};\n//# sourceMappingURL=thread-summary-panel-layout-488b931a4b80.js.map"
+          }
+        ]
+      },
+      "observation": "For default300px panel, available content width<1096px uses overlay;1096–1535px uses shift;>=1536 uses gutter. Pinned shift moves chat−154px. Panel width affects thresholds and shift; these are content-width thresholds, not browser-window widths.",
+      "current_implementation_gap": "Current CSS uses fixed320px context and viewport800/1100 breakpoints, without content-width based gutter/shift.",
+      "unknown": null
+    },
+    {
+      "id": "panel-content-spring",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/app-initial-90eb42395b7d.js",
+        "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/app-initial-90eb42395b7d.js",
+        "anchors": [
+          {
+            "anchor": "Ik={type:`spring`,duration:.5,bounce:.1}",
+            "range_utf16": {
+              "start": 3785181,
+              "end": 3785221
+            },
+            "context": "nContext is missing`);return e}var uur,Ik,dur,fur,Lk;function Rk(){return(Rk=t((()=>{uur=yu(),aXt(),Ik={type:`spring`,duration:.5,bounce:.1},dur={type:`spring`,duration:.35,bounce:.1},fur=.5,Lk=(0,uur.createContext)(null)})))()}function pur(e,t){return{isPinned:t,resetKey:typeof e==`boolean`?null:e.resetKey}}function m"
+          }
+        ]
+      },
+      "observation": "Export W3n (Ik) used by use-thread-summary-panel content shift has spring500ms,bounce0.1; adjacent docked spring is350ms,bounce0.1. This differs from panel inner enter/exit300ms.",
+      "current_implementation_gap": "Current chat width jumps with CSS grid.",
+      "unknown": null
+    },
+    {
+      "id": "computer-row-preview",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/side-panel-ca01b35697cf.js",
+        "sha256": "3f51bc9d7f762114be465ec11fa348ebf1e6970090527f3ba8c7a58300bd4272",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/side-panel-ca01b35697cf.js",
+        "anchors": [
+          {
+            "anchor": "relative flex h-8 w-12 shrink-0",
+            "range_utf16": {
+              "start": 51849,
+              "end": 51880
+            },
+            "context": "ion No(e){let t=(0,Po.c)(2),{children:n}=e,r;return t[0]===n?r=t[1]:(r=(0,Fo.jsx)(`div`,{className:`relative flex h-8 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-secondary text-secondary shadow-sm dark:bg-surface-tertiary`,children:n}),t[0]=n,t[1]=r),r}var Po,Fo;function Io("
+          },
+          {
+            "anchor": "sectionKey:`orbit-computers`",
+            "range_utf16": {
+              "start": 76714,
+              "end": 76742
+            },
+            "context": "null,t[5]=n,t[6]=o,t[7]=i,t[8]=l):l=t[8];let u;return t[9]!==c||t[10]!==l?(u=(0,gs.jsxs)(K.Section,{sectionKey:`orbit-computers`,divider:!1,mode:`accordion`,title:s,children:[c,l]}),t[9]=c,t[10]=l,t[11]=u):u=t[11],u}function ps(e){let t=(0,hs.c)(25),{conversationId:n,isInitialLoading:r}=e,i=r!==void 0&&r,a="
+          },
+          {
+            "anchor": "o-soft-gradient-gray-ed947018774a.png",
+            "range_utf16": {
+              "start": 80260,
+              "end": 80297
+            },
+            "context": "2]=o,t[3]=s):s=t[3];let c=G(ia,s),l=(i===void 0||c?.environmentId===i?c:null)?.dataUrl??``+new URL(`o-soft-gradient-gray-ed947018774a.png`,import.meta.url).href,u;t[4]===l?u=t[5]:(u=(0,gs.jsx)(`img`,{className:`size-full object-cover`,src:l,alt:``}),t[4]=l,t[5]=u);let d;t[6]===n?d=t[7]:(d=(0,gs.jsx)(`div`,{className"
+          }
+        ]
+      },
+      "observation": "Computer section is accordion. Each row has leading computer icon with connected green badge, label/status, and trailing48×32px rounded thumbnail. Cloud thumbnail uses cached last-frame dataUrl for matching environmentId or soft-gray image fallback; compact connection overlay sits on top. Cloud ready/starting/failed/offline/unknown distinguished from local connected/offline/disconnected/pending.",
+      "current_implementation_gap": "Current profile puts a large thumbnail at leading position and binary Connected/Offline state; no distinct local/cloud row semantics.",
+      "unknown": null
+    },
+    {
+      "id": "activity-header-collapse",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/side-panel-ca01b35697cf.js",
+        "sha256": "3f51bc9d7f762114be465ec11fa348ebf1e6970090527f3ba8c7a58300bd4272",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/side-panel-ca01b35697cf.js",
+        "anchors": [
+          {
+            "anchor": "compactScale:n.offsetWidth/t.offsetWidth",
+            "range_utf16": {
+              "start": 25064,
+              "end": 25104
+            },
+            "context": "Width-t.offsetWidth)/2,expandedY:e.offsetHeight,compactX:(i.left-r.left)/a,compactY:(i.top-r.top)/a,compactScale:n.offsetWidth/t.offsetWidth};C(e=>(0,Wa.default)(e,o)?e:o)},i=new ResizeObserver(r);return i.observe(e),i.observe(t),i.observe(n),r(),()=>i.disconnect()},t[10]=A):A=t[10];let M;t[11]===r?M=t[12]:(M=[r],t[11]"
+          },
+          {
+            "anchor": "expandedY:e.offsetHeight",
+            "range_utf16": {
+              "start": 24987,
+              "end": 25011
+            },
+            "context": "||t.offsetWidth===0)return;let a=r.width/e.offsetWidth,o={expandedX:(e.offsetWidth-t.offsetWidth)/2,expandedY:e.offsetHeight,compactX:(i.left-r.left)/a,compactY:(i.top-r.top)/a,compactScale:n.offsetWidth/t.offsetWidth};C(e=>(0,Wa.default)(e,o)?e:o)},i=new ResizeObserver(r);return i.observe(e),i.observe("
+          },
+          {
+            "anchor": "n>=t",
+            "range_utf16": {
+              "start": 25494,
+              "end": 25498
+            },
+            "context": "||S==null)return;let t=S.expandedY/2,n=()=>{let n=Math.max(0,En(e));E.set(Math.min(n,t)),x(e=>e?n>1:n>=t)};return e.addEventListener(`scroll`,n,{passive:!0}),n(),()=>e.removeEventListener(`scroll`,n)},P=[S,m,E],t[13]=S,t[14]=m,t[15]=E,t[16]=N,t[17]=P):(N=t[16],P=t[17]),(0,Ga.useEffec"
+          },
+          {
+            "anchor": "Back to profile",
+            "range_utf16": {
+              "start": 26113,
+              "end": 26128
+            },
+            "context": "t[23]===c?ee=t[24]:(ee=c.formatMessage({id:`restricted.aeonMessaging.activity.back`,defaultMessage:`Back to profile`,description:`Return from a dot task transcript to the profile activity list`}),t[23]=c,t[24]=ee);let L=ee,R;t[25]===Symbol.for(`react.memo_cache_sentinel`)?(R=[`expanded`,`compac"
+          }
+        ]
+      },
+      "observation": "Nested activity transcript header measures64px hero and20px compact target with ResizeObserver; interpolates translation and scale. It collapses when scroll reaches half expandedY, expands at<=1px; title/back rows crossfade150ms, easing enter-snappy; focus transfers to matching visible button.",
+      "current_implementation_gap": "Current inline RunActivity expansion has no separate transcript navigation/header or collapse.",
+      "unknown": null
+    },
+    {
+      "id": "new-editor-route",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/aeon-appearance-picker-329fc29c1361.js",
+        "sha256": "c09494b175214107fff73f9d5eae74f59706d41a8cf9cd338bb189ae73e3fe24",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/aeon-appearance-picker-329fc29c1361.js",
+        "anchors": [
+          {
+            "anchor": "V=d!=null&&!Ue",
+            "range_utf16": {
+              "start": 2416,
+              "end": 2430
+            },
+            "context": "rAnimation:Le},n[4]=Le,n[5]=z);let B=nt(z),[ze,Ve]=(0,Z.useState)(!1),Ue=w(x!==`orbit-draft`&&Pe,x),V=d!=null&&!Ue,We=w(j?.appearance?.avatar===`pet`&&u==null?Re:null,d??x),Ge=w(a?.avatar===`pet`||j?.appearance?.avatar===`pet`?He:null,u),Ke=u==null?We?.pet:Ge,H=j?.pet===void 0?Ke:j.pet,U=a?.av"
+          },
+          {
+            "anchor": "previewRef:je",
+            "range_utf16": {
+              "start": 11585,
+              "end": 11598
+            },
+            "context": "`strong`,{children:`dot`})}})})}),V?(0,Q.jsx)(Z.Suspense,{fallback:(0,Q.jsx)(Xe,{title:bt,footer:St,previewRef:je,previewFallback:rt,onCreatePet:T?void 0:_t}),children:(0,Q.jsx)(et,{ref:Ee,previewRef:je,previewFallback:rt,conversationId:d,onReady:Ve,onCreatePet:T?void 0:_t,disabled:P,pet:H,on"
+          },
+          {
+            "anchor": "characterConversationId:d",
+            "range_utf16": {
+              "start": 1515,
+              "end": 1540
+            },
+            "context": ".js\";function X(e){let n=(0,pt.c)(118),{ref:ee,appearance:a,name:s,namePending:c,identity:l,petId:u,characterConversationId:d,onSave:f,variant:m,disabled:ae,readOnlyName:g,onClose:_,defaultOpen:ce,triggerContent:ue,onCloseAutoFocus:v,onTrigger:y}=e,b=c!==void 0&&c,x=l===void 0?`orbit-draft`:l,S=m===void "
+          },
+          {
+            "anchor": "reducedMotion:Ie||!R.current",
+            "range_utf16": {
+              "start": 3355,
+              "end": 3383
+            },
+            "context": "!==Ie||n[16]!==S?(it=e=>{ot({source:e?Ae.current:je.current,destination:()=>e?je.current:Ae.current,reducedMotion:Ie||!R.current||!q&&S!==`compact`||!V,update:()=>{M(e&&!C?{appearance:a,name:null}:null),F(null),Te(!1),Ve(!1),e||_?.()}})},n[10]=a,n[11]=C,n[12]=V,n[13]=q,n[14]=_,n[15]=Ie,n[16]=S,n[17]=it):it="
+          }
+        ]
+      },
+      "observation": "Nonlegacy character conversation uses lazy CharacterEditor instead of old avatar grid. Source/destination avatar shared transition only for pointer-originated hero/profile/compact trigger, not name or keyboard trigger; reduced-motion skips. Legacy/draft paths can use older grid.",
+      "current_implementation_gap": "Current six-color SVG picker lacks the newer character editor and shared avatar transition.",
+      "unknown": "Whether user’s active installed session selects this path requires runtime state; source confirms conditional path only."
+    },
+    {
+      "id": "new-editor-layout",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/editor-placeholder-14579b932502.js",
+        "sha256": "0cff8f44f829b597b08e654b3ceabd6c5b97fb0d2165ad47210b121e285a0c46",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/editor-placeholder-14579b932502.js",
+        "anchors": [
+          {
+            "anchor": "sm:grid-cols-5",
+            "range_utf16": {
+              "start": 1974,
+              "end": 1988
+            },
+            "context": " f;return t[13]!==s||t[14]!==d?(f=(0,Y.jsxs)(`div`,{className:`grid grid-cols-1 sm:h-120 sm:min-h-0 sm:grid-cols-5 sm:grid-rows-1`,children:[s,d]}),t[13]=s,t[14]=d,t[15]=f):f=t[15],f}var ce,Y;function le(){return(le=e((()=>{ce=T(),y(),x(),q(),Y=D()})))()}function ue(e){let t=(0,de.c)(11),{disa"
+          },
+          {
+            "anchor": "sm:col-span-3",
+            "range_utf16": {
+              "start": 899,
+              "end": 912
+            },
+            "context": "e,s;t[0]===n?s=t[1]:(s=(0,Y.jsx)(`div`,{className:`order-2 flex min-h-0 min-w-0 flex-col sm:order-1 sm:col-span-3`,children:n}),t[0]=n,t[1]=s);let c;t[2]===o?c=t[3]:(c=o!=null&&(0,Y.jsxs)(`div`,{className:b(`pointer-events-none absolute inset-0 flex items-center justify-center bg-surface-seco"
+          },
+          {
+            "anchor": "sm:col-span-2",
+            "range_utf16": {
+              "start": 1746,
+              "end": 1759
+            },
+            "context": "n-h-0 min-w-0 flex-col gap-4 border-b border-subtle bg-surface-secondary px-8 pt-14 pb-8 sm:order-2 sm:col-span-2 sm:border-s sm:border-b-0 dark:bg-surface-tertiary`,children:[r,l,u]}),t[9]=l,t[10]=u,t[11]=r,t[12]=d):d=t[12];let f;return t[13]!==s||t[14]!==d?(f=(0,Y.jsxs)(`div`,{className:`gr"
+          },
+          {
+            "anchor": "sm:h-120",
+            "range_utf16": {
+              "start": 1954,
+              "end": 1962
+            },
+            "context": "t[12]=d):d=t[12];let f;return t[13]!==s||t[14]!==d?(f=(0,Y.jsxs)(`div`,{className:`grid grid-cols-1 sm:h-120 sm:min-h-0 sm:grid-cols-5 sm:grid-rows-1`,children:[s,d]}),t[13]=s,t[14]=d,t[15]=f):f=t[15],f}var ce,Y;function le(){return(le=e((()=>{ce=T(),y(),x(),q(),Y=D()})))()}function ue(e"
+          }
+        ]
+      },
+      "observation": "Editor desktop is480px high5-column grid:controls span3, preview/name/footer span2. Preview side has secondary surface, left border,32px padding,56px top padding. Mobile stacks preview above controls; preview224px high. Actual editor controls have shape,eyes,eyewear,accessory and optional pet tabs; horizontal swatches/tool rail.",
+      "current_implementation_gap": "Current editor is equal two-column layout with6 static choices.",
+      "unknown": null
+    },
+    {
+      "id": "appearance-view-transition",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/appearance-edit-badge-e7a2d9c55b0a.js",
+        "sha256": "6c3fdcd7ec3ab60320f6493dfa1186bf74692f6446cf04751bbbd996fe9900de",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/appearance-edit-badge-e7a2d9c55b0a.js",
+        "anchors": [
+          {
+            "anchor": "startViewTransition",
+            "range_utf16": {
+              "start": 1066,
+              "end": 1085
+            },
+            "context": "urface:s,surfaceBoundary:c}){let l=e?.ownerDocument??document,u=!i&&e?.isConnected===!0;if(typeof l.startViewTransition!=`function`||!u&&W===0){r();return}let d=l.documentElement;W+=1,G?.();let f=u,p=null,m=null,h=null,g=null,_=u?d.querySelectorAll(`[style*=\"view-transition-name\"]`):[],v=e=>{if(e=="
+          },
+          {
+            "anchor": "character-appearance-surface",
+            "range_utf16": {
+              "start": 2297,
+              "end": 2325
+            },
+            "context": "=null&&(g=d.animate({clipPath:[h,h]},{duration:1,fill:`both`,pseudoElement:`::view-transition-group(character-appearance-surface)`})))}).catch(()=>{}),b.updateCallbackDone.catch(e=>{n.error(`Failed to update character presentation`,{safe:{},sensitive:{error:e}})}),b.finished.then(x,x)}function H(e){for(let "
+          },
+          {
+            "anchor": "new DOMMatrix(r.transform).scale(a,o)",
+            "range_utf16": {
+              "start": 3011,
+              "end": 3048
+            },
+            "context": "oat(`${i.height}`);!Number.isFinite(a)||!Number.isFinite(o)||a<=0||o<=0||e.setKeyframes([{transform:new DOMMatrix(r.transform).scale(a,o).toString(),transformOrigin:`0 0`,easing:r.easing},{transform:i.transform,transformOrigin:`0 0`,easing:i.easing}])}}var U,W,G;function K(){return(K=e((()=>{U=h(),o(),B(),W=0,G=null"
+          }
+        ]
+      },
+      "observation": "Uses document.startViewTransition, flushSync state update, snapshot names character-appearance/surface/modal/backdrop. Corrects avatar keyframes to scale transforms rather than independent width/height interpolation; hides departing source surface; cleans up concurrent transition.",
+      "current_implementation_gap": "Current editor opens ordinary dialog without shared-element avatar.",
+      "unknown": null
+    },
+    {
+      "id": "appearance-view-transition-css",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/appearance-edit-badge-361f1a474233.css",
+        "sha256": "9926a12edcc30162535c8311a048d802859619a9aea11179a0a30dc46ac802cc",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/appearance-edit-badge-361f1a474233.css",
+        "anchors": [
+          {
+            "anchor": "--transition-duration-relaxed",
+            "range_utf16": {
+              "start": 548,
+              "end": 577
+            },
+            "context": "drop!important}._active_p6szg_2::view-transition-group(character-appearance){animation-duration:var(--transition-duration-relaxed);animation-timing-function:var(--ease-enter-snappy)}._active_p6szg_2::view-transition-group(character-appearance-surface){animation-duration:var(--transition-duration-relaxed);ani"
+          },
+          {
+            "anchor": "--ease-enter-snappy",
+            "range_utf16": {
+              "start": 609,
+              "end": 628
+            },
+            "context": "ter-appearance){animation-duration:var(--transition-duration-relaxed);animation-timing-function:var(--ease-enter-snappy)}._active_p6szg_2::view-transition-group(character-appearance-surface){animation-duration:var(--transition-duration-relaxed);animation-timing-function:var(--ease-enter-snappy)}._a"
+          },
+          {
+            "anchor": "transform:translate(100%)",
+            "range_utf16": {
+              "start": 1683,
+              "end": 1708
+            },
+            "context": "arance-surface){animation-name:_surface-exit_p6szg_2}@keyframes _surface-enter_p6szg_2{0%{opacity:0;transform:translate(100%)}}@keyframes _surface-exit_p6szg_2{to{opacity:0;transform:translate(100%)}}._active_p6szg_2::view-transition-new(character-appearance-modal){animation-name:_modal-enter_p6szg_2}._a"
+          },
+          {
+            "anchor": "transform:scale(.9)",
+            "range_utf16": {
+              "start": 2031,
+              "end": 2050
+            },
+            "context": "r-appearance-modal){animation-name:_modal-exit_p6szg_2}@keyframes _modal-enter_p6szg_2{0%{opacity:0;transform:scale(.9)}}@keyframes _modal-exit_p6szg_2{to{opacity:0;transform:scale(.9)}}}\n"
+          }
+        ]
+      },
+      "observation": "All named groups use relaxed300ms and enter-snappy cubic-bezier(.23,1,.32,1). Surface fades with horizontal100% translation; modal fades with scale0.9; avatar appears above surface with z-index10.",
+      "current_implementation_gap": "Current generic modal fade/scale does not animate avatar between actual source/destination rectangles.",
+      "unknown": null
+    },
+    {
+      "id": "motion-token-values",
+      "evidence_type": "static packaged source",
+      "source": {
+        "archive": "/Applications/ChatGPT.app/Contents/Resources/app.asar",
+        "member": "webview/assets/app-shared-dc7535e633d7.css",
+        "sha256": "282dd3546bccfba48212a186641a73dedb27af6af7962dad40b3f5db6a9a08f2",
+        "prettified_reading_copy": "/tmp/dot-layout-analysis/app-shared-dc7535e633d7.css",
+        "anchors": [
+          {
+            "anchor": "--transition-duration-relaxed:.3s",
+            "range_utf16": {
+              "start": 134574,
+              "end": 134607
+            },
+            "context": "ve:cubic-bezier(.65, 0, .35, 1);--transition-duration-basic:.15s;--transition-duration-moderate:.2s;--transition-duration-relaxed:.3s;--ease-basic:ease;--ease-enter:var(--cubic-enter);--ease-enter-snappy:cubic-bezier(.23, 1, .32, 1);--ease-spring-snappy:linear(0, .086, .2539, .428, .5786, .698, .7879, .8534, .89"
+          },
+          {
+            "anchor": "--ease-enter-snappy:cubic-bezier(.23, 1, .32, 1)",
+            "range_utf16": {
+              "start": 134658,
+              "end": 134706
+            },
+            "context": "on-moderate:.2s;--transition-duration-relaxed:.3s;--ease-basic:ease;--ease-enter:var(--cubic-enter);--ease-enter-snappy:cubic-bezier(.23, 1, .32, 1);--ease-spring-snappy:linear(0, .086, .2539, .428, .5786, .698, .7879, .8534, .8998, .9323, .9546, .9697, .98, .9868, .9913, .9943, .9963, .9976, .9985, 1);--animate-token-pulsing-"
+          }
+        ]
+      },
+      "observation": "Packaged CSS token values resolve appearance animation to300ms/cubic-bezier(.23,1,.32,1).",
+      "current_implementation_gap": null,
+      "unknown": null
+    }
+  ]
+}

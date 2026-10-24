@@ -6,8 +6,9 @@ import time
 from sqlalchemy import or_, select
 
 from .integrations import Integrations
+from .opencode_provider import run_opencode
 from .providers import TaskFailure, run_codex, run_openai
-from .store import Event, Message, Run
+from .store import Conversation, Event, Message, Run
 from .tools import Adapter, Tools
 
 
@@ -146,6 +147,8 @@ class Runtime:
             run = db.get(Run, run_id)
             identity = db.scalar(select(Event).where(Event.run_id == run_id, Event.type == "run.queued").order_by(Event.sequence).limit(1))
             run.dot_name = json.loads(identity.payload).get("dot_name", "OhMyDots") if identity else "OhMyDots"
+            # Standing memories belong to the dot that owns this conversation.
+            run.dot_memories = [row["text"] for row in self.store.memories(db.get(Conversation, run.conversation_id).dot_id)]
             cutoff = db.scalar(
                 select(Message.sequence)
                 .where(Message.run_id == run_id, Message.role == "user")
@@ -173,11 +176,14 @@ class Runtime:
             )
             history = [{"role": r.role, "content": r.text} for r in reversed(rows)]
         self.store.event("run.activity", "요청을 확인하고 있어요", run_id)
-        provider = run_openai if run.provider == "openai" else run_codex
-        invocation = asyncio.create_task(provider(self, run, history, tools))
+        provider = {"openai": run_openai, "codex": run_codex, "opencode": run_opencode}.get(run.provider)
+        invocation = None
         elapsed = 0.0
         last = time.monotonic()
         try:
+            if provider is None:
+                raise RuntimeError("UNKNOWN_PROVIDER")
+            invocation = asyncio.create_task(provider(self, run, history, tools))
             while not invocation.done():
                 await asyncio.sleep(0.25)
                 now = time.monotonic()
@@ -215,8 +221,9 @@ class Runtime:
                 db.commit()
             self.store.status(run_id, "FAILED", error=error[:100])
         finally:
-            invocation.cancel()
-            await asyncio.gather(invocation, return_exceptions=True)
+            if invocation is not None:
+                invocation.cancel()
+                await asyncio.gather(invocation, return_exceptions=True)
             with self.store.session() as db:
                 failed = db.get(Run, run_id).status != "COMPLETED"
             if failed:

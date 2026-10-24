@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, type AIProvider } from '../lib/api';
 type Catalog = { models: { id: string; name: string }[]; message: string };
-export default function ModelPicker({ provider, configured, value, onChange }: { provider: 'codex' | 'openai'; configured: boolean; value: string; onChange: (model: string) => void }) {
+export default function ModelPicker({ provider, configured, value, onChange }: { provider: AIProvider; configured: boolean; value: string; onChange: (model: string) => void }) {
   const [catalog, setCatalog] = useState<Catalog>({ models: [], message: '' });
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);

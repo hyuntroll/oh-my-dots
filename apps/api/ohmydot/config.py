@@ -20,6 +20,7 @@ class Config:
     internal_url: str = os.getenv("INTERNAL_API_URL", "http://127.0.0.1:18000")
     provider: str = os.getenv("DOT_PROVIDER", "codex")
     model: str = os.getenv("OPENAI_MODEL", "gpt-5.4")
+    opencode_bin: str = os.getenv("OPENCODE_BIN", "opencode")
     codex_bin: str = os.getenv("CODEX_BIN", "codex")
     data_dir: str = os.getenv("DOT_DATA_DIR", ".local")
     run_seconds: int = 600

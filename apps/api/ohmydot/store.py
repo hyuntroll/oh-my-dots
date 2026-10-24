@@ -4,6 +4,7 @@ import uuid
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     Float,
     ForeignKey,
     Integer,
@@ -13,8 +14,10 @@ from sqlalchemy import (
     and_,
     create_engine,
     func,
+    inspect,
     or_,
     select,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
@@ -31,6 +34,22 @@ class Dot(Base):
     __tablename__ = "dots"
     id: Mapped[str] = mapped_column(String, primary_key=True, default="dot-1")
     name: Mapped[str] = mapped_column(String, default="OhMyDots")
+    # ACTIVE keeps the dot usable, PAUSED stops new work until resumed, ARCHIVED hides
+    # a deleted dot without destroying its archived conversations.
+    status: Mapped[str] = mapped_column(String, default="ACTIVE")
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
+    last_active_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class Memory(Base):
+    """A short standing fact a dot was asked to remember, scoped to that dot."""
+    __tablename__ = "memories"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=uid)
+    dot_id: Mapped[str] = mapped_column(ForeignKey("dots.id"), default="dot-1")
+    text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
 
 
 class Conversation(Base):
@@ -39,6 +58,7 @@ class Conversation(Base):
     dot_id: Mapped[str] = mapped_column(ForeignKey("dots.id"), default="dot-1")
     title: Mapped[str] = mapped_column(String, default="새 대화")
     created_at: Mapped[float] = mapped_column(Float, default=time.time)
+    archived_at: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
 class Task(Base):
@@ -110,11 +130,36 @@ def serialize(row):
     return result
 
 
+def migrate(engine):
+    """Add columns introduced after the first release.
+
+    ``Base.metadata.create_all`` only creates missing tables, so an existing
+    database needs explicit ADD COLUMN statements for later additions.
+    """
+    columns = {name: {column["name"] for column in inspect(engine).get_columns(name)}
+               for name in Base.metadata.tables}
+    boolean = "FALSE" if engine.dialect.name == "postgresql" else "0"
+    additions = [
+        ("dots", "status", "VARCHAR DEFAULT 'ACTIVE' NOT NULL"),
+        ("dots", "pinned", "BOOLEAN DEFAULT " + boolean + " NOT NULL"),
+        ("dots", "position", "INTEGER"),
+        ("dots", "created_at", "FLOAT"),
+        ("dots", "last_active_at", "FLOAT"),
+        ("conversations", "archived_at", "FLOAT"),
+    ]
+    with engine.begin() as connection:
+        for table, column, ddl in additions:
+            if column not in columns.get(table, {column}):
+                connection.execute(text("ALTER TABLE " + table + " ADD COLUMN " + column + " " + ddl))
+        connection.execute(text("UPDATE dots SET created_at = :now WHERE created_at IS NULL"), {"now": time.time()})
+
+
 class Store:
     def __init__(self, url):
         kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {}
         self.engine = create_engine(url, **kwargs)
         Base.metadata.create_all(self.engine)
+        migrate(self.engine)
         with self.session() as db:
             if not db.get(Dot, "dot-1"):
                 db.add(Dot(id="dot-1", name="OhMyDots"))
@@ -190,6 +235,29 @@ class Store:
         with self.session() as db:
             item = db.get(Setting, key)
             return item.value if item else default
+
+    def touch_dot(self, dot_id):
+        """Record the last time a dot did visible work."""
+        with self.session() as db:
+            dot = db.get(Dot, dot_id)
+            if dot:
+                dot.last_active_at = time.time()
+                db.commit()
+
+    def memories(self, dot_id):
+        with self.session() as db:
+            return [serialize(row) for row in db.scalars(
+                select(Memory).where(Memory.dot_id == dot_id).order_by(Memory.created_at))]
+
+    def archive_conversations(self, dot_id):
+        """Hide a removed dot's conversations without deleting their messages."""
+        with self.session() as db:
+            rows = list(db.scalars(select(Conversation).where(
+                Conversation.dot_id == dot_id, Conversation.archived_at.is_(None))))
+            for row in rows:
+                row.archived_at = time.time()
+            db.commit()
+            return len(rows)
 
     def recover(self):
         with self.session() as db:

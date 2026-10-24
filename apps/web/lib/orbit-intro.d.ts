@@ -1,0 +1,2 @@
+export type IntroRenderer = { spin: (request: { color: string; landingColor: string; palette?: string[]; repeatDelayMs?: number }) => void; settle: () => Promise<void>; dispose: () => void };
+export function renderOrbitIntroductionLogo(canvas: HTMLCanvasElement, container: HTMLElement, request: { color: string; landingColor: string; palette?: string[]; repeatDelayMs?: number }, onFailure: () => void, onStart: () => void): IntroRenderer;

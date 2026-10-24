@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 
 
-async def model_catalog(provider, current, key='', cache=None):
+async def model_catalog(provider, current, key='', cache=None, opencode_bin='opencode'):
     models = []
     message = ''
     if provider == 'codex':
@@ -18,6 +18,11 @@ async def model_catalog(provider, current, key='', cache=None):
                           and isinstance(m.get('slug'), str))
         except (OSError, ValueError, TypeError, KeyError, AttributeError):
             message = 'Codex 모델 목록은 로그인 후 CLI가 갱신합니다.'
+    elif provider == 'opencode':
+        from .opencode_provider import opencode_status
+        status = await opencode_status(opencode_bin)
+        models = [{'id': '', 'name': 'OpenCode 기본 모델'}] + status['models']
+        message = status['message'] or 'OpenCode에 연결된 모델입니다. 모델별 계정 권한과 요금이 적용됩니다.'
     elif key:
         try:
             async with httpx.AsyncClient(timeout=5) as client:

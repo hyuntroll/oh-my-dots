@@ -1,0 +1,5 @@
+{
+  "source": "ChatGPT 26.1013.40934 (20770), app.asar/webview/assets/Dot-7cb00c0b541f.js",
+  "source_sha256": "c520f8ad307fcd45afe844b900dade34353529c4760665b9871562638685cf2a",
+  "adaptation": "Original 56px body/eye paths and eye highlights copied as static SVG; palette mapped to existing OhMyDots color IDs; decorative inner-shadow filters omitted. No app runtime or network code imported."
+}

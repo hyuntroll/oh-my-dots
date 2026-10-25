@@ -1,0 +1,41 @@
+{
+  "name": "dots-reconstructed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Dots host using the original shipped client UI and a separate local backend",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "dev": "node tools/dev.mjs",
+    "build": "tsc --noEmit && vite build",
+    "start": "node tools/original-start.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "computer:start": "node tools/computer-start.mjs",
+    "computer:stop": "node tools/computer-start.mjs --stop",
+    "assets:extract": "node tools/extract-character-assets.mjs",
+    "assets:verify": "node tools/verify-assets.mjs",
+    "original:extract": "node tools/extract-original-ui.mjs",
+    "original:verify": "node tools/verify-original-ui.mjs",
+    "original:dev": "node exact-host/server.mjs",
+    "original:start": "node tools/original-start.mjs",
+    "legacy:start": "node server/main.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "0.577.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@babel/parser": "8.0.4",
+    "@electron/asar": "4.2.0",
+    "@types/node": "24.10.9",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.5"
+  }
+}

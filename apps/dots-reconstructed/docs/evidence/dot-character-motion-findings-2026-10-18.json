@@ -1,0 +1,262 @@
+{
+  "scope": "Static character/artwork motion only; no original runtime access, target execution, or WASM decompilation.",
+  "date": "2026-10-18",
+  "sources": {
+    "Dot-7cb00c0b541f.js": {
+      "asar_member": "webview/assets/Dot-7cb00c0b541f.js",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/Dot-7cb00c0b541f.js",
+      "bytes": 10463,
+      "sha256": "c520f8ad307fcd45afe844b900dade34353529c4760665b9871562638685cf2a"
+    },
+    "mini-orbit-artwork-e6f674db9556.js": {
+      "asar_member": "webview/assets/mini-orbit-artwork-e6f674db9556.js",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/mini-orbit-artwork-e6f674db9556.js",
+      "bytes": 2676,
+      "sha256": "8b58a465d99d16157ba58f9a83feec53e9c91bb919457beee7c3f92cf494344f"
+    },
+    "app-initial-90eb42395b7d.js": {
+      "asar_member": "webview/assets/app-initial-90eb42395b7d.js",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/app-initial-90eb42395b7d.js",
+      "bytes": 14403934,
+      "sha256": "2687d59e8c67ccf81c7efb3820211070df303c6a200c9e0e8d604f26253f2f5e",
+      "anchors": {
+        "function mec": {
+          "character_offset": 9222135,
+          "byte_offset": 9241581,
+          "line": 4495
+        },
+        "function B9s": {
+          "character_offset": 9206121,
+          "byte_offset": 9225567,
+          "line": 4495
+        },
+        "function J9s": {
+          "character_offset": 9217399,
+          "byte_offset": 9236845,
+          "line": 4495
+        },
+        "function x9s": {
+          "character_offset": 9199038,
+          "byte_offset": 9218484,
+          "line": 4495
+        },
+        "function S9s": {
+          "character_offset": 9200004,
+          "byte_offset": 9219450,
+          "line": 4495
+        },
+        "t7s=": {
+          "character_offset": 9166202,
+          "byte_offset": 9185648,
+          "line": 4495
+        },
+        "function d6s": {
+          "character_offset": 9130274,
+          "byte_offset": 9149712,
+          "line": 4495
+        },
+        "function u6s": {
+          "character_offset": 9129967,
+          "byte_offset": 9149405,
+          "line": 4495
+        }
+      }
+    },
+    "aeon-appearance-picker-329fc29c1361.js": {
+      "asar_member": "webview/assets/aeon-appearance-picker-329fc29c1361.js",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/aeon-appearance-picker-329fc29c1361.js",
+      "bytes": 19546,
+      "sha256": "c09494b175214107fff73f9d5eae74f59706d41a8cf9cd338bb189ae73e3fe24"
+    },
+    "app-shared-dc7535e633d7.css": {
+      "asar_member": "webview/assets/app-shared-dc7535e633d7.css",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/app-shared-dc7535e633d7.css",
+      "bytes": 1307139,
+      "sha256": "282dd3546bccfba48212a186641a73dedb27af6af7962dad40b3f5db6a9a08f2"
+    },
+    "avatar-mascot-button-1d7e7f02ecf5.js": {
+      "asar_member": "webview/assets/avatar-mascot-button-1d7e7f02ecf5.js",
+      "local_path": "/tmp/chatgpt-ui-analysis-20770/webview/assets/avatar-mascot-button-1d7e7f02ecf5.js",
+      "bytes": 9129,
+      "sha256": "f0080d7642c2ae8b4415f09c63c31ac165aede0ea7d673765a94ee1a5359eac6"
+    },
+    "appearance-edit-badge-e7a2d9c55b0a.js": {
+      "asar_member": "webview/assets/appearance-edit-badge-e7a2d9c55b0a.js",
+      "local_path": "/tmp/dot-character-study/webview/assets/appearance-edit-badge-e7a2d9c55b0a.js",
+      "bytes": 4723,
+      "sha256": "6c3fdcd7ec3ab60320f6493dfa1186bf74692f6446cf04751bbbd996fe9900de"
+    },
+    "editor-lazy-9ce9cd1f2bde.js": {
+      "asar_member": "webview/assets/editor-lazy-9ce9cd1f2bde.js",
+      "local_path": "/tmp/dot-character-study/webview/assets/editor-lazy-9ce9cd1f2bde.js",
+      "bytes": 1888,
+      "sha256": "d7a73852c5dd5b9e46c0264f18d771fdb16b6846ce07a397b7eea2891dc1959c"
+    },
+    "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/activity.mjs": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/activity.mjs",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/activity.mjs",
+      "bytes": 2076,
+      "sha256": "30e36b94b8ddac04b5c7c42bd8933790dc09241cbbc0ad3eee0c727304390dbf"
+    },
+    "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/frame.mjs": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/frame.mjs",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/frame.mjs",
+      "bytes": 8520,
+      "sha256": "051ec53b4f475e3501fdc87e08e6a1eef80c952ccfccdcecd96cba4f79d43b15"
+    },
+    "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs",
+      "bytes": 63991,
+      "sha256": "ee666f5514110f8eae35914ca7769e535235af3ee242808fa1d57644467aa674"
+    },
+    "orbit-character-a46c99f7e8749621/runtime/orbit-characters.d.mts": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/runtime/orbit-characters.d.mts",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/runtime/orbit-characters.d.mts",
+      "bytes": 14878,
+      "sha256": "e857bd20d5a40f62c6e4cdc3828f432480ed5bbb861de11e17208754ccad20ce"
+    },
+    "orbit-character-a46c99f7e8749621/runtime/orbit-enums.d.mts": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/runtime/orbit-enums.d.mts",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/runtime/orbit-enums.d.mts",
+      "bytes": 2660,
+      "sha256": "71c49b4e518fd6654dbce22064f8e7ac2a50c40933bd4765c60a0382d3ad1600"
+    },
+    "orbit-character-a46c99f7e8749621/runtime/bundle.json": {
+      "asar_member": "webview/assets/orbit-character-a46c99f7e8749621/runtime/bundle.json",
+      "local_path": "/tmp/dot-character-study/webview/assets/orbit-character-a46c99f7e8749621/runtime/bundle.json",
+      "bytes": 116079,
+      "sha256": "16ed1c7d9045dbdfbc0c748c66837a6aeeb534b09be906c8c4be4eb7b2ba26e0"
+    }
+  },
+  "findings": [
+    {
+      "id": "character-vs-fallback",
+      "type": "static observation",
+      "claim": "Dot SVG is only static body/eye geometry. The saved interactive character route is mec → J9s → B9s → iframe frame.mjs → presentation.mjs → orbit WASM engine. Legacy SVG, sprite pets, rendered snapshots and interactive characters are distinct paths; which the original account currently uses remains unknown.",
+      "sources": [
+        "Dot-7cb00c0b541f.js",
+        "app-initial-90eb42395b7d.js"
+      ],
+      "gap": "DotAvatar is a single static img and ignores avatar type. Adding a CSS bounce would not recreate this renderer."
+    },
+    {
+      "id": "activity-state",
+      "type": "static observation",
+      "claim": "Host t7s maps paused→Paused; attached failed turn→Error; ready or finished→Ready; activeFlags→NeedsInput; sleeping→Ready; status strings working/searching/creating/payment/needs input/paused→matching kind; unknown in-progress→Thinking. Local active computer use→Working, other active→Thinking. B9s converts None to Ready.",
+      "sources": [
+        "app-initial-90eb42395b7d.js"
+      ],
+      "gap": "Current DotAvatar has no activity input or state-dependent appearance."
+    },
+    {
+      "id": "activity-order",
+      "type": "static observation",
+      "claim": "CharacterActivityController sends ordered Start/Stop episodes, ignores unchanged kind+turnId, suppresses activity while fitting, and always uses Neutral outcome because a status change does not prove success.",
+      "sources": [
+        "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/activity.mjs"
+      ],
+      "lines": [
+        10,
+        69
+      ]
+    },
+    {
+      "id": "ready-gaze",
+      "type": "static observation",
+      "claim": "Avatar mode forwards only Move to setReadyGaze; legacy drag/reaction is disabled by activity binding. Host x9s rejects touch and begins a 10000ms attention window when cursor enters target; attention clears on timeout, blur or document hidden. Engine docs say gaze overlays continuing Ready clock and release eases back without restart.",
+      "sources": [
+        "app-initial-90eb42395b7d.js",
+        "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs",
+        "orbit-character-a46c99f7e8749621/runtime/orbit-characters.d.mts"
+      ],
+      "lines": {
+        "presentation": [
+          816,
+          854
+        ],
+        "types": [
+          150,
+          164
+        ]
+      },
+      "gap": "Current img has no pointer gaze or attention clock."
+    },
+    {
+      "id": "studio-gesture",
+      "type": "static observation",
+      "claim": "Editor S9s distinguishes click from drag with 6px max movement; primary left-button pointer capture, coalesced drag events, cancellation on blur/hidden/lostcapture. Click/keyboard invokes Signature reaction if ready/active and not framing/editing. Editor after edit pauses gaze for300ms then smoothsteps from center to clamped pointer over200ms; reduced-motion immediate.",
+      "sources": [
+        "app-initial-90eb42395b7d.js",
+        "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs"
+      ],
+      "lines": {
+        "presentation": [
+          [
+            380,
+            420
+          ],
+          [
+            1056,
+            1072
+          ]
+        ]
+      },
+      "gap": "Current appearance editor lacks drag, click reaction, gaze easing."
+    },
+    {
+      "id": "appearance-morph",
+      "type": "static observation",
+      "claim": "Appearance picker uses startViewTransition between actual avatar and editor preview; scales source transform by source/destination dimensions, hides trigger while open, and can include surface/modal/backdrop. CSS duration300ms, cubic-bezier(.23,1,.32,1); modal scale.9+opacity, surface translateX100%+opacity. Disabled when reduced motion, keyboard-triggered, unsupported variant or noninteractive character.",
+      "sources": [
+        "aeon-appearance-picker-329fc29c1361.js",
+        "appearance-edit-badge-e7a2d9c55b0a.js",
+        "app-shared-dc7535e633d7.css"
+      ],
+      "extra_source": "webview/assets/appearance-edit-badge-361f1a474233.css (read directly from ASAR)",
+      "gap": "Current dialog showModal has no avatar shared-element transition."
+    },
+    {
+      "id": "framing-lifecycle",
+      "type": "static observation",
+      "claim": "Activity avatar is drawn in a double-sized outer frame (-inset-1/2) with inner frameScale.5, leaving room for reactions. Rendering gates on active/visibility, keeps polling reduced-motion so gaze/release can settle, retains neutral snapshot while engine prepares and during resize.",
+      "sources": [
+        "app-initial-90eb42395b7d.js",
+        "orbit-character-a46c99f7e8749621/fd5f2a1997e55d5f/presentation.mjs"
+      ],
+      "lines": {
+        "presentation": [
+          [
+            463,
+            465
+          ],
+          [
+            1820,
+            1827
+          ]
+        ]
+      }
+    },
+    {
+      "id": "pet-distinct",
+      "type": "static observation",
+      "claim": "Sprite pet route is distinct: 192x208cells,8columns;v2 has11rows,16look directions at22.5degree intervals in rows9/10. Idle base times280/110/110/140/140/320ms multiplied6. Non-loop states play3times then idle. Hover jumping belongs to mascot pet route, not proven for interactive Dot.",
+      "sources": [
+        "app-initial-90eb42395b7d.js",
+        "mini-orbit-artwork-e6f674db9556.js",
+        "avatar-mascot-button-1d7e7f02ecf5.js"
+      ]
+    }
+  ],
+  "unknowns": [
+    "Exact Ready/Working/Searching/etc geometry, blink rhythm, easing and prop trajectories are implemented in WASM and have not been recovered.",
+    "Currently active original account avatar branch is unknown.",
+    "No frame/pixel comparison or animation runtime observation was performed."
+  ],
+  "implementation_priority": [
+    "Separate interactive character from legacy SVG/sprite/snapshot roles.",
+    "Add activity state contract and Ready gaze/attention independently from renderer geometry.",
+    "Reproduce shared-element appearance transition and input gesture thresholds.",
+    "Inspect engine static artifacts before claiming same character animation; do not replace unknowns with arbitrary bounce."
+  ]
+}

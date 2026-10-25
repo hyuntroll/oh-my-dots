@@ -14,6 +14,28 @@ npm start
 
 원본 UI 실행 주소: <http://127.0.0.1:3420/original/webview/>. 이 명령은 API 서버(3410)와 원본 UI 호스트(3420)를 함께 시작하며, 이미 실행 중인 같은 서비스는 재사용합니다. 기존 로컬 Dot과 대화 기록을 사용합니다. 기본 실행 중 3410의 시작 주소도 이 화면으로 이동합니다. 이전 화면은 `npm run legacy:start`로 실행할 수 있습니다.
 
+## Grok Bot reconstructed 실행기 연결
+
+원본 Dots UI에 로컬 **Grok Bot reconstructed의 실제 호스트·러너·대화 저장소**를 연결할 수 있습니다. 모델만 바꾸는 방식이 아닙니다. 각 Dot의 첫 메시지에서 전용 Grok 에이전트를 만들고, Grok의 `sendPrompt`와 `SendMessage` 결과를 기존 Dots 메시지·작업 상태로 전달합니다. Grok의 질문은 원본 UI의 입력 카드로 표시됩니다. 기존 Dot과 대화 기록은 유지됩니다.
+
+```sh
+# Grok 소스와 해당 프로젝트의 node_modules가 준비되어 있어야 합니다.
+export DOTS_GROK_SOURCE="$HOME/Github/grok-bot-0.18-reconstructed"
+# Node 26이 기본 node가 아니라면 지정합니다.
+export DOTS_GROK_NODE=/opt/homebrew/opt/node@26/bin/node
+npm run grok:prepare
+# 기존 서버를 먼저 종료한 뒤 실행합니다.
+npm run grok:start
+```
+
+선택한 실행기는 `.data/runtime-choice.json`에 저장되어 다음 `npm start`에서도 유지됩니다. 이전 실행기로 돌아가려면 서버 종료 후 `npm run opencode:start`를 실행합니다. 포트를 다른 실행기가 점유하면 자동으로 덮어쓰지 않고 오류를 냅니다.
+
+Grok 빌드·네이티브 의존성은 `.data/grok-build/`, Dot별 Grok 기록은 `.data/grok/<Dot ID>/`에 저장합니다. Grok 원본 체크아웃과 원래 앱의 데이터는 수정하지 않습니다. 새 Grok 데이터의 기본 모델은 `opencode-go/gpt-6-luna`이며, 이미 저장된 모델 설정은 유지됩니다. 현재 계정으로 해당 모델의 실제 응답을 확인했습니다. `beam-free`는 Grok의 큰 프롬프트에서 본문 없이 종료됐고, 별도의 무료 모델은 한도 오류를 반환했습니다. 모델 목록에 있다는 것만으로 사용 가능하다고 판단하지 않습니다.
+
+현재 연결 범위는 대화, 여러 턴의 문맥 유지, 상태·오류 표시, 질문 응답, 승인 응답 전달, 취소·일시 정지·재개입니다. 취소하면 해당 Dot이 소유한 호스트를 종료하며 Grok 저장소는 유지합니다. 승인에 응답하더라도 영구 허용으로 바꾸지 않습니다. 기존 Dots의 Docker 화면은 별도 서비스이며 **Grok의 컴퓨터·파일 실행기로 연결하지 않았습니다**. 이 어댑터는 네이티브 컴퓨터/기존 loopback 실행기로 통하는 Grok box 전송을 차단합니다. 파일 첨부·비밀 입력·외부 provider 설치·Grok 에이전트 간 메시지의 Dots UI 동기화는 아직 지원하지 않습니다. Grok 소스를 이 저장소에 복제하거나 번들로 게시하지 않습니다.
+
+[Grok 연결 구현 및 실제 검증](docs/grok-integration.md)
+
 사이드바 아래의 프로필 메뉴에서 **설정**을 열거나 `⌘,`/`Ctrl+,`를 누릅니다. 원본 설정 사이드바·검색·일반·모양·계정·개인 맞춤 설정·키보드 단축키·플러그인 화면을 연결했습니다. 모양의 테마와 계정의 로컬 이름은 브라우저에 저장됩니다. 사이드바 **플러그인**에서 공개/개인용 디렉터리와 관리 화면을 오갈 수 있습니다. 현재 로컬 연결 목록은 비어 있으며 설치·OAuth·클라우드 사용량은 연결하지 않았습니다. 펫 오버레이·초대·로그아웃은 미지원 상태로 표시합니다.
 
 현재 원본 기준은 `app.asar` SHA-256 `5b5cf52887cfd4de19cb5862155a8ef6cf58830c0a2fc592b72060cfcc3be869`입니다. 파일이 같다는 사실만으로 모든 화면·상태·서버 동작의 동일성을 보증하지 않습니다. [원본 렌더러 연결과 검증 범위](docs/exact-ui/verification.md)를 참고하세요.

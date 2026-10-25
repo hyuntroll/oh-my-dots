@@ -21,7 +21,10 @@
     "original:verify": "node tools/verify-original-ui.mjs",
     "original:dev": "node exact-host/server.mjs",
     "original:start": "node tools/original-start.mjs",
-    "legacy:start": "node server/main.mjs"
+    "legacy:start": "node server/main.mjs",
+    "grok:prepare": "node tools/grok-prepare.mjs",
+    "grok:start": "DOTS_RUNTIME=grok node tools/original-start.mjs",
+    "opencode:start": "DOTS_RUNTIME=opencode node tools/original-start.mjs"
   },
   "dependencies": {
     "lucide-react": "0.577.0",

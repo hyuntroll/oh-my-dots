@@ -40,6 +40,8 @@
 
 최종 검증은 기본 테스트 62개와 실제 Grok 소스를 사용하는 선택 테스트 1개 통과, 빌드 성공, 원본 UI 1,479개 해시 검증이다. 증거 화면은 로컬 `.data/grok-evidence/computer-control.png`에 저장했다. 기본 3420/3410 서버를 최종 Grok 모드로 재시작하고 기존 Dot 2개·메시지 23개·작업 12개 및 메시지 내용 해시 보존을 확인했다.
 
+![원본 Dots UI에서 완료 응답과 실제 Docker 주소창의 DOTS-READY 확인](qa/exact-ui/grok-computer-control.png)
+
 ## 남은 연결
 
 첨부/결과물 전송, 비밀 입력, provider OAuth, Grok 내부 에이전트 간 메시지와 Dots 프로필의 동기화는 별도 구현이 필요하다. 설치된 Grok/원본 앱의 계정 저장소를 가져오거나 권한을 자동 허용하는 방식으로 연결하지 않는다. 컴퓨터는 Dot별 VM이 아닌 하나의 공유 Docker 데스크톱이다. Mac 화면과 호스트 셸은 연결하지 않는다.

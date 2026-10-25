@@ -21,5 +21,5 @@ until xdpyinfo -display :99 >/dev/null 2>&1; do
 done
 dbus-launch openbox --sm-disable &
 xsetroot -solid '#e3e6e3'
-chromium --no-sandbox --no-first-run --disable-dev-shm-usage --disable-gpu --window-size=1080,800 --window-position=100,80 file:///app/start.html >/tmp/browser.log 2>&1 &
+chromium --no-sandbox --no-first-run --disable-dev-shm-usage --disable-gpu --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223 --window-size=1080,800 --window-position=100,80 file:///app/start.html >/tmp/browser.log 2>&1 &
 exec uvicorn daemon:app --app-dir /app --host 0.0.0.0 --port 8765 --no-access-log

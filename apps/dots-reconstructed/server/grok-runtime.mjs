@@ -5,6 +5,9 @@ import { GrokHost, delay } from './grok-host.mjs';
 import { buildRoot } from '../tools/grok-prepare.mjs';
 import { OpenCodeProvider } from './provider.mjs';
 import { now } from './store.mjs';
+import { randomBytes } from 'node:crypto';
+import { computerStatus } from './computer.mjs';
+import { grokComputer } from './grok-computer-bridge.mjs';
 
 export class GrokProvider {
   async status() {
@@ -13,7 +16,7 @@ export class GrokProvider {
     try { await access(join(buildRoot, 'dots-grok-build.json')); } catch { built = false; }
     return { ...code, provider: 'grok-reconstructed', inference_provider: 'opencode',
       installed: code.installed && built, ...(!built ? { error: 'npm run grok:prepare가 필요합니다.' } : {}),
-      capabilities: { conversation: true, widgets: true, native_computer: false, box_execution: false } };
+      capabilities: { conversation: true, widgets: true, native_computer: false, docker_computer: true, box_execution: false } };
   }
 }
 
@@ -32,7 +35,7 @@ export function grokEntry(entry) {
       status: message.ask?.status === 'pending' ? 'pending' : message.ask?.status === 'allowed' ? 'allowed' : 'denied' };
     if (message?.type === 'auto-review-approval') return { type: 'approval', kind: 'grok', question: 'Grok 도구 실행 승인\n' + JSON.stringify(message.approval),
       grok: { command: 'resolveAutoReviewApproval', entryId: entry.id, requestId: message.approval?.requestId },
-      status: message.approval?.status === 'pending' ? 'pending' : 'interrupted' };
+      status: message.approval?.status === 'pending' ? 'pending' : message.approval?.status === 'approved' ? 'allowed' : message.approval?.status === 'denied' ? 'denied' : 'interrupted' };
     // Files and credentials need their own verified transport; never turn a
     // secret request into a plain text chat field.
     if (message) return { type: 'tool_call', name: 'Grok: ' + message.type, status: 'error',
@@ -63,7 +66,7 @@ export class GrokRuntime extends Runtime {
         else if (old.content.text !== value.text) this.store.patch('message', key, { content: { text: value.text } });
       }
     }
-    const pending = this.store.get('task', task.id).items.some(item => ['question', 'approval'].includes(item.type) && item.status === 'pending');
+    const pending = this.store.get('task', task.id).items.some(item => ['question', 'approval', 'computer_handoff'].includes(item.type) && item.status === 'pending');
     const status = pending ? 'needs_input' : 'in_progress';
     if (this.store.get('task', task.id).status !== status) this.setTask(task, { status });
   }
@@ -72,7 +75,11 @@ export class GrokRuntime extends Runtime {
     let host;
     this.runs.set(task.id, { controller, profileId: task.profile_id });
     try {
-      host = this.hostFactory({ directory: join(this.dataDir, 'grok', task.profile_id), model: this.store.getSettings().model });
+      const token = randomBytes(32).toString('hex');
+      this.tokens.set(task.id, token);
+      const screen = await computerStatus({ dataDir: this.dataDir, settings: this.store.getSettings() });
+      host = this.hostFactory({ directory: join(this.dataDir, 'grok', task.profile_id), model: this.store.getSettings().model,
+        computer: { url: this.baseUrl + '/internal/grok-computer/' + task.id, token, width: screen.width, height: screen.height } });
       this.runs.get(task.id).host = host;
       this.setTask(task, { status: 'in_progress', error: null, error_code: null, engine: 'grok-reconstructed' });
       await host.start(controller.signal);
@@ -102,20 +109,33 @@ export class GrokRuntime extends Runtime {
       if (attempt > 1) prompt = 'Resume the following request using the existing transcript. Do not replay completed actions.\n' + prompt;
       await host.call('sendPrompt', { agentId: binding.agent_id, prompt, clientNonce: 'dots-' + task.id + '-' + attempt });
       let idleSince = null;
+      let hadBackgroundWork = false;
       const deadline = Date.now() + 15 * 60 * 1000;
       for (;;) {
         controller.signal.throwIfAborted();
         const [entries, roster, trays] = await Promise.all([host.call('getAgentTranscript', { id: binding.agent_id }), host.call('listAgents'), host.call('getTrays')]);
+        let backgroundRunning = false;
+        if (host instanceof GrokHost) {
+          const subagents = await host.call('getSubagents', { id: binding.agent_id });
+          backgroundRunning = subagents.some(agent => agent.status === 'running');
+          hadBackgroundWork ||= backgroundRunning;
+          const box = await host.call('getForeverBoxStatus', { id: binding.agent_id });
+          if (box.handoff && !this.runs.get(task.id).handoff) {
+            await this.computer(task.id, { operation: 'handoff' });
+            const item = this.addItem(task, { type: 'computer_handoff', instruction: box.handoff.instruction, status: 'pending' });
+            this.runs.get(task.id).handoff = { itemId: item.id, requestId: box.handoff.requestId };
+          }
+        }
         const current = entries.filter(entry => !baseline.has(entry.id));
         this.project(task, current);
         const error = trays.find(entry => entry.agentId === binding.agent_id && entry.kind === 'error' && !traysBefore.has(entry.id));
         if (error) throw Error(error.detail || error.title || 'Grok 실행 실패');
         const agent = roster.find(agent => agent.id === binding.agent_id);
         if (!agent) throw Error('연결된 Grok 에이전트를 찾지 못했습니다.');
-        const waiting = this.store.get('task', task.id).items.some(item => ['approval', 'question'].includes(item.type) && item.status === 'pending');
-        if (!agent.isRunning && !waiting) {
+        const waiting = this.store.get('task', task.id).items.some(item => ['approval', 'question', 'computer_handoff'].includes(item.type) && item.status === 'pending');
+        if (!agent.isRunning && !waiting && !backgroundRunning) {
           idleSince ??= Date.now();
-          if (Date.now() - idleSince > 1500) {
+          if (Date.now() - idleSince > (hadBackgroundWork ? 8000 : 1500)) {
             if (!current.some(entry => grokEntry(entry)?.type === 'text')) throw Error('Grok 러너가 사용자 메시지를 보내지 않고 종료했습니다. ' + host.log.slice(-900));
             this.setTask(task, { status: 'completed', completed_at: now() }); break;
           }
@@ -130,11 +150,13 @@ export class GrokRuntime extends Runtime {
       this.setTask(task, { status, error: status === 'queued' ? null : error?.message || String(error), error_code: 'GROK_RUN_FAILED',
         items: current.items.map(item => ['pending', 'running', 'streaming'].includes(item.status) ? { ...item, status: status === 'error' ? 'error' : 'interrupted' } : item) });
     } finally {
-      await host?.stop(); this.runs.delete(task.id);
+      await host?.stop(); this.runs.delete(task.id); this.tokens.delete(task.id);
+      if (this.computerLease === task.id) this.computerLease = null;
       if (!this.closing) queueMicrotask(() => this.pump(task.profile_id));
     }
   }
   async respond(approvalId, result) {
+    if (this.waiters.has(approvalId)) return super.respond(approvalId, result);
     const task = this.store.all('task').find(task => task.status === 'needs_input' && task.items.some(item => item.id === approvalId && item.status === 'pending'));
     const run = task && this.runs.get(task.id), item = task?.items.find(item => item.id === approvalId);
     if (!run || !item?.grok || run.responding) return false;
@@ -154,5 +176,22 @@ export class GrokRuntime extends Runtime {
       this.updateItem(task, approvalId, { status: result.decision === 'allow' ? 'allowed' : 'denied', decision: result.decision, value: result.value });
       this.setTask(task, { status: 'in_progress' }); return true;
     } finally { run.responding = false; }
+  }
+  computer(taskId, body) { return grokComputer(this, taskId, body); }
+  async computerHandback() {
+    for (const [taskId, run] of this.runs) {
+      if (!run.handoff || run.handbackPending) continue;
+      run.handbackPending = true;
+      try { await run.host.call('handBackForeverBox', { id: run.agentId, trigger: 'button' });
+      const task = this.store.get('task', taskId);
+      this.updateItem(task, run.handoff.itemId, { status: 'completed' });
+      run.handoff = null;
+      this.setTask(task, { status: 'in_progress' });
+      } catch (error) {
+        const task = this.store.get('task', taskId);
+        this.updateItem(task, run.handoff.itemId, { error: '컴퓨터 반환 후 Grok 재개 실패: ' + error.message });
+        throw error;
+      } finally { run.handbackPending = false; }
+    }
   }
 }

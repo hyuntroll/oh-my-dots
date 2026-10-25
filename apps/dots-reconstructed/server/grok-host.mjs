@@ -3,6 +3,8 @@ import { createServer } from 'node:net';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
+import { homedir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { buildRoot, grokNode } from '../tools/grok-prepare.mjs';
 
 export const delay = (ms, signal) => new Promise((resolve, reject) => {
@@ -22,8 +24,9 @@ async function freePort() {
 // Each Dot owns a host and a database. A stop terminates that host's complete
 // process group, including its inference CLI, without cancelling another Dot.
 export class GrokHost {
-  constructor({ directory, model, build = buildRoot, binary = grokNode() }) {
+  constructor({ directory, model, computer, build = buildRoot, binary = grokNode() }) {
     this.directory = directory; this.model = model; this.build = build; this.binary = binary;
+    this.computer = computer;
     this.token = randomBytes(32).toString('hex'); this.log = ''; this.child = null;
   }
   async start(signal) {
@@ -34,6 +37,7 @@ export class GrokHost {
     try { settings = JSON.parse(await readFile(settingsPath, 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
     await writeFile(settingsPath, JSON.stringify({ version: 1, ...settings, inferenceProvider: 'opencode',
       agentDefaultModel: { modelId: this.model, maxMode: true, parameters: [] }, hasSeenOnboarding: true,
+      computerUseModel: { modelId: this.model, maxMode: true, parameters: [] },
       boxRuntime: 'remote' }), { mode: 0o600 });
     this.url = 'http://127.0.0.1:' + await freePort();
     signal?.throwIfAborted();
@@ -44,6 +48,11 @@ export class GrokHost {
         SAND_USER_DATA_DIR: this.directory, SAND_DISABLE_UPDATES: '1', SAND_DISABLE_SENTRY: '1',
         SAND_DISABLE_TELEMETRY: '1', SAND_DISABLE_ANALYTICS: '1', SAND_BOX_AUTO_UPDATE: '0',
         SAND_OPENCODE_MODEL: this.model, SAND_USE_EXISTING_BOX_EXEC_DAEMON: '1',
+        OPENCODE_BIN: fileURLToPath(new URL('./grok-opencode.mjs', import.meta.url)),
+        DOTS_OPENCODE_REAL_BIN: process.env.OPENCODE_BIN || join(homedir(), '.opencode/bin/opencode'),
+        DOTS_COMPUTER_DIAGNOSTICS: process.env.DOTS_COMPUTER_DIAGNOSTICS || '0',
+        DOTS_COMPUTER_BRIDGE_URL: this.computer?.url || '', DOTS_COMPUTER_BRIDGE_TOKEN: this.computer?.token || '',
+        DOTS_COMPUTER_WIDTH: String(this.computer?.width || 1280), DOTS_COMPUTER_HEIGHT: String(this.computer?.height || 960),
         SAND_GATEWAY_BIND_HOST: '127.0.0.1', SAND_HOST_PORT: new URL(this.url).port,
         SAND_GATEWAY_REQUIRE_AUTH: '1', SAND_GATEWAY_TOKEN: this.token },
     });
@@ -80,6 +89,7 @@ export class GrokHost {
       await Promise.race([this.exited, delay(3000)]);
       // The CLI may still be running after the host exits.
       kill('SIGKILL');
+      await writeFile(join(this.directory, 'dots-host.log'), this.log, { mode: 0o600 });
     })();
     return this.stopping;
   }

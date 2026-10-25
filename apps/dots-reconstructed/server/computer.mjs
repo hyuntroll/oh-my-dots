@@ -24,7 +24,7 @@ async function connection(dataDir,settings={}) {
   return {base,token};
 }
 
-async function requestDesktop(path,{dataDir,settings={},body,signal,timeout=3500}={}) {
+export async function requestDesktop(path,{dataDir,settings={},body,signal,timeout=3500}={}) {
   const {base,token}=await connection(dataDir,settings);
   const timeoutSignal=AbortSignal.timeout(timeout);
   const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{Authorization:`Bearer ${token}`,...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:signal?AbortSignal.any([signal,timeoutSignal]):timeoutSignal});
@@ -55,7 +55,7 @@ function manageComputer(dataDir,stop=false) {
   child.once('exit',code=>{if(managedProcess!==child)return;managedProcess=null;startup={phase:code===0?'idle':'failed',error:code===0?null:(diagnostic.trim()||'컴퓨터 시작에 실패했습니다.')}});
 }
 
-export async function handleComputerRequest(req,res,{store,dataDir,url,readJson,json}) {
+export async function handleComputerRequest(req,res,{store,runtime,dataDir,url,readJson,json}) {
   const path=url.pathname;
   if(!path.startsWith('/api/computer/'))return false;
   if(req.headers['sec-fetch-site']==='cross-site'){json(res,403,{error:'Cross-site computer requests are not allowed'});return true;}
@@ -67,6 +67,9 @@ export async function handleComputerRequest(req,res,{store,dataDir,url,readJson,
   if(['/api/computer/control','/api/computer/input'].includes(path)&&req.method==='POST'){
     const body=await readJson(req);
     const result=await (await requestDesktop(path.endsWith('control')?'/control':'/input',{...options,body})).json();
+    // Ownership is already transferred. Grok's resume may include inference;
+    // do not hold the desktop driver's short control acknowledgement open.
+    if(path.endsWith('control')&&body.owner==='AGENT')void runtime?.computerHandback?.().catch(error=>console.error('[computer-handback]',error.message));
     json(res,200,result);return true;
   }
   if(path==='/api/computer/screenshot'&&req.method==='GET'){

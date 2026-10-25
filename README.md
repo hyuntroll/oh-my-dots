@@ -1,175 +1,74 @@
 # OhMyDots
 
-**내 컴퓨터와 서버에 설치하는, 나만의 AI 작업 공간.**
+원본 Dots UI에 로컬 Grok Bot reconstructed 실행기와 실제 Docker 컴퓨터를 연결한 앱입니다. 이번 구현이 저장소 루트의 기본 앱이며, 이전 Python API·Next.js 웹·PostgreSQL 실행 구성을 대체합니다.
 
-[![Last Commit](https://img.shields.io/github/last-commit/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/commits/main)
-[![Issues](https://img.shields.io/github/issues/hyuntroll/oh-my-dots?style=flat-square)](https://github.com/hyuntroll/oh-my-dots/issues)
-![Self-hosted](https://img.shields.io/badge/self--hosted-your%20server-f4c95d?style=flat-square)
+![Grok이 실제 컴퓨터를 조작하고 결과를 확인한 화면](docs/qa/exact-ui/grok-computer-control.png)
 
-[설치하고 호스팅하기](docs/SELF-HOSTING.md) · [주요 기능](#하나의-대화-하나의-컴퓨터) · [개발 환경](#개발-모드로-실행하기)
+## 설치와 실행
 
-![대화와 실제 Linux 컴퓨터를 나란히 사용하는 OhMyDots](docs/assets/readme/workspace.png)
-
-| 나에게 맞는 설정 | 필요한 앱과 연결 |
-| :---: | :---: |
-| ![OhMyDots 설정](docs/assets/readme/settings.png) | ![Gmail·Calendar·Drive 앱 연결](docs/assets/readme/connections.png) |
-
-메시지로 일을 요청하고, AI가 브라우저와 컴퓨터를 사용하는 모습을 실시간으로 확인하세요. 필요하면 **Take over**로 직접 조작하고, 만든 파일은 **Spaces**에서 모아 봅니다. Dot마다 이름·색상·컴퓨터를 따로 두고, Codex Auth 또는 OpenAI API로 모델을 연결할 수 있습니다.
-
-개인 컴퓨터에서는 로컬 앱처럼, 개인 서버에서는 브라우저로 접속하는 서비스처럼 사용할 수 있습니다. 현재 버전은 **v0.0.1**, 한 소유자를 위한 설치형 서비스입니다.
-
-## 원본 Dots UI 작업본
-
-원본 앱의 React 구성요소·CSS·폰트·네이티브 캐릭터 엔진을 실행하는 별도 로컬 프로젝트는 [`apps/dots-reconstructed`](apps/dots-reconstructed/README.md)에 있습니다. 원본 UI에 로컬 저장소와 OpenCode 연결을 붙인 작업본이며, 원본 클라우드 하네스를 복원한 것은 아닙니다. [검증 범위와 화면 기록](apps/dots-reconstructed/docs/exact-ui/verification.md)을 함께 기록했습니다.
-
-```sh
-cd apps/dots-reconstructed
-npm ci
-npm run original:verify
-npm start
-```
-
-브라우저에서 **http://127.0.0.1:3420/original/webview/** 를 엽니다. 이 프로젝트의 대화·설정은 해당 폴더의 `.data/`에 저장됩니다. 컴퓨터 화면은 Docker Desktop 실행 후 `npm run computer:start`로 준비합니다.
-
-## 설치해서 호스팅하기
-
-Linux 또는 macOS에서 Docker를 설치하고 실행한 뒤, 터미널에 한 줄을 붙여 넣으세요.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/hyuntroll/oh-my-dots/main/install.sh | bash
-```
-
-터미널에서 **설치 폴더 → 접속 포트·주소 → 로그인 이름·비밀번호 → 실행 여부**를 정합니다. 기본 폴더는 `~/.ohmydots`, 기본 주소는 **http://localhost:3080/** 입니다. Python·Node가 부족하면 사용자 폴더에 준비하고 운영용 웹, Codex CLI와 격리된 Linux 컴퓨터를 설치합니다. Git·curl·tar와 실행 중인 Docker/Compose는 필요합니다. AI 계정은 설치 후 웹 설정에서 연결합니다.
-
-```sh
-ohmydots start    # 실행
-ohmydots stop     # 중지 (데이터 유지)
-ohmydots status   # 상태 확인
-ohmydots setup    # 설정 확인 및 다시 설치
-ohmydots update   # 최신 코드로 업데이트
-ohmydots doctor   # 설치 환경 점검
-```
-
-명령어 경로 추가에 동의했다면 새 터미널에서 사용할 수 있습니다. 현재 창에서는 `~/.local/bin/ohmydots`로 실행하세요. 데이터와 브라우저 프로필은 재시작 후에도 보관합니다.
-
-포트 변경, HTTPS 도메인·Tailscale 접속, Linux 자동 시작, 업데이트와 백업은 [셀프 호스팅 가이드](docs/SELF-HOSTING.md)를 참고하세요.
-
-## 하나의 대화, 하나의 컴퓨터
-
-- **시작하기:** AI 연결 확인, 작업할 컴퓨터 안내, 이름·모습 선택을 따라 시작합니다. 이름과 모습을 선택하고 Dot마다 따로 컴퓨터를 준비합니다.
-- **대화:** 요청과 응답을 저장하고, 새 대화와 이전 대화를 오가며 작업합니다.
-- **컴퓨터:** Linux 데스크톱을 실시간으로 표시합니다. Chromium, 터미널, 파일 관리자를 Dock에서 열 수 있습니다.
-- **직접 제어:** `Take over`로 컴퓨터를 직접 조작하고, `Return control`로 AI에게 돌려줍니다. 제어권을 가져와도 대화와 셸 작업은 이어집니다.
-- **설정:** 검색 가능한 설정 화면에서 AI 연결, 모델 선택 목록, 사용량, 앱 연결과 컴퓨터 상태를 확인합니다. 전송 키, 시작 시 컴퓨터 표시, 애니메이션 줄이기는 브라우저별로 저장됩니다.
-- **질문과 선택지:** 답변이 필요하면 채팅 하단 카드에서 추천 선택지나 다른 선택지를 고르거나 직접 입력할 수 있습니다. 답변 제출 전에는 작업을 재개하지 않으며, 카드를 접어도 다시 펼칠 수 있습니다.
-- **실시간 진행:** 대화 화면에서 화면 확인·명령 실행·파일 작성 등 현재 작업을 확인하고 답변을 스트리밍으로 받아봅니다. Activity에는 실행 기록이 남고 진행 중인 작업은 취소할 수 있습니다.
-- **스킬:** 필요한 작업 설명서만 불러와 활용합니다. 설정에서 내장 스킬의 절차를 읽고, 대화의 작업 기록에서 에이전트가 읽은 설명서를 확인할 수 있습니다.
-- **사용량:** 최근 작업의 누적 입력·출력 토큰을 확인하고 펼쳐서 캐시·비캐시, 보고된 모델 호출 수와 마지막 요청 입력을 구분합니다. 설정에서는 제공자별 누적 사용량을 확인합니다. 모델이 보고한 값이며 계정의 잔여 한도나 청구 금액을 뜻하지 않습니다.
-- **활동과 결과물:** 대화 옆 프로필 패널에서 작업 상태와 결과 파일을 확인합니다. Spaces에서 파일을 검색하고 종류별로 모아 봅니다. Markdown·텍스트·이미지·PDF를 미리 보고 원본을 다운로드할 수 있습니다.
-- **앱 연결:** Gmail, Google Calendar, Google Drive, Slack의 지원되는 읽기 작업은 연결한 OAuth/API로 처리합니다. 지원되지 않는 작업은 Dot 컴퓨터의 브라우저로 이어갑니다.
-- **인증 설정:** Codex Auth 또는 OpenAI API를 선택해 AI를 연결합니다.
-
-대화를 중심으로 탐색 메뉴, 프로필, 활동과 결과물을 배치하고 필요할 때 컴퓨터를 펼칩니다. Dot마다 이름과 색상, 캐릭터를 선택하고 다크·라이트 테마를 사용할 수 있습니다. 화면 크기에 따라 대화와 컴퓨터를 분할하거나 탭으로 전환합니다. 저장한 dot 이름은 다음 요청의 AI 지침에도 전달됩니다. 서버 계정의 이름은 바꾸지 않습니다.
-
-## 개발 모드로 실행하기
-
-Docker Desktop, Node.js 24, Python 3.11 이상이 필요합니다. Codex Auth를 사용할 때는 `codex` CLI도 설치되어 있어야 합니다.
+Node.js 24.15 이상, 사용할 모델에 연결된 OpenCode CLI, 로컬 Grok 소스와 해당 프로젝트의 `node_modules`가 필요합니다. Grok 호스트는 Node.js 26을 사용합니다. 컴퓨터 화면에는 실행 중인 Docker Desktop 또는 Docker Engine + Compose가 필요합니다.
 
 ```sh
 git clone https://github.com/hyuntroll/oh-my-dots.git
 cd oh-my-dots
-python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
-npm ci --prefix apps/web
-./scripts/dev.sh
+npm ci
+
+# 기본 위치가 다를 때만 지정합니다.
+export DOTS_GROK_SOURCE="$HOME/Github/grok-bot-0.18-reconstructed"
+export DOTS_GROK_NODE=/opt/homebrew/opt/node@26/bin/node
+npm run setup
+npm start
 ```
 
-브라우저에서 **http://localhost:3080/** 을 엽니다. 실행 스크립트는 로컬 서비스 인증값을 생성하고 PostgreSQL, 컴퓨터, 셸, 게이트웨이를 Docker로 실행한 뒤 API와 웹 서버를 시작합니다.
+브라우저에서 **[http://127.0.0.1:3420/original/webview/](http://127.0.0.1:3420/original/webview/)** 를 엽니다. UI 호스트는 3420, API는 3410 포트를 사용하며 루프백에서만 연결을 받습니다. `npm run dev`도 같은 원본 UI를 실행합니다. `./scripts/dev.sh`도 같은 앱을 시작합니다.
 
-### AI 연결
+Grok 소스의 기본 위치는 `~/Github/grok-bot-0.18-reconstructed`입니다. 기본 실행기는 Grok이며, 선택한 실행기는 다음 시작에도 유지됩니다. Grok 없이 기존 OpenCode 실행기를 사용하려면 `npm ci` 후 `npm run build`와 `npm run opencode:start`를 실행합니다. Grok으로 돌아갈 때는 서버를 종료하고 `npm run grok:start`를 실행합니다.
 
-설정에서 인증 방식을 선택합니다.
-
-- **Codex Auth:** 기존 Codex 로그인을 사용합니다. 로그인이 필요하면 설정에서 ChatGPT 로그인을 시작하고 공식 페이지에서 기기 코드를 입력합니다.
-- **OpenAI API:** 설정의 API 키 입력란에 키를 저장하거나 서버 전용 `.env.local`에 `OPENAI_API_KEY`를 설정합니다.
-
-모델 이름을 직접 입력하는 대신 목록에서 선택합니다. Codex는 로컬 모델 목록과 계정 기본 모델을, OpenAI API는 저장한 키로 조회한 모델 목록을 제공합니다. 목록을 검색하거나 새로고침할 수 있으며 다음 작업부터 적용됩니다.
-
-앱의 OAuth/API를 쓰려면 해당 서비스의 앱 등록 정보가 필요합니다. 등록하지 않은 서비스는 Dot 컴퓨터에서 직접 로그인해 브라우저로 사용할 수 있습니다.
-
-인증값은 서버에서 관리하며 API 키를 브라우저 번들에 포함하지 않습니다. `.env.local`은 Git에서 제외됩니다.
-
-### macOS 데스크톱 앱
-
-Apple Silicon Mac에서는 같은 웹 서버에 연결하는 데스크톱 앱을 실행할 수 있습니다. 커스텀 상단바, macOS 창 제어, 새로고침과 브라우저 열기 메뉴를 제공합니다.
+이전에 배포한 설치 주소도 새 앱의 설치 절차를 사용합니다. Node·OpenCode·Grok 소스는 먼저 준비해야 하며 설치기가 계정이나 키를 생성하지 않습니다.
 
 ```sh
-npm ci --prefix apps/desktop
-npm start --prefix apps/desktop
+curl -fsSL https://raw.githubusercontent.com/hyuntroll/oh-my-dots/main/install.sh | bash
+# 설치 위치 지정: bash install.sh --dir /absolute/path
 ```
 
-앱 파일을 만들려면:
+## 컴퓨터 사용
 
 ```sh
-npm run package:mac --prefix apps/desktop
-open output/desktop/OhMyDots-darwin-arm64/OhMyDots.app
+npm run computer:start
+# 사용 후 컴퓨터만 종료
+npm run computer:stop
 ```
 
-데스크톱 앱을 사용할 때도 웹 서버가 실행 중이어야 합니다. 앱을 종료한 뒤에는 같은 주소에서 웹으로 작업할 수 있습니다. 자세한 안내는 [데스크톱 앱 README](apps/desktop/README.md)에 있습니다.
+Dot 프로필의 **컴퓨터** 버튼에서 실제 1280×960 Linux 화면을 엽니다. 채팅으로 화면 확인이나 브라우저 조작을 요청하면 Grok의 원본 `computerUse` 지침·Task 위임·Computer/Screenshot 도구를 사용합니다. 원본 UI·CSS·폰트·캐릭터 자산은 해시로 검증합니다.
 
-## 작업과 제어권
+로컬에서는 클라우드 자동 심사 대신 원래 수동 승인 경로를 사용하고 실행 전에 상태를 재확인합니다. Dots 실행 승인도 별도로 받아 카드가 두 번 나타날 수 있습니다. 사용자가 제어권을 가져가면 봇 입력은 차단됩니다. 봇이 컴퓨터를 넘기면 **제어권 가져오기 → 제어권 반환**으로 돌려주며, Grok이 새 화면을 읽고 재개합니다.
 
-컴퓨터 한 대에서는 한 번에 하나의 AI 작업이 실행됩니다. 추가 요청은 순서대로 대기합니다. AI가 질문하면 같은 작업에서 답변을 받아 이어서 실행합니다.
+컴퓨터는 모든 Dot이 공유하는 하나의 Docker 데스크톱입니다. Mac 화면·임의 셸·Grok 파일 전송은 연결하지 않습니다. Docker의 포트 3480은 루프백에만 공개합니다.
 
-`Take over`는 GUI 제어권을 사용자에게 넘깁니다. `Return control`은 현재 화면을 다시 확인한 뒤 AI에게 제어권을 넘깁니다. 컴퓨터 입력은 소유권과 제어 세대값을 검사합니다. 모델이 화면을 관찰한 시점까지 행동에 연결하는 검증은 후속 과제입니다. 작업 중단은 별도의 `Cancel`로 처리합니다.
+## 데이터와 기존 버전
 
-결과 파일은 공유 작업 공간에 저장됩니다. Spaces에는 이 작업 공간 전체의 파일이 표시되며, 현재 대화에서 만든 파일만으로 한정하지 않습니다. 원본 다운로드는 파일당 20 MiB까지 지원합니다. 컴퓨터 컨테이너를 다시 생성하면 GUI 프로필과 임시 상태가 초기화될 수 있습니다. `docker compose down -v`는 저장 볼륨을 삭제하므로 데이터를 유지하려면 사용하지 마세요.
+Dot·대화·작업·설정·Grok 기록은 `.data/`에 저장합니다. `.data/`, 인증 정보, 환경 파일, 의존성과 빌드 캐시는 Git에 올리지 않습니다. OpenCode가 이미 연결한 계정을 사용하며 설치된 앱의 인증 저장소를 복사하지 않습니다.
 
-셸에는 Python, Node/npm, Git, curl, C/C++ 빌드 도구가 포함되며 패키지 다운로드를 위한 인터넷 연결을 지원합니다. `pip install --user 패키지명`과 `npm install -g 패키지명`으로 설치한 도구와 캐시는 `/workspace/.tools` 볼륨에 보관됩니다. 가상환경도 이 경로에 만들면 셸 재시작 후 유지됩니다. 명령은 기본 120초, `timeout` 지정 시 최대 300초 동안 실행할 수 있습니다.
+이전 앱은 [codex/dots-pre-original-ui 브랜치](https://github.com/hyuntroll/oh-my-dots/tree/codex/dots-pre-original-ui)에 남아 있습니다. 이전 `.local/`과 PostgreSQL 데이터는 자동 삭제하거나 새 SQLite로 변환하지 않습니다. 별도로 쓰던 이번 Dots의 `.data/`를 계속 사용하는 방법은 [이전 안내](docs/migration.md)에 있습니다.
 
-시스템 패키지는 셸에서 `apt-get update && apt-get install -y --no-install-recommends 패키지명`으로 설치할 수 있습니다. 셸 컨테이너 내부 root 권한으로 실행되므로 sudo는 필요하지 않습니다. apt 패키지는 컨테이너 재시작 시 유지되며, 컨테이너를 삭제하거나 새 이미지로 재생성하면 다시 설치해야 합니다.
+설정·프로필·플러그인 탐색 화면은 원본 구성요소를 사용합니다. 모델 provider 설정·계정 사용량, 플러그인 설치·OAuth, 첨부·비밀 입력·Grok 에이전트 간 메시지의 Dots 동기화는 아직 연결하지 않았습니다. 원본 클라우드 하네스 전체가 복원된 것은 아닙니다.
 
-컴퓨터 안의 터미널에서도 `apt-get update && apt-get install -y --no-install-recommends mousepad`처럼 GUI 앱을 설치할 수 있습니다. `apt`·`apt-get`은 설치 권한을 자동으로 사용하며, 데스크톱 앱과 터미널은 일반 사용자로 실행됩니다. 작업용 셸과 컴퓨터는 별도 환경이므로 GUI 앱은 컴퓨터 터미널에서 설치해야 합니다. 컴퓨터에 설치한 패키지도 새 컨테이너를 만들면 초기화됩니다.
-
-## 구성
-
-| 경로 | 역할 |
-| --- | --- |
-| `apps/web` | Next.js · React 대화 및 컴퓨터 UI |
-| `apps/api` | FastAPI · 작업 실행 · 인증 · 이벤트 · 데이터 저장 |
-| `apps/desktop` | Electron macOS 앱 |
-| `computer` | Linux 데스크톱 · GUI 입력 · 화면 스트림 · Dock |
-| `shell` | 별도 셸 실행 환경 |
-| `infra` | 개발·호스팅 게이트웨이 |
-| `scripts` | 실행 및 실제 환경 검증 |
-| `tests` | 제어권 · 작업 큐 · 취소 · 셸 · 입력 복구 테스트 |
-
-도구 정의는 공통 Registry에서 관리하며 OpenAI와 Codex MCP에 같은 입력 규격을 제공합니다. 서버는 실행 전에 JSON Schema를 검증합니다. 내장 스킬은 목록과 본문을 나누어 필요한 절차만 읽고, 실행 기록에는 설명서의 이름과 내용 버전을 남깁니다.
-
-PostgreSQL에 대화, 작업과 이벤트를 저장합니다. 화면과 Activity는 WebSocket으로 전달하며, AI는 Codex app-server와 MCP 또는 OpenAI Agents SDK를 통해 컴퓨터·셸 도구를 사용합니다.
-
-## 개발과 검증
+## 검증과 구현 근거
 
 ```sh
-.venv/bin/pytest -q
-.venv/bin/ruff check apps/api computer/daemon.py shell/daemon.py tests scripts
-npm run typecheck --prefix apps/web
-npm test --prefix apps/web
-npm run build --prefix apps/web
+npm test
+npm run build
+npm run original:verify
+npm run assets:verify
+# 로컬 Grok 소스가 있을 때 실제 도구 프로토콜도 검증
+node --test tests/grok-protocol.mjs
 ```
 
-실제 모델과 컴퓨터를 사용하는 검증은 앱 실행과 AI 인증 연결 후 진행합니다.
+- [Grok 실행기·컴퓨터 연결과 실제 검증](docs/grok-integration.md)
+- [원본 UI 연결·검증 범위](docs/exact-ui/verification.md)
+- [컴퓨터 서비스와 제어권](docs/computer.md)
+- [백엔드·승인 경계](docs/backend.md)
+- [캐릭터 원본·해시](docs/character-evidence.md)
+- [선택형 macOS 데스크톱 셸](apps/desktop/README.md)
 
-```sh
-.venv/bin/python scripts/live_smoke.py
-```
-
-OhMyDots는 한 소유자를 위한 설치형 서비스입니다. 개발 모드는 localhost에서, 호스팅 모드는 비밀번호로 보호되는 게이트웨이 뒤에서 사용합니다. 로컬 서비스 접근은 게이트웨이 쿠키와 전용 토큰으로 인증하고, GUI와 셸 실행 환경을 분리합니다. 사용자가 요청한 공개 페이지와 개인 계정의 메일·일정·문서를 GUI로 확인하고 작업을 준비합니다. 온라인 문서·일정 생성이나 수정, 메일·초대장 발송, 업로드·공유·삭제는 대상과 내용을 제시한 뒤 대화에서 확인받고 실행합니다. 자동 저장되는 편집기는 입력 전에 확인받습니다. 로그인·비밀번호·MFA·CAPTCHA는 사용자가 Take over로 직접 처리합니다. 이 확인 절차는 에이전트의 공통 지침으로 적용되며, 별도의 서버 측 승인 게이트는 아닙니다.
-
-## 에이전트 구조를 이해하기
-
-- [쉬운 개념 설명과 학습 순서](docs/AGENT-LEARNING-GUIDE.md)
-- [오픈소스 비교, 아키텍처 결정과 로드맵](docs/AGENT-ARCHITECTURE.md)
-- [구현과 검증 기록](docs/AGENT-IMPLEMENTATION.md)
-- [토큰 사용량 조사와 입력 축소](docs/TOKEN-USAGE.md)
-- [UI 구성과 시작 가이드](docs/DOTS-UI.md)
+기준 원본은 `app.asar` SHA-256 `5b5cf52887cfd4de19cb5862155a8ef6cf58830c0a2fc592b72060cfcc3be869`입니다. 원본 앱 버전이 바뀌면 내부 계약도 달라질 수 있습니다. 원본 자산의 소유권이나 공개 배포 권한을 주장하지 않습니다.

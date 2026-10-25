@@ -1,6 +1,6 @@
 # OhMyDots 데스크톱 미리보기
 
-기존 `http://localhost:3080/`을 사용하는 임시 macOS Apple Silicon 앱입니다. 웹 서버와 컴퓨터 서비스는 기존 방식으로 실행해야 합니다. 서버나 대화 데이터를 별도로 복제하지 않습니다.
+`http://127.0.0.1:3420/original/webview/`의 원본 Dots UI를 여는 macOS Apple Silicon 데스크톱 셸입니다. 저장소 루트에서 `npm start`로 서버를 먼저 실행하고, 컴퓨터가 필요하면 `npm run computer:start`로 준비합니다. 서버나 대화 데이터를 별도로 복제하지 않습니다.
 
 ```sh
 npm ci --prefix apps/desktop

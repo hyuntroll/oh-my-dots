@@ -13,3 +13,14 @@ output/
 *.tsbuildinfo
 
 .playwright-cli/
+
+dist/
+.data
+.data/
+.data-exact-qa/
+.env.*
+!.env.example
+.DS_Store
+*.log
+docs/evidence/rea-session.json
+docs/evidence/rea-session.json.gz

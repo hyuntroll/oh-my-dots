@@ -1,6 +1,6 @@
 const { app, BrowserWindow, WebContentsView, ipcMain, Menu, shell } = require('electron');
 const path = require('node:path');
-const URL_HOME = 'http://localhost:3080/';
+const URL_HOME = 'http://127.0.0.1:3420/original/webview/';
 let win, view;
 app.setName('OhMyDots');
 function external(url) { if (/^https?:\/\//i.test(url)) shell.openExternal(url); }

@@ -7,6 +7,7 @@ const rootId = profile => 'local-dot-' + profile.id;
 
 function requestText(item) {
   switch (item.kind) {
+    case 'grok': return item.question || 'Grok 도구 실행 승인이 필요합니다.';
     case 'question': return item.question || '답변이 필요합니다.';
     case 'write': return '파일을 작성하려고 합니다.\n\n경로: ' + item.path + '\n\n내용:\n' + item.content;
     case 'shell': return '명령을 실행하려고 합니다.\n\n' + item.command + (item.warning ? '\n\n' + item.warning : '');

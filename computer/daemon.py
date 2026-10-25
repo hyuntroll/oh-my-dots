@@ -4,6 +4,8 @@ import io
 import os
 import re
 import secrets
+import json
+import urllib.request
 from contextlib import asynccontextmanager
 from typing import Literal
 
@@ -62,6 +64,7 @@ class Input(BaseModel):
     y: int = Field(0, ge=0, lt=HEIGHT)
     button: int = Field(1, ge=1, le=3)
     delta: int = Field(0, ge=-20, le=20)
+    axis: Literal["vertical", "horizontal"] = "vertical"
     text: str = Field("", max_length=8000)
     key: str = Field("", max_length=100)
     app: Literal["browser", "terminal", "files"] = "browser"
@@ -99,7 +102,7 @@ class Desktop:
             if body.actor != self.owner or body.epoch != self.epoch:
                 raise HTTPException(409, "Control revoked or stale input")
             action = body.action
-            if action in ("move", "click", "double_click", "down", "up", "scroll"):
+            if action in ("move", "click", "double_click", "down", "up", "scroll") and ("x" in body.model_fields_set or "y" in body.model_fields_set):
                 await command("xdotool", "mousemove", str(body.x), str(body.y))
             if action in ("click", "double_click"):
                 await command("xdotool", "click", "--repeat", "2" if action == "double_click" else "1", str(body.button))
@@ -108,7 +111,8 @@ class Desktop:
             elif action == "up":
                 await command("xdotool", "mouseup", str(body.button)); self.buttons.discard(body.button)
             elif action == "scroll" and body.delta:
-                await command("xdotool", "click", "--repeat", str(abs(body.delta)), "4" if body.delta > 0 else "5")
+                buttons = ("6", "7") if body.axis == "horizontal" else ("4", "5")
+                await command("xdotool", "click", "--repeat", str(abs(body.delta)), buttons[0] if body.delta > 0 else buttons[1])
             elif action == "type":
                 await command("xdotool", "type", "--clearmodifiers", "--delay", "0", "--", body.text)
             elif action in ("key", "keydown", "keyup"):
@@ -148,6 +152,20 @@ async def status():
 @app.get("/screenshot")
 async def screenshot():
     return Response(await capture(), media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/browser-state")
+async def browser_state():
+    # Read-only tab identity for Grok's original action-review recheck. CDP is
+    # loopback inside this container and is not published to the host.
+    def read_state():
+        try:
+            with urllib.request.urlopen("http://127.0.0.1:9223/json/list", timeout=2) as response:
+                pages = json.loads(response.read(1_000_000))
+            return [{key: page.get(key, "") for key in ("id", "type", "url", "title")} for page in pages if page.get("type") == "page"]
+        except Exception:
+            raise HTTPException(503, "Browser page state is unavailable")
+    return await asyncio.to_thread(read_state)
 
 
 @app.get("/stream")

@@ -59,6 +59,11 @@ test('Grok projection sends only explicit chat messages and never exposes scratc
   assert.equal(grokEntry({ kind: 'assistant-text', text: 'secret scratch' }), null);
   assert.equal(grokEntry({ kind: 'send-message', message: { type: 'secret-request', secretRequest: {} } }).type, 'tool_call');
 });
+test('original computer approvals remain resolved after subsequent transcript polls', () => {
+  for (const [status, expected] of [['pending', 'pending'], ['approved', 'allowed'], ['denied', 'denied'], ['expired', 'interrupted']]) {
+    assert.equal(grokEntry({ kind: 'send-message', message: { type: 'auto-review-approval', approval: { requestId: 'review', status } } }).status, expected);
+  }
+});
 test('Grok tasks use original gateway commands and persist only actual SendMessage replies', async t => {
   const f = await fixture(t), sent = await f.send(); await f.until(sent.task.id, 'completed');
   const messages = f.app.store.all('message');

@@ -55,7 +55,19 @@ http.createServer(async(req,res)=>{
     if(!file.startsWith(base+sep))throw Error('Invalid path');
     let bytes=await readFile(file);
     if(path==='/original/webview/index.html'){
-      bytes=Buffer.from(bytes.toString().replace('<!-- PROD_BASE_TAG_HERE -->','<base href="/original/webview/">').replace('src="./assets/index-40a03cbe11dc.js"','src="/exact-host/bootstrap.mjs"'));
+      bytes=Buffer.from(bytes.toString().replace('<!-- PROD_BASE_TAG_HERE -->','<base href="/original/webview/">').replace('src="./assets/index-40a03cbe11dc.js"','src="/exact-host/bootstrap.mjs"').replace('<title>ChatGPT</title>','<title>OhMyDots</title>'));
+    }
+    if(path==='/original/webview/assets/app-initial-dddef47d6ef6.js'){
+      let source=bytes.toString();
+      const patches=[
+        ['let C=S;if(c!=null){','let C=(0,i3.jsx)(`span`,{className:`shrink-0 text-heading-sm leading-6 font-semibold browser:text-lg browser:leading-6.5`,children:`OhMyDots`});if(c!=null){'],
+        ['if(i||!r&&a===`work`){','if(!0){'],
+      ];
+      for(const [before,after] of patches){
+        if(source.split(before).length!==2)throw Error('Original product header patch anchor changed');
+        source=source.replace(before,after);
+      }
+      bytes=Buffer.from(source);
     }
     const patch=appendedExports[path.split('/').at(-1)];
     if(patch)bytes=Buffer.concat([bytes,Buffer.from('\n// Local host: expose existing original functions; bodies unchanged.\n'+patch+'\n')]);

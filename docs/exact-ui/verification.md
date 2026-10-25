@@ -2,7 +2,7 @@
 
 The earlier `client/` frontend was a handwritten reconstruction. The `exact-host/` frontend instead executes components from the installed artifact. Source baseline: `/Applications/ChatGPT.app/Contents/Resources/app.asar`, SHA-256 `5b5cf52887cfd4de19cb5862155a8ef6cf58830c0a2fc592b72060cfcc3be869` (626,349,077 bytes), inspected on 2026-10-25 Asia/Seoul.
 
-Immutable extracted bytes live in `public/original/`. `npm run original:verify` verifies every manifest member. The HTTP host appends explicitly documented exports/initializers to derived JavaScript responses; it does not edit the original component bodies or CSS. The HTML entry is redirected to the local bootstrap. Local account, data, settings, execution-manager and messaging transport adapters are intentionally new implementations.
+Immutable extracted bytes live in `public/original/`. `npm run original:verify` verifies every manifest member. The HTTP host appends explicitly documented exports/initializers to derived JavaScript responses and applies one bounded response-only patch to the product-mode heading: the ChatGPT Work/Codex switcher is removed and its label becomes `OhMyDots`. The original files on disk remain unchanged. The HTML entry is redirected to the local bootstrap. Local account, data, settings, execution-manager and messaging transport adapters are intentionally new implementations.
 
 ## Observed in the local browser
 

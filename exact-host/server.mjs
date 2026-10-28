@@ -11,6 +11,9 @@ const appendedExports={
 function ExactSetMessagingSubscription(fn) { Pjn = fn; }
 let exactHeaderNavigation=()=>null;
 function ExactSetHeaderNavigation(render) { exactHeaderNavigation=render; }
+function ExactAdaptNavigationItems(adapt) { const original=ZTc; ZTc=(...args)=>adapt(original(...args)); }
+function ExactDotNavigationItem(onSelect, current) { wsc(); return { id:'builtin:ohmydots-add', label:'Dot 추가', icon:goe, largeIcon:(0,bsc.jsx)(isc,{className:'size-5',avatar:KDn.avatar}), visibleByDefault:true, canReorder:false, onSelect, isCurrentDestination:current, hasUnreadActivity:false }; }
+function ExactSetSettingsBody(slug, Component) { nUs(); const original=tUs[slug]; tUs[slug]=Component; return original; }
 function ExactAdaptMessagingClient(transform) { const original = c4c; c4c = options => transform(original(options), options); }
 function ExactInitPersistedAtoms(snapshot, publish) { Ig(); ajt(snapshot, publish); ojt(null); }
 function ExactSetLocalAccountQuery(resolve) { Xg(); Yg = Sc(J, (account, {get}) => ({queryKey:aEt(account,get(Vg)),queryFn:()=>Promise.resolve(resolve(account)),staleTime:Infinity,retry:false})); }
@@ -20,7 +23,7 @@ function ExactSetLocalOutputs(scope, rows) { A9n(); scope.set(E9n, rows); }
 function ExactSetExecutionManager(factory) { gh = factory; }
 function ExactAuthNonceContext() { lzn(); return czn; }
 function ExactAdaptProfileFooter(adapt) { ROc(); const original = NOc; NOc = adapt(original); return () => { NOc = original; }; }
-export { f8 as ExactSettingsSection, PPl as ExactInitSettingsSection, ExactAuthNonceContext, ExactAdaptProfileFooter, ExactSetHeaderNavigation };
+export { f8 as ExactSettingsSection, PPl as ExactInitSettingsSection, ExactAuthNonceContext, ExactAdaptProfileFooter, ExactSetHeaderNavigation, ExactAdaptNavigationItems, ExactSetSettingsBody, ExactDotNavigationItem };
 export { qos as ExactApplyThemes, ExactSetMessagingSubscription, ExactAdaptMessagingClient, ExactInitPersistedAtoms, ExactSetLocalAccountQuery, ExactSetExecutionManager, ExactSetLocalOutputs, ExactUseLocalAccountInputs, ExactSetLocalRoomLive, bjs as ExactNavigationBridge, Ejs as ExactInitNavigationBridge, qfu as ExactLocationBridge, Xfu as ExactInitLocationBridge };
 `,
   'room-view-fe0c1087e5e0.js':'export { Lt as ExactRoom };',
@@ -64,12 +67,23 @@ export function createRenderer({apiPort: backendPort = apiPort}={}) { return htt
       const patches=[
         ['let C=S;if(c!=null){','let C=(0,i3.jsxs)(`span`,{className:`flex items-center gap-2`,children:[(0,i3.jsx)(`span`,{className:`shrink-0 text-heading-sm leading-6 font-semibold browser:text-lg browser:leading-6.5`,children:`OhMyDots`}),exactHeaderNavigation()]});if(c!=null){'],
         ['if(i||!r&&a===`work`){','if(!0){'],
+        ['e===`builtin:space`)}','e===`builtin:space`||e===`builtin:ohmydots-add`)}'],
+        ['a=e.filter(e=>e.id===SL.images&&','a=e.filter(e=>e.id===`builtin:ohmydots-add`||e.id===SL.images&&'],
+        ['if(P=o.map(e=>{let t;return t=','if(P=o.map(e=>{let t;return t=e.id===`builtin:ohmydots-add`?!0:'],
       ];
       for(const [before,after] of patches){
-        if(source.split(before).length!==2)throw Error('Original product header patch anchor changed');
+        if(source.split(before).length!==2)throw Error('Original renderer adaptation anchor changed');
         source=source.replace(before,after);
       }
       bytes=Buffer.from(source);
+    }
+    if(path==='/original/webview/assets/page-a0db2051c101.js'){
+      const before='if(r.status!==`ready`||r.orbitIds.length>0)return;';
+      const source=bytes.toString();
+      if(source.split(before).length!==2)throw Error('Original Dot creation guard anchor changed');
+      // The local service supports more than one Dot per account. Keep the
+      // actual catalog and original creation controller; relax only this limit.
+      bytes=Buffer.from(source.replace(before,'if(r.status!==`ready`)return;'));
     }
     const patch=appendedExports[path.split('/').at(-1)];
     if(patch)bytes=Buffer.concat([bytes,Buffer.from('\n// Local host: expose existing original functions; bodies unchanged.\n'+patch+'\n')]);

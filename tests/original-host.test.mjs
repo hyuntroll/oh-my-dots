@@ -41,6 +41,15 @@ test('original host confines static files, keeps CSP local, and streams only its
   assert.equal(bootstrap.status, 200);
   assert.match(bootstrap.headers.get('content-security-policy'), /connect-src 'self' blob:/);
   assert.match(await bootstrap.text(), /installLocalAdapter/);
+  const originalCreation = await fetch(origin + '/original/webview/assets/page-a0db2051c101.js');
+  assert.equal(originalCreation.status, 200);
+  const creationSource = await originalCreation.text();
+  assert.match(creationSource, /if\(r\.status!==`ready`\)return;/);
+  assert.doesNotMatch(creationSource, /if\(r\.status!==`ready`\|\|r\.orbitIds\.length>0\)return;/);
+  assert.match(creationSource, /rc as ExactCreationController/);
+  const initialSource = await (await fetch(origin + '/original/webview/assets/app-initial-dddef47d6ef6.js')).text();
+  assert.match(initialSource, /function ExactSetSettingsBody/);
+  assert.match(initialSource, /function ExactDotNavigationItem/);
   // Encoded separators must not turn the host source route into repo-wide access.
   for (const path of ['/exact-host/..%2fpackage.json', '/exact-host/..%2f.data%2fsettings.json', '/original/..%2f..%2fpackage.json']) {
     const response = await fetch(origin + path);

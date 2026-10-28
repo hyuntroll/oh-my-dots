@@ -13,9 +13,9 @@ export const ORIGINAL_SETTINGS_MODULES = Object.freeze({
 // Local account and plugin preferences have no ChatGPT authentication method.
 // Declare the sections this port can display at the capability boundary; keep
 // the original section metadata, sidebar, rows, controls and routed bodies.
-export function installLocalSettingsVisibility({ initial, visibilityModule }) {
+export function installLocalSettingsVisibility({ initial, visibilityModule, service = false }) {
   initial._ft();
-  const slugs = new Set(['general-settings', 'appearance', 'account', 'personalization', 'plugins-settings', 'keyboard-shortcuts', 'usage']);
+  const slugs = new Set(['general-settings', 'appearance', 'account', 'personalization', 'plugins-settings', 'keyboard-shortcuts', 'usage', ...(service?['gateways']:[])]);
   const sections = initial.hft.filter(section => slugs.has(section.slug));
   return visibilityModule.ExactAdaptSettingsVisibility(() => function localSettingsVisibility(requested) {
     const active = sections.find(section => section.slug === requested)?.slug ?? 'general-settings';
@@ -33,10 +33,7 @@ export function createOriginalSettingsRoutes({ initial, React, jsx }) {
   initial._ft();
   initial.PF();
   initial.ExactInitSettingsSection();
-  const section = slug => slug === 'usage'
-    ? jsx(React.Fragment, { children: [jsx(initial.ExactSettingsSection, { slug }),
-      jsx(initial.YEn, { title: '사용량 정보를 사용할 수 없습니다', description: '이 로컬 계정에는 연결된 사용량 정보가 없습니다.' })] })
-    : jsx(initial.ExactSettingsSection, { slug });
+  const section = slug => jsx(initial.ExactSettingsSection, { slug });
   const metadata = initial.hft;
   if (!Array.isArray(metadata)) throw Error('Original Settings section metadata is unavailable.');
   const children = [

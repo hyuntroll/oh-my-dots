@@ -132,7 +132,7 @@ try {
         if (value.settingsService) rpc.setAppServices({ ...rpc.appServices, settings: value.settingsService });
         pluginModule.installLocalPluginQueries({ initial, scope, model: settings.model });
         themeConnection = await settingsModule.connectOriginalSettingsTheme({ initial, shared, settingsService: value.settingsService, initOriginalTheme, initialValues: settings, currentTheme: diagnostics.theme, onTheme: theme => { diagnostics.theme = theme; }, onError: report });
-        restoreAccountMenu = accountMenu.installLocalAccountMenu({ React, shared, initial, itemsModule: accountItems, identity: { get displayName() { return adapterModule.localAccountIdentity().name; }, modeLabel: accountState?'OhMyDots 계정':'Local' }, navigate: path => diagnostics.router.navigate(path), onOpenProfile: () => accountState?location.assign('/account'):diagnostics.router.navigate('/settings/account'), onLogout:accountState?.logout, diagnostics, onError: report });
+        restoreAccountMenu = accountMenu.installLocalAccountMenu({ React, shared, initial, itemsModule: accountItems, identity: { get displayName() { return adapterModule.localAccountIdentity().name; }, modeLabel: accountState?'OhMyDots 계정':'Local' }, navigate: path => diagnostics.router.navigate(path), onOpenProfile: () => diagnostics.router.navigate('/settings/account'), onLogout:accountState?.logout, diagnostics, onError: report });
         await config.onScope?.(scope, initial, shared, value);
         if (!cancelled) { setReady(true); diagnostics.phase = 'mounted'; }
       }).catch(report);
@@ -158,33 +158,35 @@ try {
   function OriginalEntry() {
     const location = shared.VSt();
     const profiles = diagnostics.adapter.profiles;
-    if(location.pathname==='/dots/manage')return jsx(DotsTab,{});
     const dotId = location.pathname.match(/^\/dots\/([^/]+)$/)?.[1];
     const threadId = location.pathname.match(/^\/(?:local|dots\/thread)\/([^/]+)$/)?.[1];
-    if (dotId === 'new' || dotId === 'start') return jsx(OriginalWizard, {});
+    if (dotId === 'new' || dotId === 'start' || dotId === 'manage') return jsx(OriginalWizard, {}, location.search);
     const selected = config.profileId ? profiles.find(profile => profile.id === config.profileId) : profiles.find(profile => profile.id === dotId || profile.active_root_thread_id === threadId) ?? profiles[0];
     diagnostics.selectedProfileId = selected?.id ?? null;
-    return selected ? jsx(OriginalRoom, { profile: selected }) : accountState ? jsx(DotsTab,{}) : jsx(OriginalWizard, {});
+    return selected ? jsx(OriginalRoom, { profile: selected }) : jsx(OriginalWizard, {});
   }
-  const {createDotsTab}=await import('./dots-tab.mjs');
-  const DotsTab=createDotsTab({React,initial,adapter:()=>diagnostics.adapter,navigate:path=>diagnostics.router.navigate(path)});
-  initial.ExactSetHeaderNavigation?.(()=>jsx('button',{type:'button','aria-label':'Dots 추가',title:'Dots 추가·관리',style:{fontSize:13,padding:'4px 8px',border:'1px solid var(--border-default, #555)',borderRadius:8,cursor:'pointer',whiteSpace:'nowrap'},onClick:()=>diagnostics.router.navigate('/dots/manage'),children:'+ Dots'}));
+  function startOriginalCreation() {
+    initial.Frr();
+    const adapter=diagnostics.adapter;
+    initial.Mrr(diagnostics.scope,adapter.accountId,adapter.userId);
+    const flow=diagnostics.scope.get(initial.Prr,JSON.stringify([adapter.accountId,adapter.userId]));
+    diagnostics.router.navigate('/dots/new?flow='+encodeURIComponent(flow.flowId));
+  }
+  initial.ExactAdaptNavigationItems(items=>{
+    return [...items,initial.ExactDotNavigationItem(startOriginalCreation,diagnostics.router?.state.location.pathname==='/dots/new')];
+  });
   function OriginalWizard() {
     const adapter = diagnostics.adapter;
     const accountKey = JSON.stringify([adapter.accountId, adapter.userId]);
     const flow = shared.nCt(initial.Prr, accountKey);
     diagnostics.creationFlow = flow;
-    const [completedProfile, setCompletedProfile] = React.useState(null);
-    if (completedProfile) {
-      return jsx(OriginalRoom, { profile: completedProfile });
-    }
     const accepted = flow.step === 'accepted' || flow.step === 'complete';
     const finish = async () => {
       await adapter.refresh();
       const profile = adapter.profiles.find(item => item.id === flow.acceptedOrbitId);
       if (!profile) throw Error('The created local Dot could not be loaded');
       diagnostics.createdProfile = profile;
-      setCompletedProfile(profile);
+      diagnostics.router.navigate('/dots/'+profile.id,{replace:true});
       config.onCreated?.(profile);
     };
     const computerSetup = accepted && flow.acceptedThreadId ? jsx(page.ExactComputerSetup, { conversationId: flow.acceptedThreadId, disabled: false, onContinue: finish }) : null;
@@ -230,9 +232,15 @@ try {
   if (!root) throw Error('Missing original host root');
   diagnostics.root = ReactDOM.createRoot(root);
   const settingsRoutes = settingsModule.createOriginalSettingsRoutes({ initial, React, jsx });
-  settingsModule.installLocalSettingsVisibility({ initial, visibilityModule: settingsVisibility });
+  if(accountState){
+    const {installOriginalServiceSettings}=await import('./local-service-settings.mjs');
+    await installOriginalServiceSettings({initial,shared,React,jsx,accountState,assetBase,onRefresh:()=>diagnostics.adapter?.refresh()});
+  }
+  settingsModule.installLocalSettingsVisibility({ initial, visibilityModule: settingsVisibility, service:Boolean(accountState) });
   const plugins = jsx(initial.FR, { children: jsx(initial.IR, { children: jsx(PluginsPage, {}) }) });
-  diagnostics.router = shared.kSt([{ element: jsx(initial.Pw, { children: tree }), children: [...settingsRoutes, { path: '/plugins', element: plugins }, { path: '/skills', element: plugins }, { path: '*', element: component }] }], { initialEntries: ['/dots/home'] });
+  const requestedSettings=url.searchParams.get('settings');
+  const initialPath=['account','gateways','usage','general-settings'].includes(requestedSettings)?'/settings/'+requestedSettings:'/dots/home';
+  diagnostics.router = shared.kSt([{ element: jsx(initial.Pw, { children: tree }), children: [...settingsRoutes, { path: '/plugins', element: plugins }, { path: '/skills', element: plugins }, { path: '*', element: component }] }], { initialEntries: [initialPath] });
   addEventListener('keydown', event => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key === ',') {
       event.preventDefault();

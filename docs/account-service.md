@@ -9,8 +9,10 @@
 원본 소스 계약을 직접 확인한 범위:
 
 - `app-initial-dddef47d6ef6.js`의 `_mr` 인증 컨텍스트와 `czn` AuthNonce, `NOc` 프로필 푸터, `R7c` 제품 헤더가 로컬 어댑터의 결합 지점입니다. 실제 로컬 세션에서 얻은 계정 ID와 사용자 ID를 원본 인증 컨텍스트와 쿼리 키에 전달합니다. 원본 계정 메뉴의 로그아웃이 실제 세션을 종료합니다.
-- `page-a0db2051c101.js`의 `rc` 생성 컨트롤러는 원본 상태가 ready가 아니거나 `orbitIds.length > 0`이면 생성 요청을 중단합니다. 여러 Dot 추가는 이 원본 제한을 숨겨서 우회하지 않고, 원본 셸 안에 별도 생성·관리 탭을 만들어 기존 로컬 profile mutation에 연결했습니다.
-- `Gs`, `Ja`, `rc`의 원본 생성·컴퓨터 설정 화면은 기존 단일 사용자 런처에 남아 있습니다. 계정 서비스의 첫 화면은 로컬 Dots 관리 탭입니다. 로그인 화면과 계정 관리 페이지는 새 로컬 서비스 UI입니다.
+- `page-a0db2051c101.js`의 실제 `rc` 생성 컨트롤러, `Gs` 소개 화면, `Ja` 컴퓨터 설정 화면을 서비스에서도 직접 렌더합니다. 별도 이름·설명 생성 폼은 제거했습니다. 원본 `orbitIds.length > 0` 제출 제한만 HTTP 응답에서 완화하며 실제 기존 Dot 목록은 유지합니다. 불변 원본 파일의 SHA256은 `9c76fc60a4d65659bfbf0d89d9138fce5ba99019abf69b657911b4ab2a333ab9`입니다.
+- 원본 흐름 초기화 `Frr`/`Mrr`와 `Prr` atom을 사용합니다. 추가할 때 새 flow ID로 마법사를 마운트하며 진행 중인 생성은 원본 초기화 규칙에 따라 보존합니다. 완료 후 생성된 실제 Dot 경로로 이동합니다. 원본 사이드바의 `ZTc` descriptor와 렌더러에 Dot 추가 항목을 연결했습니다.
+- 계정·모양·일반·플러그인은 기존 원본 Settings shell을 사용합니다. 별도 `/account` 페이지는 제거하고 원본 `/settings/account`로 연결합니다. 로컬 비밀번호·사용자 관리만 원본 계정 본문에 원본 행·대화상자로 추가했습니다. 로컬 인증의 로그인 진입 화면은 별도 서비스 UI입니다.
+- 모델 연결은 원본 메타데이터의 `gateways`(모델 제공업체)에 통합했습니다. 원본 Gateways 본문 `settings-660d7de134d3.js`는 보존 추출물에 없으며, 현재 설치 ASAR는 다른 버전이므로 섞지 않았습니다. 이 본문은 보존 번들의 `QF`, `LF`, `sA`, `sw`, `$C`, `ZLn`, `Y3`, `mut`, `dialog-shell` 컴포넌트와 실제 로컬 API로 구성한 어댑터입니다. 전체 원본 Gateway 본문을 복원했다는 의미는 아닙니다.
 
 ## 저장과 인증
 
@@ -24,7 +26,7 @@
 
 ## 제공자와 모델 목록
 
-연결 UI는 [Open WebUI의 자동 조회·연결 확인 흐름](https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/)을 참고했습니다. 제공자 카드 → API 키 → 모델 조회 → 검색·필터·선택으로 진행합니다. 설치 CLI도 같은 discovery 함수를 사용합니다. 조회가 없는 서버에는 고급 수동 입력을 제공합니다.
+연결 동작은 [Open WebUI의 자동 조회·연결 확인 흐름](https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/)을 참고했습니다. 화면은 원본 설정의 제공업체 행 → 원본 연결 대화상자 → API 키 → 모델 조회 → 검색·필터·선택 순서입니다. 설치 CLI도 같은 discovery 함수를 사용합니다. 조회가 없는 서버에는 고급 수동 입력을 제공합니다.
 
 | 제공자 | 실제 조회 | 범위 |
 | --- | --- | --- |
@@ -46,3 +48,11 @@
 브라우저에서는 별도 검증 계정으로 로그인해 첫 Dot과 두 번째 Dot을 만들고 메시지를 저장했습니다. IAB에서 만든 두 Dot과 대화가 별도 Chrome 브라우저 로그인에 그대로 보이는 것을 확인했습니다. 로컬 HTTP catalog fixture의108개 모델 조회, 검색·선택·모델 저장을 확인했습니다. 스크린샷은 `docs/qa/service/`에 있으며 모델 목록은 검증 fixture입니다. 실제 사용자의 API 키로 외부 모델 접근 권한을 검사한 결과가 아닙니다.
 
 새 설치·대화형 모델 선택·컨테이너 검증은 [서비스 설치 안내](service-setup.md)에 기록합니다. 공개 DNS의 실제 TLS 발급과 Linux 재부팅 검증은 별도 배포 환경이 필요합니다.
+
+## 원본 흐름 복구 검증
+
+2026-10-28 검증 계정에서 기존 Dot 2개와 대화 2개를 유지한 채 원본 마법사로 세 번째 Dot을 생성하고 원본 대화방으로 이동했습니다. 다시 추가할 때 소개 화면부터 새 흐름이 시작됩니다. 로컬 서비스에 연결된 클라우드 앱이 없어 원본 도구 단계는 unavailable 화면과 계속 동작을 보이며, 네이티브 로컬 컴퓨터 사용은 비활성화됩니다. 이 검증은 별도 계정용 컴퓨터가 실제 연결됐다는 뜻이 아닙니다.
+
+원본 계정·모델 제공업체·사용량 설정 화면을 브라우저에서 확인했습니다. 제공자 대화상자에서 저장된 검증 키로 루프백 fixture의108개 모델을 조회하고 검색·선택·저장했습니다. 원본 파일1479개 해시, 자동 테스트70개, 빌드가 통과했습니다. Postman CLI의 `GET /healthz`는 로컬 실행과 이벤트 전송 비활성화로2개 assertion을 통과했습니다(exit0). CLI 로그인 시도는 origin 검증으로403이었으며 보호를 완화하지 않았습니다. 인증된 제공자 흐름은 실제 브라우저에서 검증했습니다.
+
+현재 화면: `docs/qa/service/original-dot-welcome.png`, `original-account-settings.png`, `original-provider-models.png`. 이전 `dots-tab.png`, `account-settings.png`는 교체 전 UI의 기록입니다.

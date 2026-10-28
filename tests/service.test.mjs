@@ -23,6 +23,8 @@ test('service account isolation, two browser sessions, server state and guarded 
   const owner=await request('/api/auth/setup',{body:{...admin,setupCode:app.bootstrap}});assert.equal(owner.status,200);assert.match(owner.response.headers.get('set-cookie'),/HttpOnly; SameSite=Lax/);
   assert.equal((await request('/api/auth/setup',{body:{...admin,setupCode:app.bootstrap}})).status,409);
   const cookie=owner.cookie;
+  const accountPage=await request('/account',{cookie});
+  assert.equal(accountPage.status,302);assert.equal(accountPage.response.headers.get('location'),'/original/webview/?settings=account');
   const p=(await request('/api/profiles',{cookie,body:{display_name:'첫 Dot'}})).value;
   assert.equal((await request('/api/profiles',{cookie,body:{display_name:'두 번째 Dot'}})).status,201);
   assert.equal((await request('/api/ui-state',{cookie,method:'PATCH',body:{section:'metadata',key:p.id,value:{avatar:'frog',accent_color:'blue'}}})).status,200);

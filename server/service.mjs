@@ -83,7 +83,7 @@ export async function createService({directory=process.env.DOTS_SERVICE_DIR||joi
       if(token){accounts.logout(token);closeStreams(token);}const auth=accounts.session(account.id);res.setHeader('Set-Cookie',cookie(auth.token));return json(res,200,{user:account});
     }
     if(['/login','/setup'].includes(path)||path.startsWith('/service-assets/')){
-      if(path.startsWith('/service-assets/')){const name=path.slice(16);if(!['login.mjs','service.css','account.mjs','providers.mjs'].includes(name))throw error('Not found',404);res.setHeader('Content-Type',name.endsWith('.css')?'text/css':'text/javascript');return res.end(await readFile(join(root,'service-ui',name)));}
+      if(path.startsWith('/service-assets/')){const name=path.slice(16);if(!['login.mjs','service.css'].includes(name))throw error('Not found',404);res.setHeader('Content-Type',name.endsWith('.css')?'text/css':'text/javascript');return res.end(await readFile(join(root,'service-ui',name)));}
       if(user){res.writeHead(302,{Location:'/original/webview/'}).end();return;}
       res.setHeader('Content-Type','text/html; charset=utf-8');return res.end(await readFile(join(root,'service-ui/login.html')));
     }
@@ -98,7 +98,7 @@ export async function createService({directory=process.env.DOTS_SERVICE_DIR||joi
     if(path==='/api/service-settings'){if(!user.admin)throw error('관리자 권한이 필요합니다.',403);if(req.method==='PATCH'){const saved=await saveProvider(providerPath,await readJson(req));(await appFor(user)).store.patch('settings','app',{model:saved.defaultModel});}const config=await readProviders(providerPath);return json(res,200,{providers:publicProviders(config),defaultModel:config.defaultModel||null,engine,registration});}
     if(path==='/api/models'&&req.method==='GET'){const config=await readProviders(providerPath);return json(res,200,{models:Object.entries(config.providers||{}).flatMap(([provider,p])=>Object.entries(p.models||{}).map(([id,model])=>({id:provider+'/'+id,name:model.name||id,provider})))});}
     if(path==='/api/providers/discover'&&req.method==='POST'){if(!user.admin)throw error('관리자 권한이 필요합니다.',403);const b=await readJson(req);return json(res,200,await discoverModels({provider:b.provider,apiKey:b.apiKey,baseUrl:b.baseUrl,configPath:providerPath}));}
-    if(path==='/account'){res.setHeader('Content-Type','text/html; charset=utf-8');return res.end(await readFile(join(root,'service-ui/account.html')));}
+    if(path==='/account'){res.writeHead(302,{Location:'/original/webview/?settings=account'});return res.end();}
     if(path.startsWith('/api/')){const app=await appFor(user);return proxy(req,res,app.server.address().port,token,session.expires,app.gatewayToken);}
     if(path==='/'){res.writeHead(302,{Location:'/original/webview/'}).end();return;}
     return proxy(req,res,rendererPort,token,session.expires);

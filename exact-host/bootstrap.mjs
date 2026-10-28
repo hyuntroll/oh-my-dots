@@ -7,6 +7,7 @@ const url = new URL(location.href);
 const view = config.view ?? url.searchParams.get('view') ?? 'auto';
 const diagnostics = { phase: 'loading', view, errors: [], characterStatuses: [], source: '5b5cf52887cfd4de19cb5862155a8ef6cf58830c0a2fc592b72060cfcc3be869' };
 globalThis.__DOTS_EXACT__ = diagnostics;
+document.addEventListener('dots-storage-error',event=>{let banner=document.getElementById('dots-storage-error');if(!banner){banner=document.createElement('div');banner.id='dots-storage-error';banner.setAttribute('role','alert');Object.assign(banner.style,{position:'fixed',bottom:'16px',left:'16px',zIndex:'10000',padding:'12px 18px',background:'#592b29',color:'white',borderRadius:'12px'});document.body.append(banner);}banner.textContent=event.detail+' 연결을 확인하고 다시 시도해 주세요.';});
 function report(error, info) {
   const entry = { message: String(error?.message ?? error), stack: String(error?.stack ?? ''), componentStack: info?.componentStack ?? '' };
   diagnostics.errors.push(entry);
@@ -60,6 +61,10 @@ try {
   if (config.appHost) rpc.setAppHost(config.appHost);
   if (config.appServices) rpc.setAppServices(config.appServices);
   const initial = await import(assetBase + 'app-initial-dddef47d6ef6.js');
+  const adapterModule = await import('./local-adapter.mjs');
+  const {createAccountState}=await import('./account-state.mjs');
+  const accountState=await createAccountState();
+  adapterModule.configureAccountState(accountState);
   const computerDriver = await import(assetBase + 'webauthn-c37be3fbf886.js');
   const { installLocalComputerTransport } = await import('./local-computer.mjs');
   diagnostics.computer = { errors: [] };
@@ -67,10 +72,11 @@ try {
   if (typeof initial.ExactInitPersistedAtoms !== 'function') throw Error('The asset server must expose the original persisted atom store initializer.');
   const persistedKey = 'dots-exact-persisted-v1';
   let persisted = {};
-  try { const saved = JSON.parse(localStorage.getItem(persistedKey) ?? '{}'); if (saved && typeof saved === 'object' && !Array.isArray(saved)) persisted = saved; } catch {}
+  if(accountState)persisted={...accountState.state.persisted};
+  else try { const saved = JSON.parse(localStorage.getItem(persistedKey) ?? '{}'); if (saved && typeof saved === 'object' && !Array.isArray(saved)) persisted = saved; } catch {}
   initial.ExactInitPersistedAtoms(persisted, (key, value) => {
     if (value === undefined) delete persisted[key]; else persisted[key] = value;
-    localStorage.setItem(persistedKey, JSON.stringify(persisted));
+    if(accountState)void accountState.save('persisted',key,value??null);else localStorage.setItem(persistedKey, JSON.stringify(persisted));
   });
   const locale = config.locale ?? 'ko-KR';
   const messages = config.messages ?? (locale === 'ko-KR' ? (await import(assetBase + 'ko-KR-8a007bddadf3.js')).default : {});
@@ -80,7 +86,6 @@ try {
     return response.json();
   });
   diagnostics.theme = initOriginalTheme(initial, shared, settings);
-  const adapterModule = await import('./local-adapter.mjs');
   const settingsModule = await import('./local-settings.mjs');
   const settingsVisibility = await import(assetBase + 'use-visible-settings-sections-acca727feff5.js');
   const accountMenu = await import('./local-account-menu.mjs');
@@ -127,7 +132,7 @@ try {
         if (value.settingsService) rpc.setAppServices({ ...rpc.appServices, settings: value.settingsService });
         pluginModule.installLocalPluginQueries({ initial, scope, model: settings.model });
         themeConnection = await settingsModule.connectOriginalSettingsTheme({ initial, shared, settingsService: value.settingsService, initOriginalTheme, initialValues: settings, currentTheme: diagnostics.theme, onTheme: theme => { diagnostics.theme = theme; }, onError: report });
-        restoreAccountMenu = accountMenu.installLocalAccountMenu({ React, shared, initial, itemsModule: accountItems, identity: { get displayName() { return adapterModule.localAccountIdentity().name; }, modeLabel: 'Local' }, navigate: path => diagnostics.router.navigate(path), onOpenProfile: () => diagnostics.router.navigate('/settings/account'), diagnostics, onError: report });
+        restoreAccountMenu = accountMenu.installLocalAccountMenu({ React, shared, initial, itemsModule: accountItems, identity: { get displayName() { return adapterModule.localAccountIdentity().name; }, modeLabel: accountState?'OhMyDots 계정':'Local' }, navigate: path => diagnostics.router.navigate(path), onOpenProfile: () => accountState?location.assign('/account'):diagnostics.router.navigate('/settings/account'), onLogout:accountState?.logout, diagnostics, onError: report });
         await config.onScope?.(scope, initial, shared, value);
         if (!cancelled) { setReady(true); diagnostics.phase = 'mounted'; }
       }).catch(report);
@@ -153,13 +158,17 @@ try {
   function OriginalEntry() {
     const location = shared.VSt();
     const profiles = diagnostics.adapter.profiles;
+    if(location.pathname==='/dots/manage')return jsx(DotsTab,{});
     const dotId = location.pathname.match(/^\/dots\/([^/]+)$/)?.[1];
     const threadId = location.pathname.match(/^\/(?:local|dots\/thread)\/([^/]+)$/)?.[1];
     if (dotId === 'new' || dotId === 'start') return jsx(OriginalWizard, {});
     const selected = config.profileId ? profiles.find(profile => profile.id === config.profileId) : profiles.find(profile => profile.id === dotId || profile.active_root_thread_id === threadId) ?? profiles[0];
     diagnostics.selectedProfileId = selected?.id ?? null;
-    return selected ? jsx(OriginalRoom, { profile: selected }) : jsx(OriginalWizard, {});
+    return selected ? jsx(OriginalRoom, { profile: selected }) : accountState ? jsx(DotsTab,{}) : jsx(OriginalWizard, {});
   }
+  const {createDotsTab}=await import('./dots-tab.mjs');
+  const DotsTab=createDotsTab({React,initial,adapter:()=>diagnostics.adapter,navigate:path=>diagnostics.router.navigate(path)});
+  initial.ExactSetHeaderNavigation?.(()=>jsx('button',{type:'button','aria-label':'Dots 추가',title:'Dots 추가·관리',style:{fontSize:13,padding:'4px 8px',border:'1px solid var(--border-default, #555)',borderRadius:8,cursor:'pointer',whiteSpace:'nowrap'},onClick:()=>diagnostics.router.navigate('/dots/manage'),children:'+ Dots'}));
   function OriginalWizard() {
     const adapter = diagnostics.adapter;
     const accountKey = JSON.stringify([adapter.accountId, adapter.userId]);

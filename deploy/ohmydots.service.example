@@ -1,0 +1,18 @@
+# OhMyDots managed service — replace paths with your installation paths.
+[Unit]
+Description=OhMyDots account service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ohmydots
+ExecStart=/opt/ohmydots/.data/service/run.sh
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

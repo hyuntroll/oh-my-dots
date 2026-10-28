@@ -24,9 +24,10 @@ async function freePort() {
 // Each Dot owns a host and a database. A stop terminates that host's complete
 // process group, including its inference CLI, without cancelling another Dot.
 export class GrokHost {
-  constructor({ directory, model, computer, build = buildRoot, binary = grokNode() }) {
+  constructor({ directory, model, computer, inferenceDir, build = buildRoot, binary = grokNode() }) {
     this.directory = directory; this.model = model; this.build = build; this.binary = binary;
     this.computer = computer;
+    this.inferenceDir=inferenceDir;
     this.token = randomBytes(32).toString('hex'); this.log = ''; this.child = null;
   }
   async start(signal) {
@@ -41,10 +42,11 @@ export class GrokHost {
       boxRuntime: 'remote' }), { mode: 0o600 });
     this.url = 'http://127.0.0.1:' + await freePort();
     signal?.throwIfAborted();
-    const inherited = Object.fromEntries(['PATH', 'HOME', 'LANG', 'TMPDIR', 'OPENCODE_BIN'].filter(key => process.env[key]).map(key => [key, process.env[key]]));
+    const inherited = Object.fromEntries(['PATH', 'HOME', 'LANG', 'TMPDIR', 'OPENCODE_BIN','DOTS_PROVIDER_CONFIG'].filter(key => process.env[key]).map(key => [key, process.env[key]]));
     this.child = spawn(this.binary, [join(this.build, 'dist/host/host-main.cjs')], {
       cwd: this.directory, detached: true, stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...inherited, SAND_LOCAL_PROFILE: '1', SAND_PACKAGED: '1', SAND_DATA_ROOT: this.directory,
+        DOTS_INFERENCE_DIR:this.inferenceDir||'',
         SAND_USER_DATA_DIR: this.directory, SAND_DISABLE_UPDATES: '1', SAND_DISABLE_SENTRY: '1',
         SAND_DISABLE_TELEMETRY: '1', SAND_DISABLE_ANALYTICS: '1', SAND_BOX_AUTO_UPDATE: '0',
         SAND_OPENCODE_MODEL: this.model, SAND_USE_EXISTING_BOX_EXEC_DAEMON: '1',

@@ -5,6 +5,7 @@
 import { spawn } from 'node:child_process';
 import { readFile, realpath, writeFile } from 'node:fs/promises';
 import { join, sep } from 'node:path';
+import {providerSettings,inferenceEnvironment} from './inference-config.mjs';
 let input = '';
 for await (const chunk of process.stdin) input += chunk;
 const args = process.argv.slice(2);
@@ -28,7 +29,9 @@ if (process.env.DOTS_COMPUTER_DIAGNOSTICS === '1') {
   } catch {}
 }
 const diagnostics = process.env.DOTS_COMPUTER_DIAGNOSTICS === '1';
-const child = spawn(process.env.DOTS_OPENCODE_REAL_BIN, args, { env: process.env, stdio: ['pipe', diagnostics ? 'pipe' : 'inherit', 'inherit'] });
+const env={...process.env,...inferenceEnvironment(process.env.DOTS_INFERENCE_DIR)};
+if(process.env.DOTS_PROVIDER_CONFIG){const content=JSON.parse(env.OPENCODE_CONFIG_CONTENT||'{}');env.OPENCODE_CONFIG_CONTENT=JSON.stringify({...content,...providerSettings()});}
+const child = spawn(process.env.DOTS_OPENCODE_REAL_BIN, args, { env, stdio: ['pipe', diagnostics ? 'pipe' : 'inherit', 'inherit'] });
 let output = '';
 if (diagnostics) child.stdout.on('data', chunk => { process.stdout.write(chunk); output = (output + chunk).slice(-24000); });
 child.on('error', () => { console.error('OpenCode could not start'); process.exitCode = 1; });

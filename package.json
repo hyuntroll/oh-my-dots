@@ -8,9 +8,9 @@
     "node": ">=24.15.0"
   },
   "scripts": {
-    "dev": "node tools/original-start.mjs",
+    "dev": "node server/service.mjs",
     "build": "tsc --noEmit && vite build",
-    "start": "node tools/original-start.mjs",
+    "start": "node server/service.mjs",
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "computer:start": "node tools/computer-start.mjs",
@@ -26,7 +26,11 @@
     "grok:start": "DOTS_RUNTIME=grok node tools/original-start.mjs",
     "opencode:start": "DOTS_RUNTIME=opencode node tools/original-start.mjs",
     "legacy:dev": "node tools/dev.mjs",
-    "setup": "npm run original:verify && npm run assets:verify && npm run grok:prepare && npm run build"
+    "setup": "npm run original:verify && npm run assets:verify && npm run build",
+    "service:start": "node server/service.mjs",
+    "service:setup": "node tools/service-setup.mjs",
+    "legacy:original": "node tools/original-start.mjs",
+    "grok:setup": "npm run setup && npm run grok:prepare"
   },
   "dependencies": {
     "lucide-react": "0.577.0",

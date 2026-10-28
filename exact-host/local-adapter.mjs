@@ -2,9 +2,9 @@ import { approvalMessages, inspectApproval, respondApproval } from './local-appr
 import { readOnlyLocalPluginRpc, localPluginMcpServers } from './local-plugins.mjs';
 // Transport/data boundary for the unmodified shipped Dots components.
 // This is a local backend, never a ChatGPT account or a cloud session.
-export const LOCAL_ACCOUNT_ID = 'local';
-export const LOCAL_USER_ID = 'local-user';
-export const localAuth = Object.freeze({
+export let LOCAL_ACCOUNT_ID = 'local';
+export let LOCAL_USER_ID = 'local-user';
+export let localAuth = Object.freeze({
   accountId: LOCAL_ACCOUNT_ID, authenticatedAccountId: LOCAL_ACCOUNT_ID,
   userId: LOCAL_USER_ID, authenticatedUserId: LOCAL_USER_ID,
   accountUserId: LOCAL_USER_ID, accountLoading: false, authLoading: false,
@@ -12,6 +12,8 @@ export const localAuth = Object.freeze({
   requiresAuth: false, supportedSurface: true, email: null, plan: null,
   isLoading: false, openAIAuth: null,
 });
+let accountState;
+export function configureAccountState(value){accountState=value;if(value){const user=value.session.user;LOCAL_ACCOUNT_ID=user.id;LOCAL_USER_ID=user.id;localAuth={...localAuth,accountId:user.id,authenticatedAccountId:user.id,userId:user.id,authenticatedUserId:user.id,accountUserId:user.id};}}
 
 const metadataKey = 'dots-exact-local-metadata-v1';
 const encode = encodeURIComponent;
@@ -25,13 +27,13 @@ const artifactMime = path => ({ txt: 'text/plain', md: 'text/markdown', markdown
   png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', svg: 'image/svg+xml',
   pdf: 'application/pdf', zip: 'application/zip' })[path.split('.').at(-1)?.toLowerCase()] || 'application/octet-stream';
 const metadata = {
-  read() { try { return JSON.parse(localStorage.getItem(metadataKey) || '{}'); } catch { return {}; } },
+  read() { if(accountState)return accountState.state.metadata;try { return JSON.parse(localStorage.getItem(metadataKey) || '{}'); } catch { return {}; } },
   get(id) { return this.read()[id] || {}; },
-  set(id, patch) { const rows = this.read(); rows[id] = { ...rows[id], ...patch }; localStorage.setItem(metadataKey, JSON.stringify(rows)); },
+  set(id, patch) { const rows = this.read(); rows[id] = { ...rows[id], ...patch };if(accountState)return accountState.save('metadata',id,rows[id]);localStorage.setItem(metadataKey, JSON.stringify(rows));return Promise.resolve(); },
 };
 
 export function localAccountIdentity() {
-  return { id: LOCAL_USER_ID, name: metadata.get('local-account').name || '로컬 사용자', email: null, picture: null };
+  return { id: LOCAL_USER_ID, name: accountState?.session.user.displayName || metadata.get('local-account').name || '로컬 사용자', email: null, picture: null };
 }
 
 export function originalProfile(profile) {
@@ -153,7 +155,7 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
     async readAll() { return settingsSnapshot(); },
     async read(key) { const value = settingsSnapshot().values[key]; return { effective: value, configured: value }; },
     async write(key, value) {
-      metadata.set('settings', { [key]: value });
+      await metadata.set('settings', { [key]: value });
       for (const listener of settingsListeners.get(key) || []) listener({ effective: value, configured: value });
       return { effective: value, configured: value };
     },
@@ -175,11 +177,12 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
   });
   const api = async (path, { method = 'GET', body, signal } = {}) => {
     if (!path.startsWith('/api/')) throw missing('Only local /api requests are permitted', 400);
-    const response = await fetchImpl(path, { method, credentials: 'omit', signal,
+    const response = await fetchImpl(path, { method, credentials: 'same-origin', signal,
       headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body) });
     const value = await response.json();
     if (!response.ok) {
+      if(accountState&&response.status===401)location.replace('/login');
       warn('api:' + response.status + ':' + path, { method, path, status: response.status });
       throw missing(value.error || value.message || 'Local backend request failed', response.status);
     }
@@ -202,7 +205,7 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
       // Original EN/Blob consumers require an actual Response. Their native
       // httpFetch service is absent here; only owned local file bytes use this
       // browser transport. No cloud account headers or cookies are forwarded.
-      const response = await fetchImpl(url.pathname + url.search, { method, credentials: 'omit', signal: options.signal });
+      const response = await fetchImpl(url.pathname + url.search, { method, credentials: 'same-origin', signal: options.signal });
       if (binaryReads++ < 8) console.info('[dots-local-adapter]', JSON.stringify({ event: 'local-binary-read', method, path: url.pathname, status: response.status }));
       if (!response.ok) throw missing('Local file download failed', response.status);
       options.onResponseHeaders?.(response.headers);
@@ -367,7 +370,8 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
     };
     if (method === 'PATCH' && path === '/accounts/users/name') {
       if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 100) throw missing('이름을 1~100자로 입력하세요.', 400);
-      metadata.set('local-account', { name: body.name.trim() });
+      if(accountState){const response=await fetchImpl('/api/account',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({displayName:body.name.trim()})});if(!response.ok)throw missing('이름을 저장하지 못했습니다.',response.status);accountState.session.user=(await response.json()).user;}
+      await metadata.set('local-account', { name: body.name.trim() });
       return localAccountIdentity();
     }
     // The standalone local installation has no connected cloud apps or hosted
@@ -427,7 +431,7 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
       const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
       const id = 'local-avatar-' + crypto.randomUUID();
       await api('/api/local-avatars', { method: 'POST', signal: options.signal, body: { file_id: id, data_url: dataUrl } });
-      metadata.set('asset:' + id, { dataUrl, created_at: new Date().toISOString() });
+      await metadata.set('asset:' + id, { dataUrl, created_at: new Date().toISOString() });
       return { snapshot: { schema_version: 1, asset_pointer: 'file-service://' + id } };
     }
     if ((match = path.match(/^\/files\/download\/([^/]+)$/)) && method === 'GET') {
@@ -445,7 +449,7 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
         const extra = Object.fromEntries(['avatar', 'avatar_id', 'avatar_type', 'avatar_manifest', 'accent_color', 'appearance'].filter(k => k in body).map(k => [k, body[k]]));
         // Persist original renderer metadata only after the server mutation succeeds.
         const value = await api('/api/profiles/' + encode(p.id), { method: 'PATCH', body: patch, signal: options.signal });
-        metadata.set(p.id, extra); await refresh(); return originalProfile(value);
+        await metadata.set(p.id, extra); await refresh(); return originalProfile(value);
       }
       if (method === 'DELETE') { await api('/api/profiles/' + encode(p.id), { method, signal: options.signal }); await refresh(); return; }
     }
@@ -495,7 +499,7 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
     }
     if ((match = path.match(/^\/messaging\/rooms\/([^/]+)\/(?:read|mark-read|read-cursor|read_cursor)$/)) && method === 'POST') {
       const room = roomOrThrow(decodeURIComponent(match[1]));
-      metadata.set('room:' + room.id, { last_read_at: body.last_read_at || body.timestamp || new Date().toISOString() });
+      await metadata.set('room:' + room.id, { last_read_at: body.last_read_at || body.timestamp || new Date().toISOString() });
       emit({ type: 'room', roomId: room.id }); return { last_read_at: metadata.get('room:' + room.id).last_read_at };
     }
     if (/^\/messaging\/rooms\/[^/]+\/responding_heartbeat$/.test(path)) {
@@ -615,20 +619,25 @@ export async function installLocalAdapter({ initial, scope, queryClient, shared,
   if (typeof EventSource !== 'undefined') {
     source = new EventSource('/api/events?after=' + state.revision);
     source.onopen = () => { setLocalConnection(true); for (const sub of subscriptions) { sub.onSubscribedChange?.(true); sub.onUpdate?.({ type: 'resync' }); } };
-    source.onerror = () => { setLocalConnection(false); for (const sub of subscriptions) sub.onSubscribedChange?.(false); };
+    source.onerror = () => { setLocalConnection(false); for (const sub of subscriptions) sub.onSubscribedChange?.(false);if(accountState)void fetchImpl('/api/session').then(r=>r.json()).then(s=>{if(!s.authenticated)location.replace('/login');}).catch(()=>{}); };
     const onEvent = event => {
       if (disposed) return;
       let record; try { record = JSON.parse(event.data); } catch { return; }
       clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => refresh().then(() => {
         const data = record.value || record.data || {};
+        if(accountState&&record.type==='ui_metadata.updated'){
+          accountState.state.metadata[data.id]=data.value;
+          if(data.id==='settings')for(const [key,listeners]of settingsListeners)for(const listener of listeners)listener({effective:data.value?.[key],configured:data.value?.[key]});
+          seed();
+        }
         if (record.type.startsWith('task.')) emit({ type: 'resync' });
         else if (data.room_id && record.type.startsWith('message.')) emit({ type: record.type === 'message.created' ? 'message-added' : 'message', roomId: data.room_id, messageId: data.id });
         else if (data.room_id) emit({ type: 'room', roomId: data.room_id });
         else for (const room of state.rooms) emit({ type: 'room', roomId: room.id });
       }).catch(error => diagnostics.errors.push(error.message)), 60);
     };
-    for (const type of ['message.created', 'message.updated', 'task.created', 'task.updated', 'profile.created', 'profile.updated', 'profile.deleted', 'room.created']) source.addEventListener(type, onEvent);
+    for (const type of ['message.created', 'message.updated', 'task.created', 'task.updated', 'profile.created', 'profile.updated', 'profile.deleted', 'room.created','ui_metadata.updated']) source.addEventListener(type, onEvent);
   }
   return { accountId: LOCAL_ACCOUNT_ID, userId: LOCAL_USER_ID, auth: localAuth, diagnostics,
     get state() { return state; }, get profiles() { return state.profiles.map(originalProfile); },

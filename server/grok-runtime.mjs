@@ -10,8 +10,9 @@ import { computerStatus } from './computer.mjs';
 import { grokComputer } from './grok-computer-bridge.mjs';
 
 export class GrokProvider {
+  constructor(options={}){this.options=options;}
   async status() {
-    const code = await new OpenCodeProvider().status();
+    const code = await new OpenCodeProvider(this.options).status();
     let built = true;
     try { await access(join(buildRoot, 'dots-grok-build.json')); } catch { built = false; }
     return { ...code, provider: 'grok-reconstructed', inference_provider: 'opencode',
@@ -48,7 +49,7 @@ export function grokEntry(entry) {
 }
 
 export class GrokRuntime extends Runtime {
-  constructor(options) { super(options); this.hostFactory = options.hostFactory || (options => new GrokHost(options)); this.pollMs = options.pollMs || 500; }
+  constructor(options) { super(options); this.hostFactory = options.hostFactory || (options => new GrokHost({...options,inferenceDir:this.inferenceDir})); this.pollMs = options.pollMs || 500; }
   project(task, entries) {
     for (const entry of entries) {
       const mapped = grokEntry(entry);

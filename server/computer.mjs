@@ -17,6 +17,7 @@ export function validateComputerUrl(value) {
 }
 
 async function connection(dataDir,settings={}) {
+  if(settings.computer_enabled===false)throw Error('이 계정에는 전용 컴퓨터가 설정되지 않았습니다.');
   const base=validateComputerUrl(settings.computer_url||process.env.DOTS_COMPUTER_URL);
   let token=process.env.DOTS_COMPUTER_TOKEN;
   if(!token){try{token=(await readFile(join(dataDir,'computer.token'),'utf8')).trim()}catch(e){if(e.code!=='ENOENT')throw e;}}

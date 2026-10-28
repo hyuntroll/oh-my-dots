@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir, homedir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
+import { providerSettings, inferenceEnvironment } from './inference-config.mjs';
 const exec=promisify(execFile);
 export function productConfig(system,bridge){
  const names=['dots_read_file','dots_list_files','dots_write_file','dots_shell','dots_ask_user','dots_send_message','dots_computer_status','dots_computer_screenshot','dots_computer_action'];
@@ -10,12 +11,12 @@ export function productConfig(system,bridge){
  return {agents:{dots:{mode:'primary',system,permissions}},permissions,policies:[{action:'tool.use',resource:'*',effect:'deny'},{action:'integration.use',resource:'*',effect:'deny'},...(bridge?names:[]).map(name=>({action:'tool.use',resource:name+':*',effect:'allow'})),...(bridge?[{action:'integration.use',resource:'mcp:dots',effect:'allow'}]:[])],mcp:{servers:bridge?{dots:bridge}:{}},share:'disabled',snapshots:false,lsp:false,formatter:false,update:'disable'};
 }
 export class OpenCodeProvider {
- constructor({binary=process.env.OPENCODE_BIN||join(homedir(),'.opencode/bin/opencode')}={}){this.binary=binary;}
- async status(){if(!existsSync(this.binary))return {provider:'opencode',installed:false,models:[],error:'OpenCode 2 CLI가 설치되어 있지 않습니다.'};try{let {stdout}=await exec(this.binary,['models'],{timeout:15000,maxBuffer:2e6});return {provider:'opencode',installed:true,models:stdout.split('\n').map(s=>s.trim()).filter(s=>/^[^\s/]+\/[^\s]+$/.test(s))};}catch{return {provider:'opencode',installed:true,models:[],error:'OpenCode 모델 목록을 읽지 못했습니다. OpenCode 계정 연결을 확인하세요.'};}}
+ constructor({binary=process.env.OPENCODE_BIN||join(homedir(),'.opencode/bin/opencode'),isolationDir}={}){this.binary=binary;this.isolationDir=isolationDir;}
+ async status(){if(!existsSync(this.binary))return {provider:'opencode',installed:false,models:[],error:'OpenCode 2 CLI가 설치되어 있지 않습니다.'};try{let {stdout}=await exec(this.binary,['models'],{timeout:15000,maxBuffer:2e6,env:{...process.env,...inferenceEnvironment(this.isolationDir),OPENCODE_CONFIG_CONTENT:JSON.stringify(providerSettings())}});return {provider:'opencode',installed:true,models:stdout.split('\n').map(s=>s.trim()).filter(s=>/^[^\s/]+\/[^\s]+$/.test(s))};}catch{return {provider:'opencode',installed:true,models:[],error:'OpenCode 모델 목록을 읽지 못했습니다. OpenCode 계정 연결을 확인하세요.'};}}
  async run({model,history,system,bridge,signal,onEvent,images=[]}){
-  const dir=mkdtempSync(join(tmpdir(),'dots-inference-'));writeFileSync(join(dir,'opencode.json'),JSON.stringify(productConfig(system,bridge)),{mode:0o600});
+  const dir=mkdtempSync(join(tmpdir(),'dots-inference-'));writeFileSync(join(dir,'opencode.json'),JSON.stringify({...productConfig(system,bridge),...providerSettings()}),{mode:0o600});
   let imagePaths=[];for(let [index,image]of images.entries()){let path=join(dir,`computer-${index}.png`);writeFileSync(path,Buffer.from(image.data,'base64'),{mode:0o600});imagePaths.push(path);}
-  const env={...process.env,PWD:dir,OPENCODE_CONFIG_DIR:dir,OPENCODE_CONFIG:join(dir,'opencode.json'),OPENCODE_DISABLE_CLAUDE_CODE:'1'};delete env.OPENCODE_CONFIG_CONTENT;delete env.OPENCODE_PERMISSION;
+  const env={...process.env,...inferenceEnvironment(this.isolationDir),PWD:dir,OPENCODE_CONFIG_DIR:dir,OPENCODE_CONFIG:join(dir,'opencode.json'),OPENCODE_DISABLE_CLAUDE_CODE:'1'};delete env.OPENCODE_CONFIG_CONTENT;delete env.OPENCODE_PERMISSION;
   let child;let timer;let killTimer;let aborted=false,timedOut=false,outputLimit=false;
   const stop=()=>{aborted=true;try{process.kill(-child.pid,'SIGTERM');}catch{}killTimer=setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL');}catch{}},1500);killTimer.unref();};
   try{return await new Promise((resolve,reject)=>{
